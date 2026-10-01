@@ -1,3 +1,9 @@
+// =========================================================================
+// CẤU HÌNH ĐỒNG BỘ ĐÁM MÂY (FIREBASE REALTIME DATABASE)
+// Dán link Realtime Database của bạn vào giữa 2 dấu ngoặc kép bên dưới:
+// =========================================================================
+const CLOUD_DB_URL = "https://halisos-default-rtdb.asia-southeast1.firebasedatabase.app/";
+
 // ---------- Danh ngôn truyền cảm hứng ----------
 const QUOTES = [
   "'Hãy sống như thể ngày mai bạn sẽ chết. Hãy học như thể bạn sẽ sống mãi mãi.' — Mahatma Gandhi",
@@ -31,11 +37,11 @@ const DEFAULT_CONFIG = {
 
 const ITEMS_PER_PAGE = 6;
 
-// ---------- Quản lý Tài khoản & Lưu trữ theo User ----------
-let users = loadJSON("studyos_users", {}); // { username: { username, email, password, createdAt } }
+// ---------- Quản lý Tài khoản & Lưu trữ ----------
+let users = loadJSON("studyos_users", {});
 let currentUser = localStorage.getItem("studyos_current_user") || null;
 
-let config = DEFAULT_CONFIG;
+let config = { ...DEFAULT_CONFIG };
 let tasks = [];
 let futureMails = [];
 
@@ -43,13 +49,71 @@ let currentFilter = "all";
 let searchQuery = "";
 let currentPage = 1;
 
-// Biến cho Focus Session
+// Biến Focus Session
 let focusInterval = null;
 let focusStartTime = 0;
 let focusPausedTime = 0;
 let pauseStartTimestamp = 0;
 let isFocusPaused = false;
 let isFocusRunning = false;
+
+function isCloudEnabled() {
+  return (
+    CLOUD_DB_URL &&
+    CLOUD_DB_URL.startsWith("https://") &&
+    !CLOUD_DB_URL.includes("DAN-LINK-FIREBASE")
+  );
+}
+
+function getCloudEndpoint(username) {
+  const base = CLOUD_DB_URL.replace(/\/+$/, "");
+  return `${base}/studyos_accounts/${encodeURIComponent(username)}.json`;
+}
+
+async function fetchAccountFromCloud(username) {
+  if (!isCloudEnabled()) return null;
+  try {
+    const res = await fetch(getCloudEndpoint(username));
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function syncToCloud() {
+  if (!currentUser || !users[currentUser] || !isCloudEnabled()) return;
+  const payload = {
+    profile: users[currentUser],
+    config,
+    tasks,
+    futureMails,
+    updatedAt: Date.now()
+  };
+  try {
+    await fetch(getCloudEndpoint(currentUser), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch {
+    // Nếu mất mạng vẫn giữ nguyên trong localStorage
+  }
+}
+
+async function pullCurrentUserFromCloud() {
+  if (!currentUser || !isCloudEnabled()) return;
+  const remoteData = await fetchAccountFromCloud(currentUser);
+  if (remoteData && remoteData.profile) {
+    users[currentUser] = remoteData.profile;
+    config = { ...DEFAULT_CONFIG, ...(remoteData.config || {}) };
+    tasks = Array.isArray(remoteData.tasks) ? remoteData.tasks : [];
+    futureMails = Array.isArray(remoteData.futureMails) ? remoteData.futureMails : [];
+    saveUsersDB();
+    saveLocalOnly();
+    renderAll();
+  }
+}
 
 function loadJSON(key, fallback) {
   try {
@@ -68,7 +132,6 @@ function getStorageKeys() {
       mailsKey: `studyos_mails_${currentUser}`
     };
   }
-  // Mặc định chế độ Khách giữ nguyên key cũ để không mất dữ liệu trước đó
   return {
     configKey: "studyos_config",
     tasksKey: "studyos_tasks",
@@ -84,11 +147,16 @@ function loadActiveUserData() {
   migrateTasks();
 }
 
-function saveStorage() {
+function saveLocalOnly() {
   const { configKey, tasksKey, mailsKey } = getStorageKeys();
   localStorage.setItem(configKey, JSON.stringify(config));
   localStorage.setItem(tasksKey, JSON.stringify(tasks));
   localStorage.setItem(mailsKey, JSON.stringify(futureMails));
+}
+
+function saveStorage() {
+  saveLocalOnly();
+  syncToCloud();
 }
 
 function saveUsersDB() {
@@ -116,7 +184,7 @@ function migrateTasks() {
     if (!t.time) { t.time = "00:00"; migrated = true; }
     if (typeof t.done !== "boolean") { t.done = Boolean(t.done); migrated = true; }
   });
-  if (migrated) saveStorage();
+  if (migrated) saveLocalOnly();
 }
 
 // ---------- Tiện ích hiển thị ----------
@@ -243,9 +311,10 @@ function renderProfileUI() {
   if (currentUser && users[currentUser]) {
     const u = users[currentUser];
     const initial = u.username.charAt(0).toUpperCase();
+    const syncTag = isCloudEnabled() ? "☁️ Đã đồng bộ" : "Lưu nội bộ";
     sidebarAvatar.textContent = initial;
     sidebarUsername.textContent = u.username;
-    sidebarEmail.textContent = u.email ? u.email : "Chưa liên kết email";
+    sidebarEmail.textContent = u.email ? `${u.email} • ${syncTag}` : syncTag;
     topProfileBtn.textContent = `@${u.username}`;
     activeAccountLabel.textContent = u.username;
 
@@ -255,8 +324,8 @@ function renderProfileUI() {
     document.getElementById("profile-big-avatar").textContent = initial;
     document.getElementById("profile-display-username").textContent = `@${u.username}`;
     document.getElementById("profile-display-email").textContent = u.email
-      ? `Email: ${u.email}`
-      : "Chưa có email (Thêm email để gửi thư đến tương lai)";
+      ? `Email: ${u.email} (${syncTag})`
+      : `Chưa có email (${syncTag})`;
     document.getElementById("profile-edit-email").value = u.email || "";
     document.getElementById("profile-edit-password").value = "";
 
@@ -653,12 +722,20 @@ document.addEventListener("DOMContentLoaded", () => {
   setInterval(updateClockAndHeader, 1000);
   renderAll();
 
-  // Mặc định ngày gửi thư tương lai là 1 năm sau
+  // Tự động kéo dữ liệu mới nhất từ Cloud khi mở trang
+  pullCurrentUserFromCloud();
+
+  // Tự động làm mới dữ liệu khi chuyển qua lại giữa Điện thoại và Máy tính
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      pullCurrentUserFromCloud();
+    }
+  });
+
   const nextYear = new Date();
   nextYear.setFullYear(nextYear.getFullYear() + 1);
   document.getElementById("fm-date").value = nextYear.toISOString().split("T")[0];
 
-  // Chuyển tab chính
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
@@ -678,7 +755,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("refresh-quote-btn").addEventListener("click", refreshQuote);
 
-  // Chuyển tab Đăng nhập / Đăng ký
   document.querySelectorAll(".auth-tab-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".auth-tab-btn").forEach(b => b.classList.remove("active"));
@@ -689,8 +765,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Xử lý ĐĂNG KÝ
-  document.getElementById("register-form").addEventListener("submit", e => {
+  // Xử lý ĐĂNG KÝ (Kiểm tra trùng trên Cloud + Đồng bộ ngay)
+  document.getElementById("register-form").addEventListener("submit", async e => {
     e.preventDefault();
     const username = document.getElementById("reg-username").value.trim().toLowerCase();
     const email = document.getElementById("reg-email").value.trim();
@@ -700,12 +776,20 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("Username từ 3-24 ký tự, viết liền không dấu!");
       return;
     }
-    if (users[username]) {
-      showToast("Username này đã tồn tại, vui lòng chọn tên khác!");
-      return;
-    }
     if (password.length < 4) {
       showToast("Mật khẩu phải có ít nhất 4 ký tự!");
+      return;
+    }
+
+    // Kiểm tra trên Cloud xem Username đã có người đăng ký chưa
+    if (isCloudEnabled()) {
+      const existingCloud = await fetchAccountFromCloud(username);
+      if (existingCloud && existingCloud.profile) {
+        showToast("Username này đã tồn tại trên hệ thống Cloud!");
+        return;
+      }
+    } else if (users[username]) {
+      showToast("Username này đã tồn tại!");
       return;
     }
 
@@ -719,7 +803,6 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     saveUsersDB();
 
-    // Nếu là tài khoản đầu tiên trên máy, tự động chuyển task đang có ở chế độ Khách sang tài khoản này
     if (isFirstAccountEver && tasks.length > 0) {
       localStorage.setItem(`studyos_tasks_${username}`, JSON.stringify(tasks));
       localStorage.setItem(`studyos_config_${username}`, JSON.stringify(config));
@@ -728,17 +811,42 @@ document.addEventListener("DOMContentLoaded", () => {
     currentUser = username;
     localStorage.setItem("studyos_current_user", currentUser);
     loadActiveUserData();
+    await syncToCloud();
     renderAll();
     document.getElementById("register-form").reset();
-    showToast(`Đăng ký thành công! Chào mừng @${username}`);
+    showToast(`Đăng ký & đồng bộ thành công! Chào mừng @${username}`);
   });
 
-  // Xử lý ĐĂNG NHẬP
-  document.getElementById("login-form").addEventListener("submit", e => {
+  // Xử lý ĐĂNG NHẬP (Tải từ Cloud nếu đăng nhập trên thiết bị mới)
+  document.getElementById("login-form").addEventListener("submit", async e => {
     e.preventDefault();
     const username = document.getElementById("login-username").value.trim().toLowerCase();
     const password = document.getElementById("login-password").value;
 
+    if (isCloudEnabled()) {
+      const cloudData = await fetchAccountFromCloud(username);
+      if (cloudData && cloudData.profile) {
+        if (cloudData.profile.password !== password) {
+          showToast("Sai Username hoặc Mật khẩu!");
+          return;
+        }
+        users[username] = cloudData.profile;
+        saveUsersDB();
+        currentUser = username;
+        localStorage.setItem("studyos_current_user", currentUser);
+
+        config = { ...DEFAULT_CONFIG, ...(cloudData.config || {}) };
+        tasks = Array.isArray(cloudData.tasks) ? cloudData.tasks : [];
+        futureMails = Array.isArray(cloudData.futureMails) ? cloudData.futureMails : [];
+        saveLocalOnly();
+        renderAll();
+        document.getElementById("login-form").reset();
+        showToast(`Đã đồng bộ dữ liệu của @${username} từ Cloud!`);
+        return;
+      }
+    }
+
+    // Fallback kiểm tra trên máy nếu chưa gắn link Cloud
     const account = users[username];
     if (!account || account.password !== password) {
       showToast("Sai Username hoặc Mật khẩu!");
@@ -748,13 +856,14 @@ document.addEventListener("DOMContentLoaded", () => {
     currentUser = username;
     localStorage.setItem("studyos_current_user", currentUser);
     loadActiveUserData();
+    await syncToCloud();
     renderAll();
     document.getElementById("login-form").reset();
     showToast(`Chào mừng trở lại, @${username}!`);
   });
 
-  // Cập nhật Hồ sơ (Email & Mật khẩu)
-  document.getElementById("profile-update-form").addEventListener("submit", e => {
+  // Cập nhật Hồ sơ
+  document.getElementById("profile-update-form").addEventListener("submit", async e => {
     e.preventDefault();
     if (!currentUser || !users[currentUser]) return;
 
@@ -771,8 +880,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     saveUsersDB();
+    await syncToCloud();
     renderAll();
-    showToast("Đã cập nhật thông tin hồ sơ!");
+    showToast("Đã cập nhật & đồng bộ thông tin hồ sơ!");
   });
 
   // Đăng xuất
@@ -808,17 +918,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("fm-message").value = "";
     showToast(userEmail
       ? `Đã lên lịch thư tương lai (${targetDate}) cho ${userEmail}!`
-      : `Đã niêm phong thư tương lai (${targetDate})! Bạn có thể thêm email bất kỳ lúc nào.`);
+      : `Đã niêm phong thư tương lai (${targetDate})!`);
   });
 
-  // Đổi giao diện Sáng / Tối
   document.getElementById("theme-toggle-btn").addEventListener("click", () => {
     const html = document.documentElement;
     const nextTheme = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
     html.setAttribute("data-theme", nextTheme);
   });
 
-  // Lưu nhanh Aim ở Dashboard
   document.getElementById("quick-aim-form").addEventListener("submit", e => {
     e.preventDefault();
     const w = parseInt(document.getElementById("quick-aim-week").value, 10);
@@ -832,7 +940,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Thêm / Sửa Task
   document.getElementById("task-form").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("task-name-input").value.trim();
@@ -859,7 +966,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("cancel-edit-btn").addEventListener("click", resetTaskForm);
 
-  // Bộ lọc & Tìm kiếm Task
   document.querySelectorAll(".filter-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
@@ -888,7 +994,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTasksTab();
   });
 
-  // Focus Session
   document.getElementById("focus-task-select").addEventListener("change", updateFocusPreviewName);
 
   document.getElementById("focus-start-btn").addEventListener("click", () => {
@@ -937,7 +1042,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("focus-done-btn").addEventListener("click", () => stopFocusSession("done"));
   document.getElementById("focus-quit-btn").addEventListener("click", () => stopFocusSession("quit"));
 
-  // Cài đặt chung
   document.getElementById("settings-form").addEventListener("submit", e => {
     e.preventDefault();
     config.title = document.getElementById("setting-title").value.trim() || "Study OS";
@@ -949,7 +1053,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Đã lưu cấu hình hệ thống!");
   });
 
-  // Xuất / Nhập JSON
   document.getElementById("export-tasks-btn").addEventListener("click", () => downloadJSON("tasks.json", tasks));
   document.getElementById("export-config-btn").addEventListener("click", () => downloadJSON("config.json", config));
 
