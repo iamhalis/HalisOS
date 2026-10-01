@@ -101,7 +101,6 @@ body {
   font-weight: 600;
 }
 
-/* Thẻ Hồ sơ trên Sidebar */
 .sidebar-user-card {
   display: flex;
   align-items: center;
@@ -134,9 +133,7 @@ body {
   flex-shrink: 0;
 }
 
-.user-meta {
-  overflow: hidden;
-}
+.user-meta { overflow: hidden; }
 
 .user-name {
   font-size: 0.9rem;
@@ -157,8 +154,8 @@ body {
 .nav-menu {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  margin-top: 16px;
+  gap: 5px;
+  margin-top: 14px;
   flex: 1;
 }
 
@@ -167,12 +164,12 @@ body {
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 11px 14px;
+  padding: 10px 14px;
   border: none;
   border-radius: 10px;
   background: transparent;
   color: var(--text-muted);
-  font-size: 0.93rem;
+  font-size: 0.92rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -254,9 +251,7 @@ body {
   font-family: inherit;
 }
 
-.theme-toggle:hover {
-  background: var(--bg-hover);
-}
+.theme-toggle:hover { background: var(--bg-hover); }
 
 /* Main Content */
 .main-content {
@@ -327,9 +322,7 @@ body {
   animation: fadeIn 0.2s ease;
 }
 
-.tab-pane.active {
-  display: block;
-}
+.tab-pane.active { display: block; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(4px); }
@@ -365,9 +358,10 @@ body {
 .stat-pill {
   background: var(--accent-soft);
   color: var(--accent);
-  padding: 2px 8px;
+  padding: 4px 10px;
   border-radius: 99px;
-  font-size: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .stat-value {
@@ -433,6 +427,68 @@ body {
 .card-header h3 {
   font-size: 1.05rem;
   font-weight: 700;
+}
+
+/* Biểu đồ đường (Analytics Line Charts) */
+.charts-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.chart-card {
+  padding: 24px;
+}
+
+.svg-chart-container {
+  width: 100%;
+  overflow-x: auto;
+  padding-top: 8px;
+}
+
+.line-chart-svg {
+  width: 100%;
+  height: 260px;
+  display: block;
+}
+
+.chart-grid-line {
+  stroke: var(--border-color);
+  stroke-dasharray: 4 4;
+  stroke-width: 1;
+}
+
+.chart-axis-label {
+  fill: var(--text-muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.chart-value-label {
+  fill: var(--text-main);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.chart-line-path {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart-point {
+  fill: var(--bg-surface);
+  stroke: var(--accent);
+  stroke-width: 3;
+  cursor: pointer;
+  transition: r 0.15s ease;
+}
+
+.chart-point:hover {
+  r: 7;
+  fill: var(--accent);
 }
 
 /* Auth & Profile Styles */
@@ -534,9 +590,7 @@ select {
   outline: none;
 }
 
-textarea {
-  resize: vertical;
-}
+textarea { resize: vertical; }
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--accent);
@@ -649,9 +703,7 @@ input:focus, select:focus, textarea:focus {
   transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
-.task-item:hover {
-  border-color: var(--accent);
-}
+.task-item:hover { border-color: var(--accent); }
 
 .task-left {
   display: flex;

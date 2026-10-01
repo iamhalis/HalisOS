@@ -48,6 +48,11 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span>Focus Mode</span>
         </button>
+        <!-- MỤC MỚI: THỐNG KÊ (Nằm ngay dưới Focus Mode) -->
+        <button class="nav-item" data-tab="analytics">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span>Thống kê</span>
+        </button>
         <button class="nav-item" data-tab="profile">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           <span>Hồ sơ & Thư tương lai</span>
@@ -87,7 +92,7 @@
       <!-- Khối danh ngôn -->
       <section class="quote-banner">
         <div class="quote-content">
-          <span class="quote-tag">Today's Quote</span>
+          <span class="quote-tag">Cảm hứng hôm nay</span>
           <p id="quote-text">Đang tải danh ngôn...</p>
         </div>
         <button class="btn-icon" id="refresh-quote-btn" title="Đổi câu danh ngôn khác">
@@ -255,9 +260,44 @@
         </div>
       </section>
 
-      <!-- TAB 5: HỒ SƠ & THƯ TƯƠNG LAI (MỚI) -->
+      <!-- TAB 5: THỐNG KÊ BIỂU ĐỒ ĐƯỜNG (MỚI) -->
+      <section class="tab-pane" id="tab-analytics">
+        <div class="section-header">
+          <div>
+            <h3>Biểu đồ năng suất học tập</h3>
+            <p class="text-muted">Theo dõi trực quan số nhiệm vụ hoàn thành theo từng ngày trong tuần và từng tuần trong tháng</p>
+          </div>
+        </div>
+
+        <div class="charts-stack">
+          <!-- Biểu đồ 1: Trong tuần (Per Day) -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <div>
+                <h3>Số nhiệm vụ đã làm trong tuần (Per Day)</h3>
+                <p class="text-muted" id="weekly-chart-subtitle">Thứ 2 — Chủ Nhật</p>
+              </div>
+              <span class="stat-pill" id="weekly-chart-total">Tổng: 0 task</span>
+            </div>
+            <div class="svg-chart-container" id="weekly-line-chart"></div>
+          </div>
+
+          <!-- Biểu đồ 2: Trong tháng (Per Week) -->
+          <div class="card chart-card">
+            <div class="card-header">
+              <div>
+                <h3>Số nhiệm vụ đã làm trong tháng (Per Week)</h3>
+                <p class="text-muted" id="monthly-chart-subtitle">Tháng hiện tại</p>
+              </div>
+              <span class="stat-pill" id="monthly-chart-total">Tổng: 0 task</span>
+            </div>
+            <div class="svg-chart-container" id="monthly-line-chart"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: HỒ SƠ & THƯ TƯƠNG LAI -->
       <section class="tab-pane" id="tab-profile">
-        <!-- Giao diện khi CHƯA đăng nhập -->
         <div id="auth-guest-view" class="auth-wrapper">
           <div class="card auth-card">
             <div class="auth-tabs">
@@ -265,7 +305,6 @@
               <button class="auth-tab-btn" data-auth="register">Đăng ký tài khoản</button>
             </div>
 
-            <!-- Form Đăng nhập -->
             <form id="login-form" class="form-stack">
               <p class="text-muted">Đăng nhập bằng Username để truy cập dữ liệu học tập của bạn.</p>
               <div class="form-group">
@@ -279,7 +318,6 @@
               <button type="submit" class="btn btn-primary">Đăng nhập</button>
             </form>
 
-            <!-- Form Đăng ký -->
             <form id="register-form" class="form-stack hidden">
               <p class="text-muted">Tạo hồ sơ mới để lưu trữ riêng biệt và mở khóa tính năng gửi thư đến tương lai.</p>
               <div class="form-group">
@@ -299,9 +337,7 @@
           </div>
         </div>
 
-        <!-- Giao diện khi ĐÃ đăng nhập -->
         <div id="auth-user-view" class="dashboard-columns hidden">
-          <!-- Cột trái: Thông tin Hồ sơ -->
           <div class="card">
             <div class="profile-header-box">
               <div class="profile-big-avatar" id="profile-big-avatar">U</div>
@@ -327,7 +363,6 @@
             </form>
           </div>
 
-          <!-- Cột phải: Gửi thư đến tương lai -->
           <div class="card">
             <div class="card-header">
               <h3>✉️ Gửi thư đến tương lai (Future Mail)</h3>
@@ -358,7 +393,7 @@
         </div>
       </section>
 
-      <!-- TAB 6: CÀI ĐẶT & DỮ LIỆU -->
+      <!-- TAB 7: CÀI ĐẶT & DỮ LIỆU -->
       <section class="tab-pane" id="tab-settings">
         <div class="dashboard-columns">
           <div class="card">
