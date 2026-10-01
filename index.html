@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Study OS — Quản lý học tập & Mục tiêu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar Điều hướng -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">S</div>
+        <div class="brand-info">
+          <h1 id="app-title">Study OS</h1>
+          <span class="version-badge">v6.01 Web</span>
+        </div>
+      </div>
+
+      <nav class="nav-menu">
+        <button class="nav-item active" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
+          <span>Tổng quan</span>
+        </button>
+        <button class="nav-item" data-tab="tasks">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+          <span>Nhiệm vụ</span>
+          <span class="nav-counter" id="pending-badge">0</span>
+        </button>
+        <button class="nav-item" data-tab="calendar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <span>Lịch tuần</span>
+        </button>
+        <button class="nav-item" data-tab="focus">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Focus Mode</span>
+        </button>
+        <button class="nav-item" data-tab="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span>Cài đặt & Dữ liệu</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="countdown-box">
+          <span class="countdown-label">Đếm ngược mục tiêu</span>
+          <div class="countdown-number" id="days-left-display">0 ngày</div>
+          <span class="countdown-target" id="target-date-display">2027-06-01</span>
+        </div>
+        <button class="theme-toggle" id="theme-toggle-btn" title="Đổi giao diện Sáng/Tối">
+          <span>Giao diện Sáng / Tối</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Nội dung chính -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div class="datetime-group">
+          <h2 id="current-date-display">Thứ Năm, 01/10/2026</h2>
+          <span class="live-clock" id="live-clock">00:00:00</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-primary" id="quick-add-btn">+ Thêm nhiệm vụ</button>
+        </div>
+      </header>
+
+      <!-- Khối danh ngôn (Quote Banner) -->
+      <section class="quote-banner">
+        <div class="quote-content">
+          <span class="quote-tag">Cảm hứng hôm nay</span>
+          <p id="quote-text">Đang tải danh ngôn...</p>
+        </div>
+        <button class="btn-icon" id="refresh-quote-btn" title="Đổi câu danh ngôn khác">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+        </button>
+      </section>
+
+      <!-- TAB 1: TỔNG QUAN (DASHBOARD) -->
+      <section class="tab-pane active" id="tab-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>HÔM NAY</span>
+              <span class="stat-pill">Today</span>
+            </div>
+            <div class="stat-value" id="stat-today">0</div>
+            <div class="stat-sub">Nhiệm vụ đã hoàn thành</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>TUẦN NÀY</span>
+              <span class="stat-pill" id="stat-week-pct">0%</span>
+            </div>
+            <div class="stat-value"><span id="stat-week-done">0</span> <small>/ <span id="stat-week-aim">20</span></small></div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progress-week" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>THÁNG NÀY</span>
+              <span class="stat-pill" id="stat-month-pct">0%</span>
+            </div>
+            <div class="stat-value"><span id="stat-month-done">0</span> <small>/ <span id="stat-month-aim">80</span></small></div>
+            <div class="progress-track">
+              <div class="progress-fill" id="progress-month" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span>TỔNG CỘNG</span>
+              <span class="stat-pill">All Time</span>
+            </div>
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-sub">Tổng nhiệm vụ hoàn tất</div>
+          </div>
+        </div>
+
+        <div class="dashboard-columns">
+          <div class="card">
+            <div class="card-header">
+              <h3>Nhiệm vụ cần làm gần nhất</h3>
+              <button class="btn-link" data-goto="tasks">Xem tất cả</button>
+            </div>
+            <div id="dashboard-upcoming-list" class="task-list"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Điều chỉnh nhanh mục tiêu (Aim)</h3>
+            </div>
+            <form id="quick-aim-form" class="form-stack">
+              <div class="form-group">
+                <label for="quick-aim-week">Mục tiêu tuần (số task)</label>
+                <input type="number" id="quick-aim-week" min="1" required />
+              </div>
+              <div class="form-group">
+                <label for="quick-aim-month">Mục tiêu tháng (số task)</label>
+                <input type="number" id="quick-aim-month" min="1" required />
+              </div>
+              <button type="submit" class="btn btn-secondary">Lưu mục tiêu</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: NHIỆM VỤ (TASKS) -->
+      <section class="tab-pane" id="tab-tasks">
+        <div class="card mb-24">
+          <div class="card-header">
+            <h3 id="task-form-title">Thêm nhiệm vụ mới</h3>
+          </div>
+          <form id="task-form" class="task-form-grid">
+            <input type="hidden" id="edit-task-index" value="-1" />
+            <div class="form-group">
+              <label for="task-name-input">Tên nhiệm vụ</label>
+              <input type="text" id="task-name-input" placeholder="Nhập nội dung công việc hoặc bài học..." required />
+            </div>
+            <div class="form-group">
+              <label for="task-date-input">Ngày thực hiện</label>
+              <input type="date" id="task-date-input" required />
+            </div>
+            <div class="form-group">
+              <label for="task-time-input">Thời gian</label>
+              <input type="time" id="task-time-input" required />
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary" id="save-task-btn">Lưu nhiệm vụ</button>
+              <button type="button" class="btn btn-ghost hidden" id="cancel-edit-btn">Huỷ</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card">
+          <div class="card-header task-toolbar">
+            <div class="filter-tabs">
+              <button class="filter-btn active" data-filter="all">Tất cả</button>
+              <button class="filter-btn" data-filter="pending">Chưa xong</button>
+              <button class="filter-btn" data-filter="done">Đã hoàn thành</button>
+            </div>
+            <div class="search-box">
+              <input type="text" id="task-search" placeholder="Tìm kiếm nhiệm vụ..." />
+            </div>
+          </div>
+
+          <div id="main-task-list" class="task-list"></div>
+
+          <div class="pagination" id="task-pagination">
+            <button class="btn btn-ghost" id="prev-page-btn">Trang trước</button>
+            <span id="page-indicator">Trang 1 / 1</span>
+            <button class="btn btn-ghost" id="next-page-btn">Trang sau</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: LỊCH TUẦN (WEEKLY CALENDAR) -->
+      <section class="tab-pane" id="tab-calendar">
+        <div class="section-header">
+          <div>
+            <h3>Lịch trình 7 ngày tới</h3>
+            <p class="text-muted">Tự động sắp xếp công việc theo khung giờ mỗi ngày</p>
+          </div>
+        </div>
+        <div id="weekly-calendar-grid" class="calendar-grid"></div>
+      </section>
+
+      <!-- TAB 4: FOCUS MODE -->
+      <section class="tab-pane" id="tab-focus">
+        <div class="focus-container" id="focus-card">
+          <div class="focus-status-badge" id="focus-status-badge">SẴN SÀNG TẬP TRUNG</div>
+
+          <div class="focus-task-selector">
+            <label for="focus-task-select">Nhiệm vụ đang tập trung:</label>
+            <select id="focus-task-select"></select>
+          </div>
+
+          <div class="timer-display-wrapper">
+            <div class="timer-ring" id="timer-ring">
+              <div class="timer-digits" id="focus-timer-display">00:00:00</div>
+              <div class="timer-active-task" id="focus-active-task-name">Chọn một nhiệm vụ để bắt đầu</div>
+            </div>
+          </div>
+
+          <div class="focus-controls">
+            <button class="btn btn-primary btn-lg" id="focus-start-btn">Bắt đầu</button>
+            <button class="btn btn-secondary btn-lg hidden" id="focus-pause-btn">Tạm dừng</button>
+            <button class="btn btn-success btn-lg hidden" id="focus-done-btn">Hoàn thành Task</button>
+            <button class="btn btn-danger btn-lg hidden" id="focus-quit-btn">Kết thúc</button>
+          </div>
+
+          <div id="focus-result-banner" class="focus-result hidden"></div>
+        </div>
+      </section>
+
+      <!-- TAB 5: CÀI ĐẶT & DỮ LIỆU -->
+      <section class="tab-pane" id="tab-settings">
+        <div class="dashboard-columns">
+          <div class="card">
+            <div class="card-header">
+              <h3>Cấu hình chung (config.json)</h3>
+            </div>
+            <form id="settings-form" class="form-stack">
+              <div class="form-group">
+                <label for="setting-title">Tiêu đề hệ thống (Title)</label>
+                <input type="text" id="setting-title" required />
+              </div>
+              <div class="form-group">
+                <label for="setting-target-date">Ngày mục tiêu (Target Date)</label>
+                <input type="date" id="setting-target-date" required />
+              </div>
+              <div class="form-group">
+                <label for="setting-aim-week">Aim tuần</label>
+                <input type="number" id="setting-aim-week" min="1" required />
+              </div>
+              <div class="form-group">
+                <label for="setting-aim-month">Aim tháng</label>
+                <input type="number" id="setting-aim-month" min="1" required />
+              </div>
+              <button type="submit" class="btn btn-primary">Lưu cấu hình</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Sao lưu & Đồng bộ JSON</h3>
+            </div>
+            <p class="text-muted mb-16">
+              Dữ liệu được lưu tự động trên trình duyệt. Bạn có thể xuất hoặc nhập trực tiếp file <code>tasks.json</code> và <code>config.json</code> từ bản Python cũ.
+            </p>
+            <div class="data-actions-stack">
+              <button class="btn btn-secondary" id="export-tasks-btn">Tải xuống tasks.json</button>
+              <button class="btn btn-secondary" id="export-config-btn">Tải xuống config.json</button>
+              <hr class="divider" />
+              <label class="file-upload-label">
+                <span>Nhập từ file tasks.json</span>
+                <input type="file" id="import-tasks-input" accept=".json" />
+              </label>
+              <label class="file-upload-label">
+                <span>Nhập từ file config.json</span>
+                <input type="file" id="import-config-input" accept=".json" />
+              </label>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast-container" class="toast-container"></div>
+  <script src="script.js"></script>
+</body>
+</html>
