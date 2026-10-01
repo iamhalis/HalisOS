@@ -57,7 +57,7 @@ let pauseStartTimestamp = 0;
 let isFocusPaused = false;
 let isFocusRunning = false;
 
-// ---------- Hàm chuẩn hóa hiển thị ngày tháng DD-MM-YYYY ----------
+// ---------- Hàm chuẩn hóa định dạng ngày tháng DD-MM-YYYY ----------
 function formatDateKey(dateObj) {
   const y = dateObj.getFullYear();
   const m = String(dateObj.getMonth() + 1).padStart(2, "0");
@@ -65,6 +65,7 @@ function formatDateKey(dateObj) {
   return `${y}-${m}-${d}`;
 }
 
+// Chuyển đổi sang định dạng DD-MM-YYYY để hiển thị
 function formatDisplayDate(dateInput) {
   if (!dateInput) return "";
   if (dateInput instanceof Date) {
@@ -74,14 +75,23 @@ function formatDisplayDate(dateInput) {
     return `${d}-${m}-${y}`;
   }
   const str = String(dateInput).trim();
-  // Chuyển từ YYYY-MM-DD hoặc YYYY/MM/DD sang DD-MM-YYYY
   if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(str)) {
     const [y, m, d] = str.split(/[-/]/);
     return `${d}-${m}-${y}`;
   }
-  // Chuyển từ DD/MM/YYYY sang DD-MM-YYYY
-  if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+  if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(str)) {
     return str.replace(/\//g, "-");
+  }
+  return str;
+}
+
+// Chuẩn hóa định dạng YYYY-MM-DD để đưa vào thẻ <input type="date">
+function toInputDateStr(dateInput) {
+  if (!dateInput) return "";
+  const str = String(dateInput).trim();
+  if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(str)) {
+    const [d, m, y] = str.split(/[-/]/);
+    return `${y}-${m}-${d}`;
   }
   return str;
 }
@@ -135,7 +145,7 @@ async function syncToCloud() {
       body: JSON.stringify(payload)
     });
   } catch {
-    // Fallback lưu localStorage khi mất kết nối
+    // Fallback lưu localStorage
   }
 }
 
@@ -233,7 +243,7 @@ function updateClockAndHeader() {
 }
 
 function calculateDaysLeft() {
-  const target = new Date(config.target_date + "T00:00:00");
+  const target = new Date(toInputDateStr(config.target_date) + "T00:00:00");
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const diff = Math.floor((target - today) / (1000 * 60 * 60 * 24));
@@ -262,8 +272,9 @@ function getTaskStats() {
   tasks.forEach(task => {
     if (!task.done) return;
     doneTotal++;
-    if (task.date === todayStr) doneToday++;
-    const taskDate = new Date(task.date + "T00:00:00");
+    const tDateKey = toInputDateStr(task.date);
+    if (tDateKey === todayStr) doneToday++;
+    const taskDate = new Date(tDateKey + "T00:00:00");
     if (!isNaN(taskDate)) {
       if (taskDate >= weekStart) doneWeek++;
       if (taskDate >= monthStart) doneMonth++;
@@ -275,7 +286,7 @@ function getTaskStats() {
 
 function getSortedTasks() {
   return [...tasks].sort((a, b) => {
-    const cmpDate = (a.date || "9999-99-99").localeCompare(b.date || "9999-99-99");
+    const cmpDate = toInputDateStr(a.date || "9999-99-99").localeCompare(toInputDateStr(b.date || "9999-99-99"));
     if (cmpDate !== 0) return cmpDate;
     return (a.time || "99:99").localeCompare(b.time || "99:99");
   });
@@ -312,7 +323,10 @@ function renderAll() {
   document.getElementById("quick-aim-week").value = aimWeek;
   document.getElementById("quick-aim-month").value = aimMonth;
   document.getElementById("setting-title").value = config.title;
-  document.getElementById("setting-target-date").value = config.target_date;
+  
+  // Đảm bảo thẻ input date hiển thị đúng chuẩn YYYY-MM-DD
+  document.getElementById("setting-target-date").value = toInputDateStr(config.target_date);
+  
   document.getElementById("setting-aim-week").value = aimWeek;
   document.getElementById("setting-aim-month").value = aimMonth;
 
@@ -324,7 +338,7 @@ function renderAll() {
   renderAnalyticsCharts();
 }
 
-// ---------- VẼ BIỂU ĐỒ ĐƯỜNG (ANALYTICS LINE CHARTS) ----------
+// ---------- VẼ BIỂU ĐỒ ĐƯỜNG ----------
 function createSVGLineChart(labels, values, gradientId) {
   const width = 760;
   const height = 250;
@@ -386,7 +400,7 @@ function createSVGLineChart(labels, values, gradientId) {
 function renderAnalyticsCharts() {
   const now = new Date();
 
-  // 1. Biểu đồ Tuần hiện tại (Thứ 2 -> Chủ Nhật)
+  // 1. Biểu đồ Tuần hiện tại
   const dayOfWeek = (now.getDay() + 6) % 7;
   const monday = new Date(now);
   monday.setDate(now.getDate() - dayOfWeek);
@@ -403,7 +417,7 @@ function renderAnalyticsCharts() {
     const shortDate = `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     weekLabels.push(`${dayNames[i]} (${shortDate})`);
 
-    const count = tasks.filter(t => t.done && t.date === key).length;
+    const count = tasks.filter(t => t.done && toInputDateStr(t.date) === key).length;
     weekValues.push(count);
   }
 
@@ -416,7 +430,7 @@ function renderAnalyticsCharts() {
   document.getElementById("weekly-chart-total").textContent = `Tổng tuần: ${weekTotal} task`;
   document.getElementById("weekly-line-chart").innerHTML = createSVGLineChart(weekLabels, weekValues, "gradWeek");
 
-  // 2. Biểu đồ Tháng hiện tại (Chia theo từng tuần trong tháng)
+  // 2. Biểu đồ Tháng hiện tại
   const year = now.getFullYear();
   const month = now.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -436,7 +450,7 @@ function renderAnalyticsCharts() {
 
   tasks.forEach(t => {
     if (!t.done || !t.date) return;
-    const d = new Date(t.date + "T00:00:00");
+    const d = new Date(toInputDateStr(t.date) + "T00:00:00");
     if (d.getFullYear() === year && d.getMonth() === month) {
       const dayNum = d.getDate();
       const bucketIdx = Math.min(ranges.length - 1, Math.floor((dayNum - 1) / 7));
@@ -507,7 +521,7 @@ function renderFutureMailList() {
   const todayStr = getTodayStr();
 
   futureMails.forEach((mail, idx) => {
-    const isUnlocked = todayStr >= mail.targetDate;
+    const isUnlocked = todayStr >= toInputDateStr(mail.targetDate);
     const displayTargetDate = formatDisplayDate(mail.targetDate);
     const item = document.createElement("div");
     item.className = "task-item";
@@ -687,8 +701,10 @@ function startEditTask(realIdx) {
   switchTab("tasks");
   const task = tasks[realIdx];
   document.getElementById("edit-task-index").value = realIdx;
+  document.getElementById("task-name-input").value = toInputDateStr(task.date);
+  document.getElementById("task-date-input").value = toInputDateStr(task.date);
   document.getElementById("task-name-input").value = task.name;
-  document.getElementById("task-date-input").value = task.date;
+  document.getElementById("task-date-input").value = toInputDateStr(task.date);
   document.getElementById("task-time-input").value = task.time;
   document.getElementById("task-form-title").textContent = "Chỉnh sửa nhiệm vụ";
   document.getElementById("save-task-btn").textContent = "Cập nhật";
@@ -720,7 +736,7 @@ function renderWeeklyCalendar() {
     const displayDate = formatDisplayDate(d);
 
     const dayTasks = tasks
-      .filter(t => t.date === dateKey)
+      .filter(t => toInputDateStr(t.date) === dateKey)
       .sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
 
     const card = document.createElement("div");
@@ -886,7 +902,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const nextYear = new Date();
   nextYear.setFullYear(nextYear.getFullYear() + 1);
-  document.getElementById("fm-date").value = nextYear.toISOString().split("T")[0];
+  document.getElementById("fm-date").value = formatDateKey(nextYear);
 
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
@@ -1193,6 +1209,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("focus-done-btn").addEventListener("click", () => stopFocusSession("done"));
   document.getElementById("focus-quit-btn").addEventListener("click", () => stopFocusSession("quit"));
 
+  // Cài đặt chung (Lưu cấu hình & Ngày mục tiêu)
   document.getElementById("settings-form").addEventListener("submit", e => {
     e.preventDefault();
     config.title = document.getElementById("setting-title").value.trim() || "Study OS";
