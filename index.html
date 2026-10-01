@@ -21,6 +21,15 @@
         </div>
       </div>
 
+      <!-- Thẻ tóm tắt Hồ sơ trên Sidebar -->
+      <div class="sidebar-user-card" id="sidebar-user-btn" title="Nhấn để quản lý hồ sơ">
+        <div class="user-avatar" id="sidebar-avatar">G</div>
+        <div class="user-meta">
+          <div class="user-name" id="sidebar-username">Khách (Guest)</div>
+          <div class="user-status" id="sidebar-user-email">Nhấn để đăng nhập</div>
+        </div>
+      </div>
+
       <nav class="nav-menu">
         <button class="nav-item active" data-tab="dashboard">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
@@ -39,6 +48,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span>Focus Mode</span>
         </button>
+        <button class="nav-item" data-tab="profile">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span>Hồ sơ & Thư tương lai</span>
+        </button>
         <button class="nav-item" data-tab="settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
           <span>Cài đặt & Dữ liệu</span>
@@ -51,7 +64,7 @@
           <div class="countdown-number" id="days-left-display">0 ngày</div>
           <span class="countdown-target" id="target-date-display">2027-06-01</span>
         </div>
-        <button class="theme-toggle" id="theme-toggle-btn" title="Đổi giao diện Sáng/Tối">
+        <button class="theme-toggle" id="theme-toggle-btn">
           <span>Giao diện Sáng / Tối</span>
         </button>
       </div>
@@ -66,11 +79,12 @@
           <span class="live-clock" id="live-clock">00:00:00</span>
         </div>
         <div class="topbar-actions">
+          <button class="btn btn-secondary" id="top-profile-btn">Tài khoản</button>
           <button class="btn btn-primary" id="quick-add-btn">+ Thêm nhiệm vụ</button>
         </div>
       </header>
 
-      <!-- Khối danh ngôn (Quote Banner) -->
+      <!-- Khối danh ngôn -->
       <section class="quote-banner">
         <div class="quote-content">
           <span class="quote-tag">Cảm hứng hôm nay</span>
@@ -81,7 +95,7 @@
         </button>
       </section>
 
-      <!-- TAB 1: TỔNG QUAN (DASHBOARD) -->
+      <!-- TAB 1: TỔNG QUAN -->
       <section class="tab-pane active" id="tab-dashboard">
         <div class="stats-grid">
           <div class="stat-card">
@@ -153,7 +167,7 @@
         </div>
       </section>
 
-      <!-- TAB 2: NHIỆM VỤ (TASKS) -->
+      <!-- TAB 2: NHIỆM VỤ -->
       <section class="tab-pane" id="tab-tasks">
         <div class="card mb-24">
           <div class="card-header">
@@ -202,7 +216,7 @@
         </div>
       </section>
 
-      <!-- TAB 3: LỊCH TUẦN (WEEKLY CALENDAR) -->
+      <!-- TAB 3: LỊCH TUẦN -->
       <section class="tab-pane" id="tab-calendar">
         <div class="section-header">
           <div>
@@ -241,7 +255,110 @@
         </div>
       </section>
 
-      <!-- TAB 5: CÀI ĐẶT & DỮ LIỆU -->
+      <!-- TAB 5: HỒ SƠ & THƯ TƯƠNG LAI (MỚI) -->
+      <section class="tab-pane" id="tab-profile">
+        <!-- Giao diện khi CHƯA đăng nhập -->
+        <div id="auth-guest-view" class="auth-wrapper">
+          <div class="card auth-card">
+            <div class="auth-tabs">
+              <button class="auth-tab-btn active" data-auth="login">Đăng nhập</button>
+              <button class="auth-tab-btn" data-auth="register">Đăng ký tài khoản</button>
+            </div>
+
+            <!-- Form Đăng nhập -->
+            <form id="login-form" class="form-stack">
+              <p class="text-muted">Đăng nhập bằng Username để truy cập dữ liệu học tập của bạn.</p>
+              <div class="form-group">
+                <label for="login-username">Username <span class="req">*</span></label>
+                <input type="text" id="login-username" placeholder="Nhập username của bạn..." required autocomplete="username" />
+              </div>
+              <div class="form-group">
+                <label for="login-password">Mật khẩu <span class="req">*</span></label>
+                <input type="password" id="login-password" placeholder="Nhập mật khẩu..." required autocomplete="current-password" />
+              </div>
+              <button type="submit" class="btn btn-primary">Đăng nhập</button>
+            </form>
+
+            <!-- Form Đăng ký -->
+            <form id="register-form" class="form-stack hidden">
+              <p class="text-muted">Tạo hồ sơ mới để lưu trữ riêng biệt và mở khóa tính năng gửi thư đến tương lai.</p>
+              <div class="form-group">
+                <label for="reg-username">Username (dùng để đăng nhập) <span class="req">*</span></label>
+                <input type="text" id="reg-username" placeholder="VD: hadachoang" required autocomplete="username" />
+              </div>
+              <div class="form-group">
+                <label for="reg-email">Email (dùng để gửi thư đến tương lai — Không bắt buộc)</label>
+                <input type="email" id="reg-email" placeholder="VD: ban@gmail.com (có thể bỏ trống)" autocomplete="email" />
+              </div>
+              <div class="form-group">
+                <label for="reg-password">Mật khẩu (dùng để đăng nhập) <span class="req">*</span></label>
+                <input type="password" id="reg-password" placeholder="Tối thiểu 4 ký tự..." required autocomplete="new-password" />
+              </div>
+              <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Giao diện khi ĐÃ đăng nhập -->
+        <div id="auth-user-view" class="dashboard-columns hidden">
+          <!-- Cột trái: Thông tin Hồ sơ -->
+          <div class="card">
+            <div class="profile-header-box">
+              <div class="profile-big-avatar" id="profile-big-avatar">U</div>
+              <div>
+                <h3 id="profile-display-username">username</h3>
+                <p class="text-muted" id="profile-display-email">Chưa cập nhật email</p>
+              </div>
+            </div>
+
+            <form id="profile-update-form" class="form-stack">
+              <div class="form-group">
+                <label for="profile-edit-email">Email nhận thư tương lai (Không bắt buộc)</label>
+                <input type="email" id="profile-edit-email" placeholder="Nhập email của bạn..." />
+              </div>
+              <div class="form-group">
+                <label for="profile-edit-password">Đổi mật khẩu mới (Để trống nếu giữ nguyên)</label>
+                <input type="password" id="profile-edit-password" placeholder="Nhập mật khẩu mới..." />
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Cập nhật hồ sơ</button>
+                <button type="button" class="btn btn-danger" id="logout-btn">Đăng xuất</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Cột phải: Gửi thư đến tương lai -->
+          <div class="card">
+            <div class="card-header">
+              <h3>✉️ Gửi thư đến tương lai (Future Mail)</h3>
+            </div>
+            <p class="text-muted mb-16">
+              Viết lời nhắn hoặc mục tiêu cho bản thân ở tương lai. Bức thư sẽ được niêm phong cho tới ngày mở khóa hoặc gửi qua Email đã lưu trong hồ sơ.
+            </p>
+            <form id="future-mail-form" class="form-stack">
+              <div class="form-group">
+                <label for="fm-subject">Tiêu đề bức thư</label>
+                <input type="text" id="fm-subject" placeholder="VD: Gửi tôi của ngày thi đậu Chuyên..." required />
+              </div>
+              <div class="form-group">
+                <label for="fm-date">Ngày mở thư trong tương lai</label>
+                <input type="date" id="fm-date" required />
+              </div>
+              <div class="form-group">
+                <label for="fm-message">Nội dung nhắn gửi</label>
+                <textarea id="fm-message" rows="4" placeholder="Viết những điều bạn muốn nhắn nhủ tới tương lai..." required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary">Niêm phong & Lên lịch gửi</button>
+            </form>
+
+            <hr class="divider" />
+            <h4 class="mb-12">Hộp thư tương lai đã lưu</h4>
+            <div id="future-mail-list" class="task-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: CÀI ĐẶT & DỮ LIỆU -->
       <section class="tab-pane" id="tab-settings">
         <div class="dashboard-columns">
           <div class="card">
@@ -274,7 +391,7 @@
               <h3>Sao lưu & Đồng bộ JSON</h3>
             </div>
             <p class="text-muted mb-16">
-              Dữ liệu được lưu tự động trên trình duyệt. Bạn có thể xuất hoặc nhập trực tiếp file <code>tasks.json</code> và <code>config.json</code> từ bản Python cũ.
+              Dữ liệu hiện đang lưu cho tài khoản: <strong id="settings-active-account">Khách</strong>. Bạn có thể xuất hoặc nhập file <code>tasks.json</code> và <code>config.json</code> bất kỳ lúc nào.
             </p>
             <div class="data-actions-stack">
               <button class="btn btn-secondary" id="export-tasks-btn">Tải xuống tasks.json</button>

@@ -1,4 +1,4 @@
-// ---------- Danh ngôn truyền cảm hứng (Giữ nguyên 20 câu từ bản gốc) ----------
+// ---------- Danh ngôn truyền cảm hứng ----------
 const QUOTES = [
   "'Hãy sống như thể ngày mai bạn sẽ chết. Hãy học như thể bạn sẽ sống mãi mãi.' — Mahatma Gandhi",
   "'Thành công không phải là cuối cùng, thất bại không phải là tận cùng: điều quan trọng là lòng can đảm để tiếp tục.' — Winston Churchill",
@@ -31,9 +31,14 @@ const DEFAULT_CONFIG = {
 
 const ITEMS_PER_PAGE = 6;
 
-// ---------- Trạng thái ứng dụng ----------
-let config = loadStorage("studyos_config", DEFAULT_CONFIG);
-let tasks = loadStorage("studyos_tasks", []);
+// ---------- Quản lý Tài khoản & Lưu trữ theo User ----------
+let users = loadJSON("studyos_users", {}); // { username: { username, email, password, createdAt } }
+let currentUser = localStorage.getItem("studyos_current_user") || null;
+
+let config = DEFAULT_CONFIG;
+let tasks = [];
+let futureMails = [];
+
 let currentFilter = "all";
 let searchQuery = "";
 let currentPage = 1;
@@ -46,8 +51,7 @@ let pauseStartTimestamp = 0;
 let isFocusPaused = false;
 let isFocusRunning = false;
 
-// ---------- Khởi tạo & Migrate dữ liệu ----------
-function loadStorage(key, fallback) {
+function loadJSON(key, fallback) {
   try {
     const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : fallback;
@@ -56,9 +60,39 @@ function loadStorage(key, fallback) {
   }
 }
 
+function getStorageKeys() {
+  if (currentUser && users[currentUser]) {
+    return {
+      configKey: `studyos_config_${currentUser}`,
+      tasksKey: `studyos_tasks_${currentUser}`,
+      mailsKey: `studyos_mails_${currentUser}`
+    };
+  }
+  // Mặc định chế độ Khách giữ nguyên key cũ để không mất dữ liệu trước đó
+  return {
+    configKey: "studyos_config",
+    tasksKey: "studyos_tasks",
+    mailsKey: "studyos_mails_guest"
+  };
+}
+
+function loadActiveUserData() {
+  const { configKey, tasksKey, mailsKey } = getStorageKeys();
+  config = loadJSON(configKey, { ...DEFAULT_CONFIG });
+  tasks = loadJSON(tasksKey, []);
+  futureMails = loadJSON(mailsKey, []);
+  migrateTasks();
+}
+
 function saveStorage() {
-  localStorage.setItem("studyos_config", JSON.stringify(config));
-  localStorage.setItem("studyos_tasks", JSON.stringify(tasks));
+  const { configKey, tasksKey, mailsKey } = getStorageKeys();
+  localStorage.setItem(configKey, JSON.stringify(config));
+  localStorage.setItem(tasksKey, JSON.stringify(tasks));
+  localStorage.setItem(mailsKey, JSON.stringify(futureMails));
+}
+
+function saveUsersDB() {
+  localStorage.setItem("studyos_users", JSON.stringify(users));
 }
 
 function getTodayStr() {
@@ -92,7 +126,7 @@ function showToast(msg) {
   el.className = "toast";
   el.textContent = msg;
   container.appendChild(el);
-  setTimeout(() => el.remove(), 3000);
+  setTimeout(() => el.remove(), 3200);
 }
 
 function updateClockAndHeader() {
@@ -123,13 +157,11 @@ function getTaskStats() {
   const now = new Date();
   const todayStr = getTodayStr();
 
-  // Tính ngày đầu tuần (Thứ 2)
   const dayOfWeek = (now.getDay() + 6) % 7;
   const weekStart = new Date(now);
   weekStart.setDate(now.getDate() - dayOfWeek);
   weekStart.setHours(0, 0, 0, 0);
 
-  // Tính ngày đầu tháng
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   let doneToday = 0, doneWeek = 0, doneMonth = 0, doneTotal = 0;
@@ -157,17 +189,14 @@ function getSortedTasks() {
 }
 
 function renderAll() {
-  // Cập nhật thông tin cấu hình
   document.getElementById("app-title").textContent = config.title;
   document.title = `${config.title} — Web Dashboard`;
   document.getElementById("days-left-display").textContent = `${calculateDaysLeft()} ngày`;
   document.getElementById("target-date-display").textContent = `Mục tiêu: ${config.target_date}`;
 
-  // Đếm số task chưa hoàn thành
   const pendingCount = tasks.filter(t => !t.done).length;
   document.getElementById("pending-badge").textContent = pendingCount;
 
-  // Cập nhật thống kê
   const { doneToday, doneWeek, doneMonth, doneTotal } = getTaskStats();
   const aimWeek = Number(config.aim_week) || 20;
   const aimMonth = Number(config.aim_month) || 80;
@@ -187,7 +216,6 @@ function renderAll() {
 
   document.getElementById("stat-total").textContent = doneTotal;
 
-  // Đồng bộ giá trị lên các form
   document.getElementById("quick-aim-week").value = aimWeek;
   document.getElementById("quick-aim-month").value = aimMonth;
   document.getElementById("setting-title").value = config.title;
@@ -195,12 +223,126 @@ function renderAll() {
   document.getElementById("setting-aim-week").value = aimWeek;
   document.getElementById("setting-aim-month").value = aimMonth;
 
+  renderProfileUI();
   renderDashboardUpcoming();
   renderTasksTab();
   renderWeeklyCalendar();
   renderFocusSelector();
 }
 
+// ---------- Render Hồ sơ & Future Mail ----------
+function renderProfileUI() {
+  const sidebarAvatar = document.getElementById("sidebar-avatar");
+  const sidebarUsername = document.getElementById("sidebar-username");
+  const sidebarEmail = document.getElementById("sidebar-user-email");
+  const topProfileBtn = document.getElementById("top-profile-btn");
+  const guestView = document.getElementById("auth-guest-view");
+  const userView = document.getElementById("auth-user-view");
+  const activeAccountLabel = document.getElementById("settings-active-account");
+
+  if (currentUser && users[currentUser]) {
+    const u = users[currentUser];
+    const initial = u.username.charAt(0).toUpperCase();
+    sidebarAvatar.textContent = initial;
+    sidebarUsername.textContent = u.username;
+    sidebarEmail.textContent = u.email ? u.email : "Chưa liên kết email";
+    topProfileBtn.textContent = `@${u.username}`;
+    activeAccountLabel.textContent = u.username;
+
+    guestView.classList.add("hidden");
+    userView.classList.remove("hidden");
+
+    document.getElementById("profile-big-avatar").textContent = initial;
+    document.getElementById("profile-display-username").textContent = `@${u.username}`;
+    document.getElementById("profile-display-email").textContent = u.email
+      ? `Email: ${u.email}`
+      : "Chưa có email (Thêm email để gửi thư đến tương lai)";
+    document.getElementById("profile-edit-email").value = u.email || "";
+    document.getElementById("profile-edit-password").value = "";
+
+    renderFutureMailList();
+  } else {
+    sidebarAvatar.textContent = "G";
+    sidebarUsername.textContent = "Khách (Guest)";
+    sidebarEmail.textContent = "Nhấn để đăng nhập";
+    topProfileBtn.textContent = "Đăng nhập";
+    activeAccountLabel.textContent = "Khách (Guest)";
+
+    guestView.classList.remove("hidden");
+    userView.classList.add("hidden");
+  }
+}
+
+function renderFutureMailList() {
+  const listEl = document.getElementById("future-mail-list");
+  listEl.innerHTML = "";
+
+  if (futureMails.length === 0) {
+    listEl.innerHTML = `<p class="text-muted">Chưa có bức thư tương lai nào được tạo.</p>`;
+    return;
+  }
+
+  const todayStr = getTodayStr();
+
+  futureMails.forEach((mail, idx) => {
+    const isUnlocked = todayStr >= mail.targetDate;
+    const item = document.createElement("div");
+    item.className = "task-item";
+
+    const left = document.createElement("div");
+    left.innerHTML = `
+      <div class="task-title">${isUnlocked ? "🔓" : "🔒"} ${mail.subject}</div>
+      <div class="task-meta">Ngày mở khóa: ${mail.targetDate} • Gửi tới: ${mail.email || "Lưu nội bộ"}</div>
+    `;
+
+    const actions = document.createElement("div");
+    actions.className = "task-actions";
+
+    const readBtn = document.createElement("button");
+    readBtn.className = "action-chip";
+    readBtn.textContent = isUnlocked ? "Đọc thư" : "Xem trước";
+    readBtn.addEventListener("click", () => {
+      if (!isUnlocked && !confirm(`Bức thư này hẹn mở vào ngày ${mail.targetDate}. Bạn vẫn muốn mở sớm chứ?`)) {
+        return;
+      }
+      alert(`✉️ TIÊU ĐỀ: ${mail.subject}\n📅 Ngày hẹn: ${mail.targetDate}\n\n${mail.message}`);
+    });
+
+    const sendMailClientBtn = document.createElement("button");
+    sendMailClientBtn.className = "action-chip";
+    sendMailClientBtn.textContent = "Mở Gmail";
+    sendMailClientBtn.addEventListener("click", () => {
+      const targetEmail = mail.email || (users[currentUser] && users[currentUser].email) || "";
+      if (!targetEmail) {
+        showToast("Bạn chưa nhập Email trong hồ sơ!");
+        return;
+      }
+      const subject = encodeURIComponent(`[Study OS - Thư tương lai ${mail.targetDate}] ${mail.subject}`);
+      const body = encodeURIComponent(`Ngày hẹn mở thư: ${mail.targetDate}\n\nNội dung:\n${mail.message}`);
+      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(targetEmail)}&su=${subject}&body=${body}`, "_blank");
+    });
+
+    const delBtn = document.createElement("button");
+    delBtn.className = "action-chip delete";
+    delBtn.textContent = "Xoá";
+    delBtn.addEventListener("click", () => {
+      futureMails.splice(idx, 1);
+      saveStorage();
+      renderFutureMailList();
+      showToast("Đã xoá bức thư.");
+    });
+
+    actions.appendChild(readBtn);
+    actions.appendChild(sendMailClientBtn);
+    actions.appendChild(delBtn);
+
+    item.appendChild(left);
+    item.appendChild(actions);
+    listEl.appendChild(item);
+  });
+}
+
+// ---------- Render Nhiệm vụ ----------
 function renderDashboardUpcoming() {
   const container = document.getElementById("dashboard-upcoming-list");
   container.innerHTML = "";
@@ -483,7 +625,6 @@ function stopFocusSession(actionType) {
   }
 }
 
-// ---------- Điều hướng Tab ----------
 function switchTab(tabId) {
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.tab === tabId);
@@ -493,7 +634,6 @@ function switchTab(tabId) {
   });
 }
 
-// ---------- Xuất / Nhập File JSON ----------
 function downloadJSON(filename, dataObj) {
   const blob = new Blob([JSON.stringify(dataObj, null, 4)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
@@ -506,14 +646,19 @@ function downloadJSON(filename, dataObj) {
 
 // ---------- Sự kiện DOM ----------
 document.addEventListener("DOMContentLoaded", () => {
-  migrateTasks();
+  loadActiveUserData();
   resetTaskForm();
   refreshQuote();
   updateClockAndHeader();
   setInterval(updateClockAndHeader, 1000);
   renderAll();
 
-  // Chuyển tab
+  // Mặc định ngày gửi thư tương lai là 1 năm sau
+  const nextYear = new Date();
+  nextYear.setFullYear(nextYear.getFullYear() + 1);
+  document.getElementById("fm-date").value = nextYear.toISOString().split("T")[0];
+
+  // Chuyển tab chính
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
@@ -522,6 +667,9 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", () => switchTab(btn.dataset.goto));
   });
 
+  document.getElementById("sidebar-user-btn").addEventListener("click", () => switchTab("profile"));
+  document.getElementById("top-profile-btn").addEventListener("click", () => switchTab("profile"));
+
   document.getElementById("quick-add-btn").addEventListener("click", () => {
     switchTab("tasks");
     resetTaskForm();
@@ -529,6 +677,139 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("refresh-quote-btn").addEventListener("click", refreshQuote);
+
+  // Chuyển tab Đăng nhập / Đăng ký
+  document.querySelectorAll(".auth-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".auth-tab-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const mode = btn.dataset.auth;
+      document.getElementById("login-form").classList.toggle("hidden", mode !== "login");
+      document.getElementById("register-form").classList.toggle("hidden", mode !== "register");
+    });
+  });
+
+  // Xử lý ĐĂNG KÝ
+  document.getElementById("register-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const username = document.getElementById("reg-username").value.trim().toLowerCase();
+    const email = document.getElementById("reg-email").value.trim();
+    const password = document.getElementById("reg-password").value;
+
+    if (!/^[a-zA-Z0-9_.-]{3,24}$/.test(username)) {
+      showToast("Username từ 3-24 ký tự, viết liền không dấu!");
+      return;
+    }
+    if (users[username]) {
+      showToast("Username này đã tồn tại, vui lòng chọn tên khác!");
+      return;
+    }
+    if (password.length < 4) {
+      showToast("Mật khẩu phải có ít nhất 4 ký tự!");
+      return;
+    }
+
+    const isFirstAccountEver = Object.keys(users).length === 0;
+
+    users[username] = {
+      username,
+      email,
+      password,
+      createdAt: getTodayStr()
+    };
+    saveUsersDB();
+
+    // Nếu là tài khoản đầu tiên trên máy, tự động chuyển task đang có ở chế độ Khách sang tài khoản này
+    if (isFirstAccountEver && tasks.length > 0) {
+      localStorage.setItem(`studyos_tasks_${username}`, JSON.stringify(tasks));
+      localStorage.setItem(`studyos_config_${username}`, JSON.stringify(config));
+    }
+
+    currentUser = username;
+    localStorage.setItem("studyos_current_user", currentUser);
+    loadActiveUserData();
+    renderAll();
+    document.getElementById("register-form").reset();
+    showToast(`Đăng ký thành công! Chào mừng @${username}`);
+  });
+
+  // Xử lý ĐĂNG NHẬP
+  document.getElementById("login-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const username = document.getElementById("login-username").value.trim().toLowerCase();
+    const password = document.getElementById("login-password").value;
+
+    const account = users[username];
+    if (!account || account.password !== password) {
+      showToast("Sai Username hoặc Mật khẩu!");
+      return;
+    }
+
+    currentUser = username;
+    localStorage.setItem("studyos_current_user", currentUser);
+    loadActiveUserData();
+    renderAll();
+    document.getElementById("login-form").reset();
+    showToast(`Chào mừng trở lại, @${username}!`);
+  });
+
+  // Cập nhật Hồ sơ (Email & Mật khẩu)
+  document.getElementById("profile-update-form").addEventListener("submit", e => {
+    e.preventDefault();
+    if (!currentUser || !users[currentUser]) return;
+
+    const newEmail = document.getElementById("profile-edit-email").value.trim();
+    const newPass = document.getElementById("profile-edit-password").value;
+
+    users[currentUser].email = newEmail;
+    if (newPass) {
+      if (newPass.length < 4) {
+        showToast("Mật khẩu mới phải từ 4 ký tự trở lên!");
+        return;
+      }
+      users[currentUser].password = newPass;
+    }
+
+    saveUsersDB();
+    renderAll();
+    showToast("Đã cập nhật thông tin hồ sơ!");
+  });
+
+  // Đăng xuất
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    currentUser = null;
+    localStorage.removeItem("studyos_current_user");
+    loadActiveUserData();
+    renderAll();
+    showToast("Đã đăng xuất về chế độ Khách.");
+  });
+
+  // Tạo Thư gửi tương lai
+  document.getElementById("future-mail-form").addEventListener("submit", e => {
+    e.preventDefault();
+    const subject = document.getElementById("fm-subject").value.trim();
+    const targetDate = document.getElementById("fm-date").value;
+    const message = document.getElementById("fm-message").value.trim();
+    const userEmail = (currentUser && users[currentUser] && users[currentUser].email) || "";
+
+    if (!subject || !targetDate || !message) return;
+
+    futureMails.unshift({
+      subject,
+      targetDate,
+      message,
+      email: userEmail,
+      createdAt: getTodayStr()
+    });
+
+    saveStorage();
+    renderFutureMailList();
+    document.getElementById("fm-subject").value = "";
+    document.getElementById("fm-message").value = "";
+    showToast(userEmail
+      ? `Đã lên lịch thư tương lai (${targetDate}) cho ${userEmail}!`
+      : `Đã niêm phong thư tương lai (${targetDate})! Bạn có thể thêm email bất kỳ lúc nào.`);
+  });
 
   // Đổi giao diện Sáng / Tối
   document.getElementById("theme-toggle-btn").addEventListener("click", () => {
@@ -607,7 +888,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderTasksTab();
   });
 
-  // Focus Session Controls
+  // Focus Session
   document.getElementById("focus-task-select").addEventListener("change", updateFocusPreviewName);
 
   document.getElementById("focus-start-btn").addEventListener("click", () => {
