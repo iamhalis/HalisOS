@@ -265,7 +265,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .topbar-actions {
@@ -285,19 +285,29 @@ body {
   font-weight: 500;
 }
 
-/* Quote Banner */
+/* Quote Banner (Đã căn giữa hoàn toàn, gọn gàng, không dư khoảng trống) */
 .quote-banner {
+  position: relative;
   background: linear-gradient(135deg, var(--bg-surface), var(--bg-elevated));
   border: 1px solid var(--border-color);
   border-left: 4px solid var(--accent);
   border-radius: 14px;
-  padding: 18px 22px;
+  padding: 16px 56px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 28px;
+  justify-content: center;
+  text-align: center;
+  margin-bottom: 24px;
   box-shadow: var(--shadow);
+}
+
+.quote-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
 }
 
 .quote-tag {
@@ -305,15 +315,25 @@ body {
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   color: var(--accent);
-  margin-bottom: 4px;
+  margin: 0;
 }
 
 #quote-text {
-  font-size: 0.98rem;
+  font-size: 1rem;
   font-style: italic;
+  font-weight: 500;
   color: var(--text-main);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.quote-banner .btn-icon {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 /* Tabs */
@@ -436,9 +456,7 @@ body {
   gap: 24px;
 }
 
-.chart-card {
-  padding: 24px;
-}
+.chart-card { padding: 24px; }
 
 .svg-chart-container {
   width: 100%;

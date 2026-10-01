@@ -57,6 +57,44 @@ let pauseStartTimestamp = 0;
 let isFocusPaused = false;
 let isFocusRunning = false;
 
+// ---------- Hàm chuẩn hóa hiển thị ngày tháng DD-MM-YYYY ----------
+function formatDateKey(dateObj) {
+  const y = dateObj.getFullYear();
+  const m = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const d = String(dateObj.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function formatDisplayDate(dateInput) {
+  if (!dateInput) return "";
+  if (dateInput instanceof Date) {
+    const d = String(dateInput.getDate()).padStart(2, "0");
+    const m = String(dateInput.getMonth() + 1).padStart(2, "0");
+    const y = dateInput.getFullYear();
+    return `${d}-${m}-${y}`;
+  }
+  const str = String(dateInput).trim();
+  // Chuyển từ YYYY-MM-DD hoặc YYYY/MM/DD sang DD-MM-YYYY
+  if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(str)) {
+    const [y, m, d] = str.split(/[-/]/);
+    return `${d}-${m}-${y}`;
+  }
+  // Chuyển từ DD/MM/YYYY sang DD-MM-YYYY
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(str)) {
+    return str.replace(/\//g, "-");
+  }
+  return str;
+}
+
+function getTodayStr() {
+  return formatDateKey(new Date());
+}
+
+function getCurrentTimeStr() {
+  const now = new Date();
+  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+}
+
 function isCloudEnabled() {
   return (
     CLOUD_DB_URL &&
@@ -163,22 +201,6 @@ function saveUsersDB() {
   localStorage.setItem("studyos_users", JSON.stringify(users));
 }
 
-function formatDateKey(dateObj) {
-  const y = dateObj.getFullYear();
-  const m = String(dateObj.getMonth() + 1).padStart(2, "0");
-  const d = String(dateObj.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function getTodayStr() {
-  return formatDateKey(new Date());
-}
-
-function getCurrentTimeStr() {
-  const now = new Date();
-  return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-}
-
 function migrateTasks() {
   const today = getTodayStr();
   let migrated = false;
@@ -203,7 +225,7 @@ function showToast(msg) {
 function updateClockAndHeader() {
   const now = new Date();
   const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
-  const dateFormatted = `${days[now.getDay()]} • ${String(now.getDate()).padStart(2, "0")}/${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
+  const dateFormatted = `${days[now.getDay()]} • ${formatDisplayDate(now)}`;
   const timeFormatted = now.toTimeString().split(" ")[0];
 
   document.getElementById("current-date-display").textContent = dateFormatted;
@@ -263,7 +285,7 @@ function renderAll() {
   document.getElementById("app-title").textContent = config.title;
   document.title = `${config.title} — Web Dashboard`;
   document.getElementById("days-left-display").textContent = `${calculateDaysLeft()} ngày`;
-  document.getElementById("target-date-display").textContent = `Mục tiêu: ${config.target_date}`;
+  document.getElementById("target-date-display").textContent = `Mục tiêu: ${formatDisplayDate(config.target_date)}`;
 
   const pendingCount = tasks.filter(t => !t.done).length;
   document.getElementById("pending-badge").textContent = pendingCount;
@@ -324,7 +346,6 @@ function createSVGLineChart(labels, values, gradientId) {
   const polylinePoints = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
   const areaPoints = `${points[0].x.toFixed(1)},${padTop + plotH} ${polylinePoints} ${points[points.length - 1].x.toFixed(1)},${padTop + plotH}`;
 
-  // Tạo 4 đường kẻ ngang chia tỷ lệ
   let gridLines = "";
   for (let step = 0; step <= 4; step++) {
     const val = Math.round((maxVal * step) / 4);
@@ -365,8 +386,8 @@ function createSVGLineChart(labels, values, gradientId) {
 function renderAnalyticsCharts() {
   const now = new Date();
 
-  // 1. Tính dữ liệu biểu đồ Tuần hiện tại (Thứ 2 -> Chủ Nhật)
-  const dayOfWeek = (now.getDay() + 6) % 7; // 0 = Thứ 2, 6 = Chủ Nhật
+  // 1. Biểu đồ Tuần hiện tại (Thứ 2 -> Chủ Nhật)
+  const dayOfWeek = (now.getDay() + 6) % 7;
   const monday = new Date(now);
   monday.setDate(now.getDate() - dayOfWeek);
   monday.setHours(0, 0, 0, 0);
@@ -379,7 +400,7 @@ function renderAnalyticsCharts() {
     const d = new Date(monday);
     d.setDate(monday.getDate() + i);
     const key = formatDateKey(d);
-    const shortDate = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}`;
+    const shortDate = `${String(d.getDate()).padStart(2, "0")}-${String(d.getMonth() + 1).padStart(2, "0")}`;
     weekLabels.push(`${dayNames[i]} (${shortDate})`);
 
     const count = tasks.filter(t => t.done && t.date === key).length;
@@ -391,11 +412,11 @@ function renderAnalyticsCharts() {
   const weekTotal = weekValues.reduce((a, b) => a + b, 0);
 
   document.getElementById("weekly-chart-subtitle").textContent =
-    `Tuần hiện tại: ${formatDateKey(monday)} đến ${formatDateKey(sunday)}`;
+    `Tuần hiện tại: ${formatDisplayDate(monday)} đến ${formatDisplayDate(sunday)}`;
   document.getElementById("weekly-chart-total").textContent = `Tổng tuần: ${weekTotal} task`;
   document.getElementById("weekly-line-chart").innerHTML = createSVGLineChart(weekLabels, weekValues, "gradWeek");
 
-  // 2. Tính dữ liệu biểu đồ Tháng hiện tại (Chia theo từng tuần trong tháng)
+  // 2. Biểu đồ Tháng hiện tại (Chia theo từng tuần trong tháng)
   const year = now.getFullYear();
   const month = now.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -425,7 +446,7 @@ function renderAnalyticsCharts() {
 
   const monthTotal = monthValues.reduce((a, b) => a + b, 0);
   document.getElementById("monthly-chart-subtitle").textContent =
-    `Tháng ${String(month + 1).padStart(2, "0")}/${year} (Thống kê theo từng tuần)`;
+    `Tháng ${String(month + 1).padStart(2, "0")}-${year} (Thống kê theo từng tuần)`;
   document.getElementById("monthly-chart-total").textContent = `Tổng tháng: ${monthTotal} task`;
   document.getElementById("monthly-line-chart").innerHTML = createSVGLineChart(monthLabels, monthValues, "gradMonth");
 }
@@ -487,13 +508,14 @@ function renderFutureMailList() {
 
   futureMails.forEach((mail, idx) => {
     const isUnlocked = todayStr >= mail.targetDate;
+    const displayTargetDate = formatDisplayDate(mail.targetDate);
     const item = document.createElement("div");
     item.className = "task-item";
 
     const left = document.createElement("div");
     left.innerHTML = `
       <div class="task-title">${isUnlocked ? "🔓" : "🔒"} ${mail.subject}</div>
-      <div class="task-meta">Ngày mở khóa: ${mail.targetDate} • Gửi tới: ${mail.email || "Lưu nội bộ"}</div>
+      <div class="task-meta">Ngày mở khóa: ${displayTargetDate} • Gửi tới: ${mail.email || "Lưu nội bộ"}</div>
     `;
 
     const actions = document.createElement("div");
@@ -503,10 +525,10 @@ function renderFutureMailList() {
     readBtn.className = "action-chip";
     readBtn.textContent = isUnlocked ? "Đọc thư" : "Xem trước";
     readBtn.addEventListener("click", () => {
-      if (!isUnlocked && !confirm(`Bức thư này hẹn mở vào ngày ${mail.targetDate}. Bạn vẫn muốn mở sớm chứ?`)) {
+      if (!isUnlocked && !confirm(`Bức thư này hẹn mở vào ngày ${displayTargetDate}. Bạn vẫn muốn mở sớm chứ?`)) {
         return;
       }
-      alert(`✉️️ TIÊU ĐỀ: ${mail.subject}\n📅 Ngày hẹn: ${mail.targetDate}\n\n${mail.message}`);
+      alert(`✉️ TIÊU ĐỀ: ${mail.subject}\n📅 Ngày hẹn: ${displayTargetDate}\n\n${mail.message}`);
     });
 
     const sendMailClientBtn = document.createElement("button");
@@ -518,8 +540,8 @@ function renderFutureMailList() {
         showToast("Bạn chưa nhập Email trong hồ sơ!");
         return;
       }
-      const subject = encodeURIComponent(`[Study OS - Thư tương lai ${mail.targetDate}] ${mail.subject}`);
-      const body = encodeURIComponent(`Ngày hẹn mở thư: ${mail.targetDate}\n\nNội dung:\n${mail.message}`);
+      const subject = encodeURIComponent(`[Study OS - Thư tương lai ${displayTargetDate}] ${mail.subject}`);
+      const body = encodeURIComponent(`Ngày hẹn mở thư: ${displayTargetDate}\n\nNội dung:\n${mail.message}`);
       window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(targetEmail)}&su=${subject}&body=${body}`, "_blank");
     });
 
@@ -585,7 +607,7 @@ function createTaskRowElement(task, realIdx) {
 
   const meta = document.createElement("div");
   meta.className = "task-meta";
-  meta.textContent = `Ngày: ${task.date} • Giờ: ${task.time}`;
+  meta.textContent = `Ngày: ${formatDisplayDate(task.date)} • Giờ: ${task.time}`;
 
   info.appendChild(title);
   info.appendChild(meta);
@@ -695,7 +717,7 @@ function renderWeeklyCalendar() {
     const d = new Date(today);
     d.setDate(today.getDate() + i);
     const dateKey = formatDateKey(d);
-    const displayDate = `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+    const displayDate = formatDisplayDate(d);
 
     const dayTasks = tasks
       .filter(t => t.date === dateKey)
@@ -747,7 +769,7 @@ function renderFocusSelector() {
     const realIdx = tasks.indexOf(task);
     const opt = document.createElement("option");
     opt.value = String(realIdx);
-    opt.textContent = `${task.done ? "[Đã xong]" : "[Chưa xong]"} ${task.name} (${task.date})`;
+    opt.textContent = `${task.done ? "[Đã xong]" : "[Chưa xong]"} ${task.name} (${formatDisplayDate(task.date)})`;
     select.appendChild(opt);
   });
 
@@ -1044,9 +1066,10 @@ document.addEventListener("DOMContentLoaded", () => {
     renderFutureMailList();
     document.getElementById("fm-subject").value = "";
     document.getElementById("fm-message").value = "";
+    const formattedDate = formatDisplayDate(targetDate);
     showToast(userEmail
-      ? `Đã lên lịch thư tương lai (${targetDate}) cho ${userEmail}!`
-      : `Đã niêm phong thư tương lai (${targetDate})!`);
+      ? `Đã lên lịch thư tương lai (${formattedDate}) cho ${userEmail}!`
+      : `Đã niêm phong thư tương lai (${formattedDate})!`);
   });
 
   document.getElementById("theme-toggle-btn").addEventListener("click", () => {
@@ -1084,7 +1107,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast("Đã cập nhật nhiệm vụ!");
     } else {
       tasks.push({ name, done: false, date, time });
-      showToast(`Đã thêm "${name}"`);
+      showToast(`Đã thêm "${name}" (${formatDisplayDate(date)})`);
     }
 
     saveStorage();
