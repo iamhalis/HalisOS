@@ -52,9 +52,15 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           <span>Thống kê</span>
         </button>
+        <!-- TÁCH RIÊNG TAB FUTURE MESSAGES -->
+        <button class="nav-item" data-tab="future-messages">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          <span>Future Messages</span>
+        </button>
+        <!-- TÁCH RIÊNG TAB HỒ SƠ -->
         <button class="nav-item" data-tab="profile">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          <span>Hồ sơ & Niêm phong thư</span>
+          <span>Hồ sơ</span>
         </button>
         <button class="nav-item" data-tab="settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
@@ -293,107 +299,32 @@
         </div>
       </section>
 
-      <!-- TAB 6: HỒ SƠ & NIÊM PHONG THƯ -->
-      <section class="tab-pane" id="tab-profile">
-        <!-- Giao diện dành cho Tài khoản Khách (Chưa đăng nhập) -->
-        <div id="auth-guest-view" class="auth-wrapper">
-          <div class="card auth-card">
-            <div class="auth-tabs">
-              <button class="auth-tab-btn active" data-auth="login">Đăng nhập</button>
-              <button class="auth-tab-btn" data-auth="register">Đăng ký tài khoản</button>
-            </div>
-
-            <form id="login-form" class="form-stack">
-              <p class="text-muted">Đăng nhập bằng Username để truy cập dữ liệu học tập của bạn.</p>
-              <div class="form-group">
-                <label for="login-username">Username <span class="req">*</span></label>
-                <input type="text" id="login-username" placeholder="Nhập username của bạn..." required autocomplete="username" />
-              </div>
-              <div class="form-group">
-                <label for="login-password">Mật khẩu <span class="req">*</span></label>
-                <input type="password" id="login-password" placeholder="Nhập mật khẩu..." required autocomplete="current-password" />
-              </div>
-              <button type="submit" class="btn btn-primary">Đăng nhập</button>
-            </form>
-
-            <form id="register-form" class="form-stack hidden">
-              <p class="text-muted">Tạo hồ sơ mới để lưu trữ riêng biệt, đổi ảnh đại diện và sử dụng tính năng Niêm phong thư.</p>
-              <div class="form-group">
-                <label for="reg-username">Username (dùng để đăng nhập) <span class="req">*</span></label>
-                <input type="text" id="reg-username" placeholder="VD: hadachoang" required autocomplete="username" />
-              </div>
-              <div class="form-group">
-                <label for="reg-email">Email (Không bắt buộc)</label>
-                <input type="email" id="reg-email" placeholder="VD: ban@gmail.com (có thể bỏ trống)" autocomplete="email" />
-              </div>
-              <div class="form-group">
-                <label for="reg-password">Mật khẩu (dùng để đăng nhập) <span class="req">*</span></label>
-                <input type="password" id="reg-password" placeholder="Tối thiểu 4 ký tự..." required autocomplete="new-password" />
-              </div>
-              <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
-            </form>
+      <!-- TAB 6: FUTURE MESSAGES (TÁCH ĐỘC LẬP GỒM 2 PHẦN) -->
+      <section class="tab-pane" id="tab-future-messages">
+        <div class="fm-top-header">
+          <div>
+            <h3>✉️ Future Messages</h3>
+            <p class="text-muted">Niêm phong thư gửi cho bản thân hoặc gửi thư hẹn ngày mở cho người dùng khác</p>
+          </div>
+          <!-- Thanh chuyển đổi 2 chế độ trong Future Messages -->
+          <div class="fm-mode-switcher">
+            <button type="button" class="fm-mode-btn active" data-fmmode="personal">
+              🔒 1. Niêm phong cá nhân
+            </button>
+            <button type="button" class="fm-mode-btn" data-fmmode="social">
+              📨 2. Gửi cho người dùng khác
+            </button>
           </div>
         </div>
 
-        <!-- Giao diện dành cho Tài khoản đã đăng ký -->
-        <div id="auth-user-view" class="dashboard-columns hidden">
-          <div class="card">
-            <div class="profile-header-box">
-              <div class="profile-avatar-wrapper">
-                <div class="profile-big-avatar" id="profile-big-avatar">U</div>
-                <label class="avatar-upload-btn" for="avatar-file-input" title="Đổi ảnh đại diện (PNG, JPG, JPEG, WebP)">
-                  <span>Đổi ảnh</span>
-                  <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/jpg,image/webp" />
-                </label>
-              </div>
-              <div class="profile-user-details">
-                <h3 id="profile-display-username">username</h3>
-                <p class="text-muted" id="profile-display-email">Chưa cập nhật email</p>
-              </div>
-            </div>
-
-            <!-- Cập nhật Email -->
-            <form id="profile-update-form" class="form-stack">
-              <div class="form-group">
-                <label for="profile-edit-email">Email liên kết hồ sơ (Không bắt buộc)</label>
-                <input type="email" id="profile-edit-email" placeholder="Nhập email của bạn..." />
-              </div>
-              <div class="form-actions">
-                <button type="submit" class="btn btn-secondary">Lưu Email</button>
-              </div>
-            </form>
-
-            <hr class="divider" />
-
-            <!-- Quy trình Đổi mật khẩu bắt buộc 3 bước -->
-            <h4 class="mb-12">Đổi mật khẩu tài khoản</h4>
-            <form id="password-change-form" class="form-stack">
-              <div class="form-group">
-                <label for="pwd-current">Bước 1: Nhập mật khẩu hiện tại (mật khẩu cũ) <span class="req">*</span></label>
-                <input type="password" id="pwd-current" placeholder="Nhập mật khẩu hiện tại..." required autocomplete="current-password" />
-              </div>
-              <div class="form-group">
-                <label for="pwd-new">Bước 2: Nhập mật khẩu mới <span class="req">*</span></label>
-                <input type="password" id="pwd-new" placeholder="Nhập mật khẩu mới (tối thiểu 4 ký tự)..." required autocomplete="new-password" />
-              </div>
-              <div class="form-group">
-                <label for="pwd-confirm">Bước 3: Nhập lại mật khẩu mới để xác nhận <span class="req">*</span></label>
-                <input type="password" id="pwd-confirm" placeholder="Nhập lại chính xác mật khẩu mới..." required autocomplete="new-password" />
-              </div>
-              <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Xác nhận đổi mật khẩu</button>
-                <button type="button" class="btn btn-danger" id="logout-btn">Đăng xuất</button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Cột phải: NIÊM PHONG THƯ (TIME CAPSULE) -->
+        <!-- PHẦN 1: NIÊM PHONG THƯ CHO CÁ NHÂN -->
+        <div id="fm-pane-personal" class="dashboard-columns">
           <div class="card">
             <div class="card-header">
-              <h3>🔒 Niêm phong thư (Time Capsule)</h3>
+              <h3>🔒 Tạo thư niêm phong cá nhân</h3>
             </div>
             <p class="text-muted mb-16">
-              Viết những lời nhắn nhủ, mục tiêu hoặc kỳ vọng cho bản thân. Bức thư sẽ bị khóa chặt và chỉ tự động mở khóa khi đến đúng ngày hẹn.
+              Viết những lời nhắn nhủ, mục tiêu hoặc kỳ vọng cho chính bản thân mình. Bức thư sẽ bị khóa chặt và chỉ tự động mở khóa khi đến đúng ngày hẹn.
             </p>
             <form id="future-mail-form" class="form-stack">
               <div class="form-group">
@@ -418,22 +349,205 @@
               </div>
               <div class="form-group">
                 <label for="fm-message">Nội dung bức thư</label>
-                <textarea id="fm-message" rows="4" placeholder="Viết những điều bạn muốn nhắn gửi cho chính mình..." required></textarea>
+                <textarea id="fm-message" rows="5" placeholder="Viết những điều bạn muốn nhắn gửi cho chính mình..." required></textarea>
               </div>
               <button type="submit" class="btn btn-primary">🔒 Niêm phong bức thư</button>
             </form>
+          </div>
 
-            <hr class="divider" />
+          <div class="card">
             <div class="capsule-list-header">
-              <h4>Danh sách thư đã niêm phong</h4>
+              <h3>Kho thư cá nhân đã niêm phong</h3>
               <span class="stat-pill" id="capsule-count-badge">0 bức thư</span>
             </div>
             <div id="future-mail-list" class="capsule-grid"></div>
           </div>
         </div>
+
+        <!-- PHẦN 2: GỬI THƯ NIÊM PHONG CHO NGƯỜI DÙNG KHÁC (TÌM NGƯỜI DÙNG GIỐNG EMAIL) -->
+        <div id="fm-pane-social" class="dashboard-columns hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3>📨 Soạn thư niêm phong gửi người dùng</h3>
+            </div>
+            <p class="text-muted mb-16">
+              Tìm người nhận theo Username hoặc Email (giống Gmail). Người nhận sẽ thấy bức thư trong hộp thư đến của họ nhưng chỉ có thể mở khi đến ngày hẹn.
+            </p>
+
+            <form id="user-letter-form" class="form-stack">
+              <!-- Ô tìm kiếm người nhận kiểu Email Chip + Autocomplete -->
+              <div class="form-group">
+                <label for="recipient-search-input">Người nhận (To:) <span class="req">*</span></label>
+                <div class="email-recipient-wrapper" id="recipient-box-wrapper">
+                  <div class="email-recipient-box" id="email-recipient-box">
+                    <!-- Thẻ Chip người dùng đã chọn -->
+                    <div id="selected-recipient-chip" class="recipient-chip hidden"></div>
+                    <input
+                      type="text"
+                      id="recipient-search-input"
+                      placeholder="Nhập @username hoặc email để tìm người dùng..."
+                      autocomplete="off"
+                    />
+                  </div>
+                  <input type="hidden" id="selected-recipient-username" value="" />
+                  <!-- Danh sách gợi ý thả xuống kiểu Gmail -->
+                  <div id="recipient-suggestions" class="recipient-dropdown hidden"></div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="ul-subject">Tiêu đề bức thư <span class="req">*</span></label>
+                <input type="text" id="ul-subject" placeholder="Nhập tiêu đề bức thư..." required />
+              </div>
+
+              <div class="form-group">
+                <label for="ul-date-display">Ngày cho phép người nhận mở thư (DD-MM-YYYY) <span class="req">*</span></label>
+                <div class="custom-date-picker">
+                  <input
+                    type="text"
+                    id="ul-date-display"
+                    placeholder="DD-MM-YYYY (VD: 21-06-2027)"
+                    maxlength="10"
+                    required
+                  />
+                  <button type="button" class="btn-icon calendar-trigger-btn" id="ul-date-trigger" title="Chọn ngày mở thư">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  </button>
+                  <input type="date" id="ul-date" class="sr-only-date-picker" tabindex="-1" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="ul-message">Nội dung bức thư <span class="req">*</span></label>
+                <textarea id="ul-message" rows="5" placeholder="Viết lời nhắn gửi tới người nhận..." required></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary">📨 Niêm phong & Gửi thư</button>
+            </form>
+          </div>
+
+          <!-- Cột phải: Hộp thư đến & Thư đã gửi -->
+          <div class="card">
+            <div class="card-header">
+              <div class="filter-tabs">
+                <button type="button" class="filter-btn active" data-socialbox="inbox">
+                  📥 Hộp thư đến (<span id="inbox-count">0</span>)
+                </button>
+                <button type="button" class="filter-btn" data-socialbox="sent">
+                  📤 Đã gửi (<span id="sent-count">0</span>)
+                </button>
+              </div>
+              <button type="button" class="btn-icon" id="refresh-social-mail-btn" title="Làm mới hộp thư">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+              </button>
+            </div>
+
+            <div id="social-inbox-list" class="capsule-grid"></div>
+            <div id="social-sent-list" class="capsule-grid hidden"></div>
+          </div>
+        </div>
       </section>
 
-      <!-- TAB 7: CÀI ĐẶT & DỮ LIỆU -->
+      <!-- TAB 7: HỒ SƠ CÁ NHÂN (ĐÃ TÁCH RIÊNG GỌN GÀNG) -->
+      <section class="tab-pane" id="tab-profile">
+        <!-- Giao diện dành cho Tài khoản Khách (Chưa đăng nhập) -->
+        <div id="auth-guest-view" class="auth-wrapper">
+          <div class="card auth-card">
+            <div class="auth-tabs">
+              <button class="auth-tab-btn active" data-auth="login">Đăng nhập</button>
+              <button class="auth-tab-btn" data-auth="register">Đăng ký tài khoản</button>
+            </div>
+
+            <form id="login-form" class="form-stack">
+              <p class="text-muted">Đăng nhập bằng Username để truy cập dữ liệu học tập và hộp thư của bạn.</p>
+              <div class="form-group">
+                <label for="login-username">Username <span class="req">*</span></label>
+                <input type="text" id="login-username" placeholder="Nhập username của bạn..." required autocomplete="username" />
+              </div>
+              <div class="form-group">
+                <label for="login-password">Mật khẩu <span class="req">*</span></label>
+                <input type="password" id="login-password" placeholder="Nhập mật khẩu..." required autocomplete="current-password" />
+              </div>
+              <button type="submit" class="btn btn-primary">Đăng nhập</button>
+            </form>
+
+            <form id="register-form" class="form-stack hidden">
+              <p class="text-muted">Tạo hồ sơ mới để lưu trữ riêng biệt, đổi ảnh đại diện và gửi thư niêm phong cho bạn bè.</p>
+              <div class="form-group">
+                <label for="reg-username">Username (dùng để đăng nhập) <span class="req">*</span></label>
+                <input type="text" id="reg-username" placeholder="VD: hadachoang" required autocomplete="username" />
+              </div>
+              <div class="form-group">
+                <label for="reg-email">Email (giúp bạn bè dễ tìm thấy bạn — Không bắt buộc)</label>
+                <input type="email" id="reg-email" placeholder="VD: ban@gmail.com (có thể bỏ trống)" autocomplete="email" />
+              </div>
+              <div class="form-group">
+                <label for="reg-password">Mật khẩu (dùng để đăng nhập) <span class="req">*</span></label>
+                <input type="password" id="reg-password" placeholder="Tối thiểu 4 ký tự..." required autocomplete="new-password" />
+              </div>
+              <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Giao diện dành cho Tài khoản đã đăng ký -->
+        <div id="auth-user-view" class="dashboard-columns hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3>Thông tin Hồ sơ & Ảnh đại diện</h3>
+            </div>
+            <div class="profile-header-box">
+              <div class="profile-avatar-wrapper">
+                <div class="profile-big-avatar" id="profile-big-avatar">U</div>
+                <label class="avatar-upload-btn" for="avatar-file-input" title="Đổi ảnh đại diện (PNG, JPG, JPEG, WebP)">
+                  <span>Đổi ảnh</span>
+                  <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/jpg,image/webp" />
+                </label>
+              </div>
+              <div class="profile-user-details">
+                <h3 id="profile-display-username">username</h3>
+                <p class="text-muted" id="profile-display-email">Chưa cập nhật email</p>
+              </div>
+            </div>
+
+            <form id="profile-update-form" class="form-stack">
+              <div class="form-group">
+                <label for="profile-edit-email">Email liên kết hồ sơ (Không bắt buộc)</label>
+                <input type="email" id="profile-edit-email" placeholder="Nhập email của bạn..." />
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-secondary">Lưu Email</button>
+                <button type="button" class="btn btn-danger" id="logout-btn">Đăng xuất</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Bảo mật & Đổi mật khẩu</h3>
+            </div>
+            <form id="password-change-form" class="form-stack">
+              <div class="form-group">
+                <label for="pwd-current">Bước 1: Nhập mật khẩu hiện tại (mật khẩu cũ) <span class="req">*</span></label>
+                <input type="password" id="pwd-current" placeholder="Nhập mật khẩu hiện tại..." required autocomplete="current-password" />
+              </div>
+              <div class="form-group">
+                <label for="pwd-new">Bước 2: Nhập mật khẩu mới <span class="req">*</span></label>
+                <input type="password" id="pwd-new" placeholder="Nhập mật khẩu mới (tối thiểu 4 ký tự)..." required autocomplete="new-password" />
+              </div>
+              <div class="form-group">
+                <label for="pwd-confirm">Bước 3: Nhập lại mật khẩu mới để xác nhận <span class="req">*</span></label>
+                <input type="password" id="pwd-confirm" placeholder="Nhập lại chính xác mật khẩu mới..." required autocomplete="new-password" />
+              </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-primary">Xác nhận đổi mật khẩu</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 8: CÀI ĐẶT & DỮ LIỆU -->
       <section class="tab-pane" id="tab-settings">
         <div class="dashboard-columns">
           <div class="card">
@@ -499,13 +613,13 @@
     </main>
   </div>
 
-  <!-- MODAL MỞ THƯ NIÊM PHONG (GIAO DIỆN HIỆN ĐẠI, BỐ CỤC RÕ RÀNG) -->
+  <!-- MODAL MỞ THƯ NIÊM PHONG (DÙNG CHUNG CHO CẢ THƯ CÁ NHÂN & THƯ NGƯỜI DÙNG GỬI) -->
   <div id="letter-modal-overlay" class="letter-modal-overlay hidden">
     <div class="letter-modal-card" role="dialog" aria-modal="true">
       <div class="letter-modal-topbar">
         <div class="letter-seal-badge">
           <span class="seal-dot"></span>
-          <span>THƯ NIÊM PHONG ĐÃ MỞ KHÓA</span>
+          <span id="letter-modal-badge-text">THƯ NIÊM PHONG ĐÃ MỞ KHÓA</span>
         </div>
         <button type="button" class="letter-close-icon" id="close-letter-modal-btn" title="Đóng bức thư">✕</button>
       </div>
@@ -514,15 +628,19 @@
         <h2 id="letter-modal-subject">Tiêu đề bức thư</h2>
         <div class="letter-meta-grid">
           <div class="letter-meta-box">
-            <span class="meta-label">NGƯỜI VIẾT</span>
+            <span class="meta-label">NGƯỜI GỬI</span>
             <span class="meta-val" id="letter-modal-author">@username</span>
+          </div>
+          <div class="letter-meta-box">
+            <span class="meta-label">NGƯỜI NHẬN</span>
+            <span class="meta-val" id="letter-modal-recipient">@username</span>
           </div>
           <div class="letter-meta-box">
             <span class="meta-label">NGÀY NIÊM PHONG</span>
             <span class="meta-val" id="letter-modal-created">02-10-2026</span>
           </div>
           <div class="letter-meta-box highlight">
-            <span class="meta-label">NGÀY MỞ THƯ</span>
+            <span class="meta-label">NGÀY MỞ KHÓA</span>
             <span class="meta-val" id="letter-modal-target">21-06-2027</span>
           </div>
         </div>

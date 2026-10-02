@@ -43,11 +43,13 @@ let currentUser = localStorage.getItem("studyos_current_user") || null;
 
 let config = { ...DEFAULT_CONFIG };
 let tasks = [];
-let futureMails = [];
+let futureMails = []; // Thư niêm phong cá nhân
+let sharedLetters = loadJSON("studyos_shared_letters", []); // Thư gửi giữa các người dùng
 
 let currentFilter = "all";
 let searchQuery = "";
 let currentPage = 1;
+let activeSocialBox = "inbox"; // "inbox" | "sent"
 
 // Biến Focus Session
 let focusInterval = null;
@@ -134,6 +136,7 @@ function getCurrentTimeStr() {
   return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 }
 
+// ---------- Đồng bộ Firebase Cloud ----------
 function isCloudEnabled() {
   return (
     CLOUD_DB_URL &&
@@ -142,9 +145,20 @@ function isCloudEnabled() {
   );
 }
 
+function getCloudBase() {
+  return CLOUD_DB_URL.replace(/\/+$/, "");
+}
+
 function getCloudEndpoint(username) {
-  const base = CLOUD_DB_URL.replace(/\/+$/, "");
-  return `${base}/studyos_accounts/${encodeURIComponent(username)}.json`;
+  return `${getCloudBase()}/studyos_accounts/${encodeURIComponent(username)}.json`;
+}
+
+function getCloudAllAccountsEndpoint() {
+  return `${getCloudBase()}/studyos_accounts.json`;
+}
+
+function getCloudSharedLettersEndpoint() {
+  return `${getCloudBase()}/studyos_shared_letters.json`;
 }
 
 async function fetchAccountFromCloud(username) {
@@ -155,6 +169,60 @@ async function fetchAccountFromCloud(username) {
     return await res.json();
   } catch {
     return null;
+  }
+}
+
+// Tải toàn bộ danh sách tài khoản trên hệ thống để phục vụ tìm kiếm người nhận giống Gmail
+async function syncAllDirectoryUsersFromCloud() {
+  if (!isCloudEnabled()) return;
+  try {
+    const res = await fetch(getCloudAllAccountsEndpoint());
+    if (!res.ok) return;
+    const allAccounts = await res.json();
+    if (allAccounts && typeof allAccounts === "object") {
+      Object.keys(allAccounts).forEach(uname => {
+        if (allAccounts[uname] && allAccounts[uname].profile) {
+          users[uname] = allAccounts[uname].profile;
+        }
+      });
+      saveUsersDB();
+    }
+  } catch {
+    // Bỏ qua nếu mất kết nối
+  }
+}
+
+async function pullSharedLettersFromCloud() {
+  if (!isCloudEnabled()) return;
+  try {
+    const res = await fetch(getCloudSharedLettersEndpoint());
+    if (!res.ok) return;
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      sharedLetters = data.filter(Boolean);
+      localStorage.setItem("studyos_shared_letters", JSON.stringify(sharedLetters));
+      renderSocialLettersList();
+    } else if (data && typeof data === "object") {
+      sharedLetters = Object.values(data).filter(Boolean);
+      localStorage.setItem("studyos_shared_letters", JSON.stringify(sharedLetters));
+      renderSocialLettersList();
+    }
+  } catch {
+    // Fallback localStorage
+  }
+}
+
+async function pushSharedLettersToCloud() {
+  localStorage.setItem("studyos_shared_letters", JSON.stringify(sharedLetters));
+  if (!isCloudEnabled()) return;
+  try {
+    await fetch(getCloudSharedLettersEndpoint(), {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(sharedLetters)
+    });
+  } catch {
+    // Fallback localStorage
   }
 }
 
@@ -179,6 +247,8 @@ async function syncToCloud() {
 }
 
 async function pullCurrentUserFromCloud() {
+  await syncAllDirectoryUsersFromCloud();
+  await pullSharedLettersFromCloud();
   if (!currentUser || !isCloudEnabled()) return;
   const remoteData = await fetchAccountFromCloud(currentUser);
   if (remoteData && remoteData.profile) {
@@ -221,6 +291,7 @@ function loadActiveUserData() {
   config = loadJSON(configKey, { ...DEFAULT_CONFIG });
   tasks = loadJSON(tasksKey, []);
   futureMails = loadJSON(mailsKey, []);
+  sharedLetters = loadJSON("studyos_shared_letters", []);
   migrateTasks();
 }
 
@@ -407,6 +478,8 @@ function renderAll() {
   document.getElementById("setting-aim-month").value = aimMonth;
 
   renderProfileUI();
+  renderSealedLettersList();
+  renderSocialLettersList();
   renderDashboardUpcoming();
   renderTasksTab();
   renderWeeklyCalendar();
@@ -539,7 +612,7 @@ function renderAnalyticsCharts() {
   document.getElementById("monthly-line-chart").innerHTML = createSVGLineChart(monthLabels, monthValues, "gradMonth");
 }
 
-// ---------- Render Hồ sơ, Avatar & Niêm phong thư ----------
+// ---------- Render Hồ sơ & Avatar ----------
 function renderProfileUI() {
   const sidebarAvatar = document.getElementById("sidebar-avatar");
   const sidebarUsername = document.getElementById("sidebar-username");
@@ -571,8 +644,6 @@ function renderProfileUI() {
       ? `Email: ${u.email} (${syncTag})`
       : `Chưa có email (${syncTag})`;
     document.getElementById("profile-edit-email").value = u.email || "";
-
-    renderSealedLettersList();
   } else {
     renderAvatarElement(sidebarAvatar, null, "G");
     renderAvatarElement(profileBigAvatar, null, "G");
@@ -586,13 +657,22 @@ function renderProfileUI() {
   }
 }
 
-// Mở Modal Đọc thư niêm phong
-function openLetterModal(mail) {
-  document.getElementById("letter-modal-subject").textContent = mail.subject;
-  document.getElementById("letter-modal-author").textContent = currentUser ? `@${currentUser}` : "Bạn";
-  document.getElementById("letter-modal-created").textContent = formatDisplayDate(mail.createdAt || getTodayStr());
-  document.getElementById("letter-modal-target").textContent = formatDisplayDate(mail.targetDate);
-  document.getElementById("letter-modal-content").textContent = mail.message;
+// ---------- MODAL ĐỌC THƯ NIÊM PHONG ----------
+function openLetterModal(letterData) {
+  document.getElementById("letter-modal-subject").textContent = letterData.subject;
+  document.getElementById("letter-modal-author").textContent = letterData.fromUser
+    ? `@${letterData.fromUser}`
+    : currentUser
+    ? `@${currentUser}`
+    : "Bạn";
+  document.getElementById("letter-modal-recipient").textContent = letterData.toUser
+    ? `@${letterData.toUser}`
+    : currentUser
+    ? `@${currentUser} (Cá nhân)`
+    : "Bản thân";
+  document.getElementById("letter-modal-created").textContent = formatDisplayDate(letterData.createdAt || getTodayStr());
+  document.getElementById("letter-modal-target").textContent = formatDisplayDate(letterData.targetDate);
+  document.getElementById("letter-modal-content").textContent = letterData.message;
   document.getElementById("letter-modal-overlay").classList.remove("hidden");
 }
 
@@ -600,14 +680,17 @@ function closeLetterModal() {
   document.getElementById("letter-modal-overlay").classList.add("hidden");
 }
 
+// ---------- PHẦN 1: DANH SÁCH THƯ NIÊM PHONG CÁ NHÂN ----------
 function renderSealedLettersList() {
   const listEl = document.getElementById("future-mail-list");
   const badgeEl = document.getElementById("capsule-count-badge");
+  if (!listEl || !badgeEl) return;
+
   listEl.innerHTML = "";
   badgeEl.textContent = `${futureMails.length} bức thư`;
 
   if (futureMails.length === 0) {
-    listEl.innerHTML = `<p class="text-muted">Chưa có bức thư niêm phong nào. Hãy viết một bức thư cho tương lai!</p>`;
+    listEl.innerHTML = `<p class="text-muted">Chưa có bức thư niêm phong cá nhân nào. Hãy viết một bức thư cho tương lai!</p>`;
     return;
   }
 
@@ -625,7 +708,7 @@ function renderSealedLettersList() {
 
     const statusHtml = isUnlocked
       ? `<span class="capsule-badge unlocked">🔓 Đã đến hạn mở thư</span>`
-      : `<span class="capsule-badge locked">🔒 Còn ${daysLeft} ngày nữa (${displayTargetDate})</span>`;
+      : `<span class="capsule-badge locked">🔒 Còn ${daysLeft} ngày (${displayTargetDate})</span>`;
 
     const info = document.createElement("div");
     info.className = "capsule-info";
@@ -635,7 +718,7 @@ function renderSealedLettersList() {
         <div class="capsule-title">${mail.subject}</div>
         <div class="capsule-meta-row">
           ${statusHtml}
-          <span>• Niêm phong ngày: ${displayCreatedDate}</span>
+          <span>• Tạo ngày: ${displayCreatedDate}</span>
         </div>
       </div>
     `;
@@ -651,9 +734,9 @@ function renderSealedLettersList() {
       openBtn.addEventListener("click", () => openLetterModal(mail));
     } else {
       openBtn.className = "btn-open-letter sealed";
-      openBtn.textContent = `Mở ngày ${displayTargetDate}`;
+      openBtn.textContent = `Mở ${displayTargetDate}`;
       openBtn.addEventListener("click", () => {
-        showToast(`Bức thư này đang bị khóa! Sẽ tự động mở vào ngày ${displayTargetDate} (còn ${daysLeft} ngày).`, true);
+        showToast(`Bức thư đang niêm phong! Sẽ tự động mở vào ngày ${displayTargetDate} (còn ${daysLeft} ngày).`, true);
       });
     }
 
@@ -677,6 +760,246 @@ function renderSealedLettersList() {
     card.appendChild(actions);
     listEl.appendChild(card);
   });
+}
+
+// ---------- PHẦN 2: TÌM NGƯỜI DÙNG GIỐNG EMAIL & GỬI THƯ NIÊM PHONG ----------
+function selectRecipientUser(userObj) {
+  const hiddenInput = document.getElementById("selected-recipient-username");
+  const chipEl = document.getElementById("selected-recipient-chip");
+  const searchInput = document.getElementById("recipient-search-input");
+  const dropdownEl = document.getElementById("recipient-suggestions");
+
+  hiddenInput.value = userObj.username;
+  chipEl.innerHTML = "";
+  chipEl.classList.remove("hidden");
+
+  const avatarDiv = document.createElement("div");
+  avatarDiv.className = "chip-avatar";
+  renderAvatarElement(avatarDiv, userObj.avatar, userObj.username.charAt(0).toUpperCase());
+
+  const labelSpan = document.createElement("span");
+  labelSpan.textContent = userObj.email
+    ? `@${userObj.username} <${userObj.email}>`
+    : `@${userObj.username}`;
+
+  const removeBtn = document.createElement("button");
+  removeBtn.type = "button";
+  removeBtn.className = "chip-remove-btn";
+  removeBtn.textContent = "✕";
+  removeBtn.title = "Xoá người nhận";
+  removeBtn.addEventListener("click", clearSelectedRecipient);
+
+  chipEl.appendChild(avatarDiv);
+  chipEl.appendChild(labelSpan);
+  chipEl.appendChild(removeBtn);
+
+  searchInput.value = "";
+  searchInput.placeholder = "";
+  dropdownEl.classList.add("hidden");
+}
+
+function clearSelectedRecipient() {
+  document.getElementById("selected-recipient-username").value = "";
+  const chipEl = document.getElementById("selected-recipient-chip");
+  chipEl.innerHTML = "";
+  chipEl.classList.add("hidden");
+  const searchInput = document.getElementById("recipient-search-input");
+  searchInput.placeholder = "Nhập @username hoặc email để tìm người dùng...";
+  searchInput.focus();
+}
+
+function renderRecipientSuggestions(queryText) {
+  const dropdownEl = document.getElementById("recipient-suggestions");
+  const q = String(queryText || "").trim().toLowerCase().replace(/^@/, "");
+
+  const allUserList = Object.values(users).filter(u => u && u.username);
+
+  const matches = allUserList.filter(u => {
+    const matchName = u.username.toLowerCase().includes(q);
+    const matchMail = u.email && u.email.toLowerCase().includes(q);
+    return !q || matchName || matchMail;
+  });
+
+  dropdownEl.innerHTML = "";
+
+  if (matches.length === 0) {
+    dropdownEl.innerHTML = `<div class="suggestion-item"><span class="text-muted">Không tìm thấy tài khoản nào khớp với "${queryText}"</span></div>`;
+    dropdownEl.classList.remove("hidden");
+    return;
+  }
+
+  matches.slice(0, 8).forEach(u => {
+    const row = document.createElement("div");
+    row.className = "suggestion-item";
+
+    const av = document.createElement("div");
+    av.className = "suggestion-avatar";
+    renderAvatarElement(av, u.avatar, u.username.charAt(0).toUpperCase());
+
+    const info = document.createElement("div");
+    info.className = "suggestion-info";
+    const isSelf = currentUser && u.username === currentUser;
+    info.innerHTML = `
+      <span class="suggestion-name">@${u.username} ${isSelf ? "(Bạn)" : ""}</span>
+      <span class="suggestion-email">${u.email ? u.email : "Đã đăng ký tài khoản Study OS"}</span>
+    `;
+
+    row.appendChild(av);
+    row.appendChild(info);
+
+    row.addEventListener("click", () => selectRecipientUser(u));
+    dropdownEl.appendChild(row);
+  });
+
+  dropdownEl.classList.remove("hidden");
+}
+
+function renderSocialLettersList() {
+  const inboxEl = document.getElementById("social-inbox-list");
+  const sentEl = document.getElementById("social-sent-list");
+  const inboxCountEl = document.getElementById("inbox-count");
+  const sentCountEl = document.getElementById("sent-count");
+
+  if (!inboxEl || !sentEl) return;
+
+  inboxEl.innerHTML = "";
+  sentEl.innerHTML = "";
+
+  if (!currentUser) {
+    inboxCountEl.textContent = "0";
+    sentCountEl.textContent = "0";
+    const guestMsg = `<p class="text-muted">Vui lòng <button type="button" class="btn-link" onclick="switchTab('profile')">Đăng nhập tài khoản</button> để gửi và nhận thư niêm phong với người dùng khác.</p>`;
+    inboxEl.innerHTML = guestMsg;
+    sentEl.innerHTML = guestMsg;
+    return;
+  }
+
+  const todayStr = getTodayStr();
+  const inboxLetters = sharedLetters.filter(l => l && l.toUser === currentUser);
+  const sentLetters = sharedLetters.filter(l => l && l.fromUser === currentUser);
+
+  inboxCountEl.textContent = String(inboxLetters.length);
+  sentCountEl.textContent = String(sentLetters.length);
+
+  // Render Hộp thư đến
+  if (inboxLetters.length === 0) {
+    inboxEl.innerHTML = `<p class="text-muted">Hộp thư đến trống. Chưa có người dùng nào gửi thư niêm phong cho @${currentUser}.</p>`;
+  } else {
+    inboxLetters.forEach(letter => {
+      const targetISO = toInputDateStr(letter.targetDate);
+      const isUnlocked = todayStr >= targetISO;
+      const daysLeft = getDaysUntilDate(targetISO);
+      const displayTargetDate = formatDisplayDate(targetISO);
+      const displayCreatedDate = formatDisplayDate(letter.createdAt || todayStr);
+
+      const card = document.createElement("div");
+      card.className = `capsule-card ${isUnlocked ? "unlocked" : "locked"}`;
+
+      const statusHtml = isUnlocked
+        ? `<span class="capsule-badge unlocked">🔓 Đã mở khóa</span>`
+        : `<span class="capsule-badge locked">🔒 Mở sau ${daysLeft} ngày (${displayTargetDate})</span>`;
+
+      const info = document.createElement("div");
+      info.className = "capsule-info";
+      info.innerHTML = `
+        <div class="capsule-icon-box">${isUnlocked ? "📩" : "🔒"}</div>
+        <div class="capsule-text">
+          <div class="capsule-title">${letter.subject}</div>
+          <div class="capsule-meta-row">
+            <strong>Từ: @${letter.fromUser}</strong>
+            ${statusHtml}
+            <span>• Gửi ngày: ${displayCreatedDate}</span>
+          </div>
+        </div>
+      `;
+
+      const actions = document.createElement("div");
+      actions.className = "capsule-actions";
+
+      const openBtn = document.createElement("button");
+      openBtn.type = "button";
+      if (isUnlocked) {
+        openBtn.className = "btn-open-letter ready";
+        openBtn.textContent = "Đọc thư";
+        openBtn.addEventListener("click", () => openLetterModal(letter));
+      } else {
+        openBtn.className = "btn-open-letter sealed";
+        openBtn.textContent = `Mở ${displayTargetDate}`;
+        openBtn.addEventListener("click", () => {
+          showToast(`Bức thư từ @${letter.fromUser} đang được niêm phong đến ngày ${displayTargetDate}!`, true);
+        });
+      }
+
+      actions.appendChild(openBtn);
+      card.appendChild(info);
+      card.appendChild(actions);
+      inboxEl.appendChild(card);
+    });
+  }
+
+  // Render Hộp thư đã gửi
+  if (sentLetters.length === 0) {
+    sentEl.innerHTML = `<p class="text-muted">Bạn chưa gửi bức thư niêm phong nào cho người dùng khác.</p>`;
+  } else {
+    sentLetters.forEach(letter => {
+      const targetISO = toInputDateStr(letter.targetDate);
+      const isUnlocked = todayStr >= targetISO;
+      const daysLeft = getDaysUntilDate(targetISO);
+      const displayTargetDate = formatDisplayDate(targetISO);
+
+      const card = document.createElement("div");
+      card.className = `capsule-card ${isUnlocked ? "unlocked" : "locked"}`;
+
+      const statusHtml = isUnlocked
+        ? `<span class="capsule-badge unlocked">🔓 Người nhận đã có thể mở</span>`
+        : `<span class="capsule-badge locked">🔒 Đang khóa (${daysLeft} ngày nữa)</span>`;
+
+      const info = document.createElement("div");
+      info.className = "capsule-info";
+      info.innerHTML = `
+        <div class="capsule-icon-box">📤</div>
+        <div class="capsule-text">
+          <div class="capsule-title">${letter.subject}</div>
+          <div class="capsule-meta-row">
+            <strong>Tới: @${letter.toUser}</strong>
+            ${statusHtml}
+            <span>• Ngày mở: ${displayTargetDate}</span>
+          </div>
+        </div>
+      `;
+
+      const actions = document.createElement("div");
+      actions.className = "capsule-actions";
+
+      const viewBtn = document.createElement("button");
+      viewBtn.type = "button";
+      viewBtn.className = "action-chip";
+      viewBtn.textContent = "Xem lại";
+      viewBtn.addEventListener("click", () => openLetterModal(letter));
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "action-chip delete";
+      delBtn.textContent = "Thu hồi";
+      delBtn.addEventListener("click", async () => {
+        if (confirm(`Thu hồi và xoá bức thư "${letter.subject}" gửi cho @${letter.toUser}?`)) {
+          const realIndex = sharedLetters.indexOf(letter);
+          if (realIndex !== -1) {
+            sharedLetters.splice(realIndex, 1);
+            await pushSharedLettersToCloud();
+            renderSocialLettersList();
+            showToast("Đã thu hồi bức thư.");
+          }
+        }
+      });
+
+      actions.appendChild(viewBtn);
+      actions.appendChild(delBtn);
+      card.appendChild(info);
+      card.appendChild(actions);
+      sentEl.appendChild(card);
+    });
+  }
 }
 
 // ---------- Render Nhiệm vụ ----------
@@ -969,6 +1292,12 @@ function switchTab(tabId) {
   if (tabId === "analytics") {
     renderAnalyticsCharts();
   }
+  if (tabId === "future-messages") {
+    syncAllDirectoryUsersFromCloud();
+    pullSharedLettersFromCloud();
+    renderSealedLettersList();
+    renderSocialLettersList();
+  }
 }
 
 function downloadJSON(filename, dataObj) {
@@ -981,7 +1310,6 @@ function downloadJSON(filename, dataObj) {
   URL.revokeObjectURL(url);
 }
 
-// Thiết lập đồng bộ giữa ô nhập DD-MM-YYYY và lịch ẩn
 function bindCustomDateInput(textInputId, hiddenDateId, triggerBtnId) {
   const textEl = document.getElementById(textInputId);
   const hiddenEl = document.getElementById(hiddenDateId);
@@ -1035,14 +1363,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Mặc định ngày mở thư niêm phong là ngày mục tiêu hoặc 1 năm sau (chuẩn DD-MM-YYYY)
   const defaultCapsuleISO = toInputDateStr(config.target_date) || "2027-06-21";
   document.getElementById("fm-date").value = defaultCapsuleISO;
   document.getElementById("fm-date-display").value = formatDisplayDate(defaultCapsuleISO);
+  document.getElementById("ul-date").value = defaultCapsuleISO;
+  document.getElementById("ul-date-display").value = formatDisplayDate(defaultCapsuleISO);
 
-  // Gắn sự kiện cho 2 bộ chọn ngày chuẩn DD-MM-YYYY
+  // Gắn sự kiện cho 3 bộ chọn ngày chuẩn DD-MM-YYYY
   bindCustomDateInput("setting-target-date-display", "setting-target-date", "setting-date-Trigger");
   bindCustomDateInput("fm-date-display", "fm-date", "fm-date-trigger");
+  bindCustomDateInput("ul-date-display", "ul-date", "ul-date-trigger");
 
   // Đóng Modal đọc thư
   document.getElementById("close-letter-modal-btn").addEventListener("click", closeLetterModal);
@@ -1051,6 +1381,128 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.id === "letter-modal-overlay") closeLetterModal();
   });
 
+  // Chuyển đổi 2 chế độ trong Future Messages (1. Cá nhân | 2. Gửi người dùng khác)
+  document.querySelectorAll(".fm-mode-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".fm-mode-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const mode = btn.dataset.fmmode;
+      document.getElementById("fm-pane-personal").classList.toggle("hidden", mode !== "personal");
+      document.getElementById("fm-pane-social").classList.toggle("hidden", mode !== "social");
+      if (mode === "social") {
+        syncAllDirectoryUsersFromCloud();
+        pullSharedLettersFromCloud();
+        renderSocialLettersList();
+      }
+    });
+  });
+
+  // Chuyển đổi Hộp thư đến / Đã gửi
+  document.querySelectorAll("[data-socialbox]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-socialbox]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeSocialBox = btn.dataset.socialbox;
+      document.getElementById("social-inbox-list").classList.toggle("hidden", activeSocialBox !== "inbox");
+      document.getElementById("social-sent-list").classList.toggle("hidden", activeSocialBox !== "sent");
+    });
+  });
+
+  document.getElementById("refresh-social-mail-btn").addEventListener("click", async () => {
+    await syncAllDirectoryUsersFromCloud();
+    await pullSharedLettersFromCloud();
+    showToast("Đã làm mới danh sách người dùng và hộp thư!");
+  });
+
+  // Ô tìm kiếm người nhận kiểu Gmail Autocomplete
+  const recipientSearchInput = document.getElementById("recipient-search-input");
+  const recipientDropdown = document.getElementById("recipient-suggestions");
+
+  recipientSearchInput.addEventListener("focus", () => {
+    if (!document.getElementById("selected-recipient-username").value) {
+      renderRecipientSuggestions(recipientSearchInput.value);
+    }
+  });
+
+  recipientSearchInput.addEventListener("input", e => {
+    renderRecipientSuggestions(e.target.value);
+  });
+
+  recipientSearchInput.addEventListener("keydown", e => {
+    if (e.key === "Backspace" && !recipientSearchInput.value && document.getElementById("selected-recipient-username").value) {
+      clearSelectedRecipient();
+    }
+  });
+
+  document.addEventListener("click", e => {
+    const wrapper = document.getElementById("recipient-box-wrapper");
+    if (wrapper && !wrapper.contains(e.target)) {
+      recipientDropdown.classList.add("hidden");
+    }
+  });
+
+  // Gửi thư niêm phong cho người dùng khác
+  document.getElementById("user-letter-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!currentUser || !users[currentUser]) {
+      showToast("Vui lòng đăng nhập tài khoản trước khi gửi thư cho người dùng khác!", true);
+      switchTab("profile");
+      return;
+    }
+
+    let recipientUsername = document.getElementById("selected-recipient-username").value.trim().toLowerCase();
+    const typedText = recipientSearchInput.value.trim().toLowerCase().replace(/^@/, "");
+
+    // Nếu người dùng gõ trực tiếp username hoặc email mà chưa bấm vào chip
+    if (!recipientUsername && typedText) {
+      const found = Object.values(users).find(
+        u => u && (u.username.toLowerCase() === typedText || (u.email && u.email.toLowerCase() === typedText))
+      );
+      if (found) {
+        recipientUsername = found.username;
+      }
+    }
+
+    if (!recipientUsername || !users[recipientUsername]) {
+      showToast("Vui lòng chọn một người nhận hợp lệ đã đăng ký tài khoản!", true);
+      recipientSearchInput.focus();
+      return;
+    }
+
+    const subject = document.getElementById("ul-subject").value.trim();
+    const rawDateStr = document.getElementById("ul-date-display").value.trim();
+    const validatedISO = parseAndValidateDDMMYYYY(rawDateStr);
+    const message = document.getElementById("ul-message").value.trim();
+
+    if (!validatedISO) {
+      showToast("Ngày mở thư không hợp lệ! Vui lòng nhập đúng định dạng DD-MM-YYYY.", true);
+      document.getElementById("ul-date-display").focus();
+      return;
+    }
+
+    if (!subject || !message) return;
+
+    const newSharedLetter = {
+      id: "letter_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
+      fromUser: currentUser,
+      toUser: recipientUsername,
+      subject,
+      targetDate: validatedISO,
+      message,
+      createdAt: getTodayStr()
+    };
+
+    sharedLetters.unshift(newSharedLetter);
+    await pushSharedLettersToCloud();
+    renderSocialLettersList();
+
+    clearSelectedRecipient();
+    document.getElementById("ul-subject").value = "";
+    document.getElementById("ul-message").value = "";
+    showToast(`📨 Đã gửi thư niêm phong tới @${recipientUsername} (Mở ngày ${formatDisplayDate(validatedISO)})!`);
+  });
+
+  // Điều hướng Sidebar
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
@@ -1154,6 +1606,7 @@ document.addEventListener("DOMContentLoaded", () => {
         tasks = Array.isArray(cloudData.tasks) ? cloudData.tasks : [];
         futureMails = Array.isArray(cloudData.futureMails) ? cloudData.futureMails : [];
         saveLocalOnly();
+        await pullSharedLettersFromCloud();
         renderAll();
         document.getElementById("login-form").reset();
         showToast(`Đã đồng bộ dữ liệu của @${username} từ Cloud!`);
@@ -1261,7 +1714,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Đã đăng xuất về chế độ Khách.");
   });
 
-  // NIÊM PHONG THƯ MỚI
+  // NIÊM PHONG THƯ CÁ NHÂN
   document.getElementById("future-mail-form").addEventListener("submit", e => {
     e.preventDefault();
     const subject = document.getElementById("fm-subject").value.trim();
@@ -1288,7 +1741,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSealedLettersList();
     document.getElementById("fm-subject").value = "";
     document.getElementById("fm-message").value = "";
-    showToast(`🔒 Đã niêm phong bức thư! Sẽ mở khóa vào ngày ${formatDisplayDate(validatedISO)}.`);
+    showToast(`🔒 Đã niêm phong bức thư cá nhân! Sẽ mở khóa vào ngày ${formatDisplayDate(validatedISO)}.`);
   });
 
   document.getElementById("theme-toggle-btn").addEventListener("click", () => {
@@ -1336,9 +1789,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("cancel-edit-btn").addEventListener("click", resetTaskForm);
 
-  document.querySelectorAll(".filter-btn").forEach(btn => {
+  document.querySelectorAll("#tab-tasks .filter-btn").forEach(btn => {
     btn.addEventListener("click", () => {
-      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll("#tab-tasks .filter-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       currentFilter = btn.dataset.filter;
       currentPage = 1;
