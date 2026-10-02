@@ -769,6 +769,9 @@ function renderQuickWeekdayPicker() {
   });
 }
 
+// Lưu trạng thái đóng/mở (minimize) của từng ngày trong trang Share
+let collapsedShareDays = new Set();
+
 // ---------- RENDER GIAO DIỆN TAB SHARE (THEO TỪNG NGÀY TRONG TUẦN & TẤT CẢ) ----------
 function createShareTaskRowElement(task, realIdx, counterEl) {
   const isChecked = selectedShareTaskIndices.has(realIdx);
@@ -807,6 +810,107 @@ function createShareTaskRowElement(task, realIdx, counterEl) {
   return row;
 }
 
+function createShareDayAccordionGroup(isoDate, titleLabel, dayTasks, showAddBtn, counterEl) {
+  // Mặc định thu gọn những ngày trống (0 nhiệm vụ) để giao diện gọn gàng
+  const isCollapsed = collapsedShareDays.has(isoDate);
+
+  const groupBox = document.createElement("div");
+  groupBox.className = `share-day-group ${isCollapsed ? "collapsed" : ""}`;
+
+  const header = document.createElement("div");
+  header.className = "share-day-group-header";
+
+  const leftDiv = document.createElement("div");
+  leftDiv.className = "share-day-left";
+
+  const minBtn = document.createElement("button");
+  minBtn.type = "button";
+  minBtn.className = "share-minimize-btn";
+  minBtn.title = isCollapsed ? "Mở rộng ngày này" : "Thu gọn ngày này";
+  minBtn.textContent = isCollapsed ? "+" : "−";
+
+  const titleSpan = document.createElement("span");
+  titleSpan.className = "share-day-title";
+  titleSpan.textContent = titleLabel;
+
+  leftDiv.appendChild(minBtn);
+  leftDiv.appendChild(titleSpan);
+
+  const actionsDiv = document.createElement("div");
+  actionsDiv.className = "share-day-actions";
+
+  if (dayTasks.length > 0) {
+    const allInDaySelected = dayTasks.every(t => selectedShareTaskIndices.has(tasks.indexOf(t)));
+    const selectDayBtn = document.createElement("button");
+    selectDayBtn.type = "button";
+    selectDayBtn.className = "action-chip";
+    selectDayBtn.textContent = allInDaySelected ? "Bỏ chọn ngày" : "Chọn ngày này";
+    selectDayBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      dayTasks.forEach(t => {
+        const idx = tasks.indexOf(t);
+        if (allInDaySelected) selectedShareTaskIndices.delete(idx);
+        else selectedShareTaskIndices.add(idx);
+      });
+      // Mở rộng ngày đó ra khi người dùng bấm chọn
+      collapsedShareDays.delete(isoDate);
+      renderShareTaskSelector();
+    });
+    actionsDiv.appendChild(selectDayBtn);
+  }
+
+  if (showAddBtn) {
+    const addForDayBtn = document.createElement("button");
+    addForDayBtn.type = "button";
+    addForDayBtn.className = "action-chip";
+    addForDayBtn.textContent = "+ Thêm task";
+    addForDayBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      switchTab("tasks");
+      resetTaskForm();
+      document.getElementById("task-date-input").value = isoDate;
+      document.getElementById("task-date-display").value = formatDisplayDate(isoDate);
+      renderQuickWeekdayPicker();
+      document.getElementById("task-name-input").focus();
+    });
+    actionsDiv.appendChild(addForDayBtn);
+  }
+
+  // Nhấn vào thanh tiêu đề hoặc nút [-] / [+] để đóng mở dropdown của ngày
+  const toggleCollapse = () => {
+    if (collapsedShareDays.has(isoDate)) {
+      collapsedShareDays.delete(isoDate);
+    } else {
+      collapsedShareDays.add(isoDate);
+    }
+    const nowCollapsed = collapsedShareDays.has(isoDate);
+    groupBox.classList.toggle("collapsed", nowCollapsed);
+    minBtn.textContent = nowCollapsed ? "+" : "−";
+    minBtn.title = nowCollapsed ? "Mở rộng ngày này" : "Thu gọn ngày này";
+  };
+
+  header.addEventListener("click", toggleCollapse);
+
+  header.appendChild(leftDiv);
+  header.appendChild(actionsDiv);
+  groupBox.appendChild(header);
+
+  const body = document.createElement("div");
+  body.className = "share-day-body";
+
+  if (dayTasks.length === 0) {
+    body.innerHTML = `<div class="share-empty-day"><span>Chưa có nhiệm vụ nào trong ngày ${formatDisplayDate(isoDate)}.</span></div>`;
+  } else {
+    dayTasks.forEach(task => {
+      const realIdx = tasks.indexOf(task);
+      body.appendChild(createShareTaskRowElement(task, realIdx, counterEl));
+    });
+  }
+
+  groupBox.appendChild(body);
+  return groupBox;
+}
+
 function renderShareTaskSelector() {
   const listEl = document.getElementById("share-task-selector-list");
   const counterEl = document.getElementById("share-selected-counter");
@@ -814,15 +918,14 @@ function renderShareTaskSelector() {
 
   listEl.innerHTML = "";
 
-  // Loại bỏ các index không còn tồn tại
+  // Xoá các index không hợp lệ
   Array.from(selectedShareTaskIndices).forEach(idx => {
     if (!tasks[idx]) selectedShareTaskIndices.delete(idx);
   });
 
-  const weekISOList = getUpcoming7DaysISOList();
-
   if (currentShareViewFilter === "week") {
-    // Hiển thị đầy đủ cả 7 ngày của Lịch tuần (từ hôm nay đến 6 ngày tới)
+    const weekISOList = getUpcoming7DaysISOList();
+
     weekISOList.forEach((isoDate, i) => {
       const dayName = getVietnameseDayName(isoDate);
       const displayDate = formatDisplayDate(isoDate);
@@ -830,68 +933,23 @@ function renderShareTaskSelector() {
         .filter(t => toInputDateStr(t.date) === isoDate)
         .sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
 
-      const groupBox = document.createElement("div");
-      groupBox.className = "share-day-group";
-
-      const header = document.createElement("div");
-      header.className = "share-day-group-header";
-
-      const titleSpan = document.createElement("span");
-      titleSpan.className = "share-day-title";
-      titleSpan.textContent = `${i === 0 ? "Hôm nay • " : ""}${dayName} — ${displayDate} (${tasksOfDay.length} nhiệm vụ)`;
-
-      const actionsDiv = document.createElement("div");
-      actionsDiv.className = "share-day-actions";
-
-      if (tasksOfDay.length > 0) {
-        const selectDayBtn = document.createElement("button");
-        selectDayBtn.type = "button";
-        selectDayBtn.className = "action-chip";
-        selectDayBtn.textContent = "Chọn ngày này";
-        selectDayBtn.addEventListener("click", () => {
-          tasksOfDay.forEach(t => selectedShareTaskIndices.add(tasks.indexOf(t)));
-          renderShareTaskSelector();
-        });
-        actionsDiv.appendChild(selectDayBtn);
+      // Tự động thu gọn những ngày 0 nhiệm vụ lần đầu để giao diện thoáng
+      if (tasksOfDay.length === 0 && !collapsedShareDays.has("__init_" + isoDate)) {
+        collapsedShareDays.add("__init_" + isoDate);
+        collapsedShareDays.add(isoDate);
+      } else if (tasksOfDay.length > 0 && collapsedShareDays.has("__init_" + isoDate)) {
+        collapsedShareDays.delete("__init_" + isoDate);
+        collapsedShareDays.delete(isoDate);
       }
 
-      const addForDayBtn = document.createElement("button");
-      addForDayBtn.type = "button";
-      addForDayBtn.className = "action-chip";
-      addForDayBtn.textContent = "+ Thêm task";
-      addForDayBtn.addEventListener("click", () => {
-        switchTab("tasks");
-        resetTaskForm();
-        document.getElementById("task-date-input").value = isoDate;
-        document.getElementById("task-date-display").value = displayDate;
-        renderQuickWeekdayPicker();
-        document.getElementById("task-name-input").focus();
-      });
-      actionsDiv.appendChild(addForDayBtn);
-
-      header.appendChild(titleSpan);
-      header.appendChild(actionsDiv);
-      groupBox.appendChild(header);
-
-      const body = document.createElement("div");
-      body.className = "share-day-body";
-
-      if (tasksOfDay.length === 0) {
-        body.innerHTML = `<div class="share-empty-day"><span>Chưa có nhiệm vụ nào trong ngày ${displayDate}.</span></div>`;
-      } else {
-        tasksOfDay.forEach(task => {
-          const realIdx = tasks.indexOf(task);
-          body.appendChild(createShareTaskRowElement(task, realIdx, counterEl));
-        });
-      }
-
-      groupBox.appendChild(body);
-      listEl.appendChild(groupBox);
+      const titleLabel = `${i === 0 ? "Hôm nay • " : ""}${dayName} — ${displayDate} (${tasksOfDay.length} nhiệm vụ)`;
+      const groupEl = createShareDayAccordionGroup(isoDate, titleLabel, tasksOfDay, true, counterEl);
+      listEl.appendChild(groupEl);
     });
   } else {
-    // Chế độ "Tất cả nhiệm vụ (Mọi ngày)" — Gom nhóm theo từng ngày
+    // Chế độ: Tất cả nhiệm vụ (Mọi ngày)
     if (tasks.length === 0) {
-      listEl.innerHTML = `<p class="text-muted">Chưa có nhiệm vụ nào. Hãy tạo nhiệm vụ mới ở mục Nhiệm vụ!</p>`;
+      listEl.innerHTML = `<p class="text-muted">Hiện chưa có nhiệm vụ nào trong lịch. Hãy nhấn "+ Thêm nhiệm vụ" ở góc trên để tạo nhiệm vụ mới!</p>`;
       counterEl.textContent = "Đã chọn: 0 nhiệm vụ";
       return;
     }
@@ -899,49 +957,23 @@ function renderShareTaskSelector() {
     const sorted = getSortedTasks();
     const groupedByDate = {};
     sorted.forEach(t => {
-      const iso = toInputDateStr(t.date);
+      const iso = toInputDateStr(t.date) || getTodayStr();
       if (!groupedByDate[iso]) groupedByDate[iso] = [];
       groupedByDate[iso].push(t);
     });
 
-    Object.keys(groupedByDate).forEach(isoDate => {
-      const dayTasks = groupedByDate[isoDate];
-      const dayName = getVietnameseDayName(isoDate);
-      const displayDate = formatDisplayDate(isoDate);
+    Object.keys(groupedByDate)
+      .sort((a, b) => a.localeCompare(b))
+      .forEach(isoDate => {
+        const dayTasks = groupedByDate[isoDate];
+        const dayName = getVietnameseDayName(isoDate);
+        const displayDate = formatDisplayDate(isoDate);
+        const titleLabel = `${dayName} — ${displayDate} (${dayTasks.length} nhiệm vụ)`;
 
-      const groupBox = document.createElement("div");
-      groupBox.className = "share-day-group";
-
-      const header = document.createElement("div");
-      header.className = "share-day-group-header";
-
-      const titleSpan = document.createElement("span");
-      titleSpan.className = "share-day-title";
-      titleSpan.textContent = `${dayName} — ${displayDate} (${dayTasks.length} nhiệm vụ)`;
-
-      const selectDayBtn = document.createElement("button");
-      selectDayBtn.type = "button";
-      selectDayBtn.className = "action-chip";
-      selectDayBtn.textContent = "Chọn ngày này";
-      selectDayBtn.addEventListener("click", () => {
-        dayTasks.forEach(t => selectedShareTaskIndices.add(tasks.indexOf(t)));
-        renderShareTaskSelector();
+        // Đảm bảo ở tab Tất cả nhiệm vụ luôn mở sẵn các ngày có nhiệm vụ
+        const groupEl = createShareDayAccordionGroup(isoDate, titleLabel, dayTasks, true, counterEl);
+        listEl.appendChild(groupEl);
       });
-
-      header.appendChild(titleSpan);
-      header.appendChild(selectDayBtn);
-      groupBox.appendChild(header);
-
-      const body = document.createElement("div");
-      body.className = "share-day-body";
-      dayTasks.forEach(task => {
-        const realIdx = tasks.indexOf(task);
-        body.appendChild(createShareTaskRowElement(task, realIdx, counterEl));
-      });
-
-      groupBox.appendChild(body);
-      listEl.appendChild(groupBox);
-    });
   }
 
   counterEl.textContent = `Đã chọn: ${selectedShareTaskIndices.size} nhiệm vụ`;
