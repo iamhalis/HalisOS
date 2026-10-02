@@ -65,7 +65,6 @@ function formatDateKey(dateObj) {
   return `${y}-${m}-${d}`;
 }
 
-// Chuyển đổi mọi định dạng sang DD-MM-YYYY (2 số ngày - 2 số tháng - 4 số năm) để hiển thị
 function formatDisplayDate(dateInput) {
   if (!dateInput) return "";
   if (dateInput instanceof Date) {
@@ -86,7 +85,6 @@ function formatDisplayDate(dateInput) {
   return str;
 }
 
-// Chuyển đổi từ DD-MM-YYYY hoặc YYYY-MM-DD sang chuẩn nội bộ YYYY-MM-DD
 function toInputDateStr(dateInput) {
   if (!dateInput) return "";
   const str = String(dateInput).trim();
@@ -101,7 +99,6 @@ function toInputDateStr(dateInput) {
   return str;
 }
 
-// Kiểm tra chuỗi ngày hợp lệ theo chuẩn DD-MM-YYYY
 function parseAndValidateDDMMYYYY(str) {
   const cleaned = String(str).trim().replace(/\//g, "-");
   const match = cleaned.match(/^(\d{2})-(\d{2})-(\d{4})$/);
@@ -119,6 +116,13 @@ function parseAndValidateDDMMYYYY(str) {
     return null;
   }
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function getDaysUntilDate(isoDateStr) {
+  const target = new Date(toInputDateStr(isoDateStr) + "T00:00:00");
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
 }
 
 function getTodayStr() {
@@ -270,7 +274,6 @@ function processAvatarFile(file) {
         canvas.height = size;
         const ctx = canvas.getContext("2d");
 
-        // Cắt vuông chính giữa ảnh (center crop)
         const minSide = Math.min(img.width, img.height);
         const sx = (img.width - minSide) / 2;
         const sy = (img.height - minSide) / 2;
@@ -318,10 +321,7 @@ function updateClockAndHeader() {
 }
 
 function calculateDaysLeft() {
-  const target = new Date(toInputDateStr(config.target_date) + "T00:00:00");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const diff = Math.floor((target - today) / (1000 * 60 * 60 * 24));
+  const diff = getDaysUntilDate(config.target_date);
   return diff >= 0 ? diff : 0;
 }
 
@@ -399,7 +399,6 @@ function renderAll() {
   document.getElementById("quick-aim-month").value = aimMonth;
   document.getElementById("setting-title").value = config.title;
 
-  // Hiển thị chuẩn DD-MM-YYYY cho trường Target Date trong Cài đặt & Dữ liệu
   const normalizedTargetISO = toInputDateStr(config.target_date) || "2027-06-01";
   document.getElementById("setting-target-date").value = normalizedTargetISO;
   document.getElementById("setting-target-date-display").value = formatDisplayDate(normalizedTargetISO);
@@ -540,7 +539,7 @@ function renderAnalyticsCharts() {
   document.getElementById("monthly-line-chart").innerHTML = createSVGLineChart(monthLabels, monthValues, "gradMonth");
 }
 
-// ---------- Render Hồ sơ, Avatar & Future Mail ----------
+// ---------- Render Hồ sơ, Avatar & Niêm phong thư ----------
 function renderProfileUI() {
   const sidebarAvatar = document.getElementById("sidebar-avatar");
   const sidebarUsername = document.getElementById("sidebar-username");
@@ -573,7 +572,7 @@ function renderProfileUI() {
       : `Chưa có email (${syncTag})`;
     document.getElementById("profile-edit-email").value = u.email || "";
 
-    renderFutureMailList();
+    renderSealedLettersList();
   } else {
     renderAvatarElement(sidebarAvatar, null, "G");
     renderAvatarElement(profileBigAvatar, null, "G");
@@ -587,73 +586,96 @@ function renderProfileUI() {
   }
 }
 
-function renderFutureMailList() {
+// Mở Modal Đọc thư niêm phong
+function openLetterModal(mail) {
+  document.getElementById("letter-modal-subject").textContent = mail.subject;
+  document.getElementById("letter-modal-author").textContent = currentUser ? `@${currentUser}` : "Bạn";
+  document.getElementById("letter-modal-created").textContent = formatDisplayDate(mail.createdAt || getTodayStr());
+  document.getElementById("letter-modal-target").textContent = formatDisplayDate(mail.targetDate);
+  document.getElementById("letter-modal-content").textContent = mail.message;
+  document.getElementById("letter-modal-overlay").classList.remove("hidden");
+}
+
+function closeLetterModal() {
+  document.getElementById("letter-modal-overlay").classList.add("hidden");
+}
+
+function renderSealedLettersList() {
   const listEl = document.getElementById("future-mail-list");
+  const badgeEl = document.getElementById("capsule-count-badge");
   listEl.innerHTML = "";
+  badgeEl.textContent = `${futureMails.length} bức thư`;
 
   if (futureMails.length === 0) {
-    listEl.innerHTML = `<p class="text-muted">Chưa có bức thư tương lai nào được tạo.</p>`;
+    listEl.innerHTML = `<p class="text-muted">Chưa có bức thư niêm phong nào. Hãy viết một bức thư cho tương lai!</p>`;
     return;
   }
 
   const todayStr = getTodayStr();
 
   futureMails.forEach((mail, idx) => {
-    const isUnlocked = todayStr >= toInputDateStr(mail.targetDate);
-    const displayTargetDate = formatDisplayDate(mail.targetDate);
-    const item = document.createElement("div");
-    item.className = "task-item";
+    const targetISO = toInputDateStr(mail.targetDate);
+    const isUnlocked = todayStr >= targetISO;
+    const daysLeft = getDaysUntilDate(targetISO);
+    const displayTargetDate = formatDisplayDate(targetISO);
+    const displayCreatedDate = formatDisplayDate(mail.createdAt || todayStr);
 
-    const left = document.createElement("div");
-    left.innerHTML = `
-      <div class="task-title">${isUnlocked ? "🔓" : "🔒"} ${mail.subject}</div>
-      <div class="task-meta">Ngày mở khóa: ${displayTargetDate} • Gửi tới: ${mail.email || "Lưu nội bộ"}</div>
+    const card = document.createElement("div");
+    card.className = `capsule-card ${isUnlocked ? "unlocked" : "locked"}`;
+
+    const statusHtml = isUnlocked
+      ? `<span class="capsule-badge unlocked">🔓 Đã đến hạn mở thư</span>`
+      : `<span class="capsule-badge locked">🔒 Còn ${daysLeft} ngày nữa (${displayTargetDate})</span>`;
+
+    const info = document.createElement("div");
+    info.className = "capsule-info";
+    info.innerHTML = `
+      <div class="capsule-icon-box">${isUnlocked ? "✉️" : "🔒"}</div>
+      <div class="capsule-text">
+        <div class="capsule-title">${mail.subject}</div>
+        <div class="capsule-meta-row">
+          ${statusHtml}
+          <span>• Niêm phong ngày: ${displayCreatedDate}</span>
+        </div>
+      </div>
     `;
 
     const actions = document.createElement("div");
-    actions.className = "task-actions";
+    actions.className = "capsule-actions";
 
-    const readBtn = document.createElement("button");
-    readBtn.className = "action-chip";
-    readBtn.textContent = isUnlocked ? "Đọc thư" : "Xem trước";
-    readBtn.addEventListener("click", () => {
-      if (!isUnlocked && !confirm(`Bức thư này hẹn mở vào ngày ${displayTargetDate}. Bạn vẫn muốn mở sớm chứ?`)) {
-        return;
-      }
-      alert(`✉️ TIÊU ĐỀ: ${mail.subject}\n📅 Ngày hẹn: ${displayTargetDate}\n\n${mail.message}`);
-    });
-
-    const sendMailClientBtn = document.createElement("button");
-    sendMailClientBtn.className = "action-chip";
-    sendMailClientBtn.textContent = "Mở Gmail";
-    sendMailClientBtn.addEventListener("click", () => {
-      const targetEmail = mail.email || (users[currentUser] && users[currentUser].email) || "";
-      if (!targetEmail) {
-        showToast("Bạn chưa nhập Email trong hồ sơ!", true);
-        return;
-      }
-      const subject = encodeURIComponent(`[Study OS - Thư tương lai ${displayTargetDate}] ${mail.subject}`);
-      const body = encodeURIComponent(`Ngày hẹn mở thư: ${displayTargetDate}\n\nNội dung:\n${mail.message}`);
-      window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(targetEmail)}&su=${subject}&body=${body}`, "_blank");
-    });
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    if (isUnlocked) {
+      openBtn.className = "btn-open-letter ready";
+      openBtn.textContent = "Mở thư ngay";
+      openBtn.addEventListener("click", () => openLetterModal(mail));
+    } else {
+      openBtn.className = "btn-open-letter sealed";
+      openBtn.textContent = `Mở ngày ${displayTargetDate}`;
+      openBtn.addEventListener("click", () => {
+        showToast(`Bức thư này đang bị khóa! Sẽ tự động mở vào ngày ${displayTargetDate} (còn ${daysLeft} ngày).`, true);
+      });
+    }
 
     const delBtn = document.createElement("button");
+    delBtn.type = "button";
     delBtn.className = "action-chip delete";
     delBtn.textContent = "Xoá";
     delBtn.addEventListener("click", () => {
-      futureMails.splice(idx, 1);
-      saveStorage();
-      renderFutureMailList();
-      showToast("Đã xoá bức thư.");
+      if (confirm(`Bạn có chắc muốn xoá bức thư "${mail.subject}"?`)) {
+        futureMails.splice(idx, 1);
+        saveStorage();
+        renderSealedLettersList();
+        showToast("Đã xoá bức thư niêm phong.");
+      }
     });
 
-    actions.appendChild(readBtn);
-    actions.appendChild(sendMailClientBtn);
+    actions.appendChild(openBtn);
     actions.appendChild(delBtn);
 
-    item.appendChild(left);
-    item.appendChild(actions);
-    listEl.appendChild(item);
+    card.appendChild(info);
+    card.appendChild(actions);
+    listEl.appendChild(card);
   });
 }
 
@@ -959,6 +981,43 @@ function downloadJSON(filename, dataObj) {
   URL.revokeObjectURL(url);
 }
 
+// Thiết lập đồng bộ giữa ô nhập DD-MM-YYYY và lịch ẩn
+function bindCustomDateInput(textInputId, hiddenDateId, triggerBtnId) {
+  const textEl = document.getElementById(textInputId);
+  const hiddenEl = document.getElementById(hiddenDateId);
+  const btnEl = document.getElementById(triggerBtnId);
+
+  btnEl.addEventListener("click", () => {
+    if (typeof hiddenEl.showPicker === "function") {
+      hiddenEl.showPicker();
+    } else {
+      hiddenEl.focus();
+      hiddenEl.click();
+    }
+  });
+
+  hiddenEl.addEventListener("change", () => {
+    if (hiddenEl.value) {
+      textEl.value = formatDisplayDate(hiddenEl.value);
+    }
+  });
+
+  textEl.addEventListener("input", e => {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+    if (digits.length >= 5) {
+      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2, 4)}-${digits.slice(4)}`;
+    } else if (digits.length >= 3) {
+      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2)}`;
+    } else {
+      e.target.value = digits;
+    }
+    const iso = parseAndValidateDDMMYYYY(e.target.value);
+    if (iso) {
+      hiddenEl.value = iso;
+    }
+  });
+}
+
 // ---------- Sự kiện DOM ----------
 document.addEventListener("DOMContentLoaded", () => {
   loadActiveUserData();
@@ -976,9 +1035,21 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  const nextYear = new Date();
-  nextYear.setFullYear(nextYear.getFullYear() + 1);
-  document.getElementById("fm-date").value = formatDateKey(nextYear);
+  // Mặc định ngày mở thư niêm phong là ngày mục tiêu hoặc 1 năm sau (chuẩn DD-MM-YYYY)
+  const defaultCapsuleISO = toInputDateStr(config.target_date) || "2027-06-21";
+  document.getElementById("fm-date").value = defaultCapsuleISO;
+  document.getElementById("fm-date-display").value = formatDisplayDate(defaultCapsuleISO);
+
+  // Gắn sự kiện cho 2 bộ chọn ngày chuẩn DD-MM-YYYY
+  bindCustomDateInput("setting-target-date-display", "setting-target-date", "setting-date-Trigger");
+  bindCustomDateInput("fm-date-display", "fm-date", "fm-date-trigger");
+
+  // Đóng Modal đọc thư
+  document.getElementById("close-letter-modal-btn").addEventListener("click", closeLetterModal);
+  document.getElementById("close-letter-footer-btn").addEventListener("click", closeLetterModal);
+  document.getElementById("letter-modal-overlay").addEventListener("click", e => {
+    if (e.target.id === "letter-modal-overlay") closeLetterModal();
+  });
 
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
@@ -1105,7 +1176,7 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(`Chào mừng trở lại, @${username}!`);
   });
 
-  // ĐỔI ẢNH ĐẠI DIỆN (AVATAR) — Chỉ cho tài khoản đã đăng ký
+  // ĐỔI ẢNH ĐẠI DIỆN (AVATAR)
   document.getElementById("avatar-file-input").addEventListener("change", async e => {
     if (!currentUser || !users[currentUser]) {
       showToast("Tài khoản khách không thể sử dụng tính năng đổi ảnh đại diện!", true);
@@ -1154,31 +1225,26 @@ document.addEventListener("DOMContentLoaded", () => {
     const newPasswordInput = document.getElementById("pwd-new").value;
     const confirmPasswordInput = document.getElementById("pwd-confirm").value;
 
-    // Bước 1: Kiểm tra bắt buộc không bỏ qua mật khẩu hiện tại
     if (!currentPasswordInput) {
       showToast("Vui lòng nhập mật khẩu hiện tại (mật khẩu cũ)!", true);
       return;
     }
 
-    // Kiểm tra mật khẩu cũ chính xác
     if (users[currentUser].password !== currentPasswordInput) {
       showToast("Mật khẩu hiện tại (mật khẩu cũ) không chính xác!", true);
       return;
     }
 
-    // Bước 2: Kiểm tra độ dài mật khẩu mới
     if (!newPasswordInput || newPasswordInput.length < 4) {
       showToast("Mật khẩu mới phải có ít nhất 4 ký tự!", true);
       return;
     }
 
-    // Bước 3: Kiểm tra mật khẩu mới và xác nhận mật khẩu mới khớp tuyệt đối
     if (newPasswordInput !== confirmPasswordInput) {
       showToast("Mật khẩu mới và xác nhận mật khẩu mới không khớp!", true);
       return;
     }
 
-    // Cập nhật mật khẩu mới vào tài khoản
     users[currentUser].password = newPasswordInput;
     saveUsersDB();
     await syncToCloud();
@@ -1195,32 +1261,34 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Đã đăng xuất về chế độ Khách.");
   });
 
-  // Tạo Thư gửi tương lai
+  // NIÊM PHONG THƯ MỚI
   document.getElementById("future-mail-form").addEventListener("submit", e => {
     e.preventDefault();
     const subject = document.getElementById("fm-subject").value.trim();
-    const targetDate = document.getElementById("fm-date").value;
+    const rawDateStr = document.getElementById("fm-date-display").value.trim();
+    const validatedISO = parseAndValidateDDMMYYYY(rawDateStr);
     const message = document.getElementById("fm-message").value.trim();
-    const userEmail = (currentUser && users[currentUser] && users[currentUser].email) || "";
 
-    if (!subject || !targetDate || !message) return;
+    if (!validatedISO) {
+      showToast("Ngày mở thư không hợp lệ! Vui lòng nhập đúng định dạng DD-MM-YYYY.", true);
+      document.getElementById("fm-date-display").focus();
+      return;
+    }
+
+    if (!subject || !message) return;
 
     futureMails.unshift({
       subject,
-      targetDate,
+      targetDate: validatedISO,
       message,
-      email: userEmail,
       createdAt: getTodayStr()
     });
 
     saveStorage();
-    renderFutureMailList();
+    renderSealedLettersList();
     document.getElementById("fm-subject").value = "";
     document.getElementById("fm-message").value = "";
-    const formattedDate = formatDisplayDate(targetDate);
-    showToast(userEmail
-      ? `Đã lên lịch thư tương lai (${formattedDate}) cho ${userEmail}!`
-      : `Đã niêm phong thư tương lai (${formattedDate})!`);
+    showToast(`🔒 Đã niêm phong bức thư! Sẽ mở khóa vào ngày ${formatDisplayDate(validatedISO)}.`);
   });
 
   document.getElementById("theme-toggle-btn").addEventListener("click", () => {
@@ -1344,56 +1412,20 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("focus-done-btn").addEventListener("click", () => stopFocusSession("done"));
   document.getElementById("focus-quit-btn").addEventListener("click", () => stopFocusSession("quit"));
 
-  // ---------- Xử lý chọn & hiển thị Target Date chuẩn DD-MM-YYYY trong Cài đặt ----------
-  const hiddenTargetPicker = document.getElementById("setting-target-date");
-  const displayTargetInput = document.getElementById("setting-target-date-display");
-  const calendarTriggerBtn = document.getElementById("setting-date-Trigger");
-
-  calendarTriggerBtn.addEventListener("click", () => {
-    if (typeof hiddenTargetPicker.showPicker === "function") {
-      hiddenTargetPicker.showPicker();
-    } else {
-      hiddenTargetPicker.focus();
-      hiddenTargetPicker.click();
-    }
-  });
-
-  hiddenTargetPicker.addEventListener("change", () => {
-    if (hiddenTargetPicker.value) {
-      displayTargetInput.value = formatDisplayDate(hiddenTargetPicker.value);
-    }
-  });
-
-  displayTargetInput.addEventListener("input", e => {
-    // Tự động thêm dấu gạch ngang khi người dùng gõ số
-    let digits = e.target.value.replace(/\D/g, "").slice(0, 8);
-    if (digits.length >= 5) {
-      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2, 4)}-${digits.slice(4)}`;
-    } else if (digits.length >= 3) {
-      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2)}`;
-    } else {
-      e.target.value = digits;
-    }
-    const iso = parseAndValidateDDMMYYYY(e.target.value);
-    if (iso) {
-      hiddenTargetPicker.value = iso;
-    }
-  });
-
   // Cài đặt chung (Lưu cấu hình & Ngày mục tiêu)
   document.getElementById("settings-form").addEventListener("submit", e => {
     e.preventDefault();
-    const rawTargetStr = displayTargetInput.value.trim();
+    const rawTargetStr = document.getElementById("setting-target-date-display").value.trim();
     const validatedISO = parseAndValidateDDMMYYYY(rawTargetStr);
 
     if (!validatedISO) {
       showToast("Ngày mục tiêu không hợp lệ! Vui lòng nhập đúng định dạng DD-MM-YYYY (VD: 01-06-2027).", true);
-      displayTargetInput.focus();
+      document.getElementById("setting-target-date-display").focus();
       return;
     }
 
     config.title = document.getElementById("setting-title").value.trim() || "Study OS";
-    config.target_date = validatedISO; // Lưu chuẩn YYYY-MM-DD bên dưới để không hỏng dữ liệu
+    config.target_date = validatedISO;
     config.aim_week = Math.max(1, parseInt(document.getElementById("setting-aim-week").value, 10) || 20);
     config.aim_month = Math.max(1, parseInt(document.getElementById("setting-aim-month").value, 10) || 80);
     saveStorage();

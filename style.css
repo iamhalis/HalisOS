@@ -10,7 +10,9 @@
   --accent-hover: #4f46e5;
   --accent-soft: rgba(99, 102, 241, 0.15);
   --success: #10b981;
+  --success-soft: rgba(16, 185, 129, 0.15);
   --warning: #f59e0b;
+  --warning-soft: rgba(245, 158, 11, 0.15);
   --danger: #ef4444;
   --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
 }
@@ -27,7 +29,9 @@
   --accent-hover: #4338ca;
   --accent-soft: rgba(79, 70, 229, 0.1);
   --success: #059669;
+  --success-soft: rgba(5, 150, 105, 0.12);
   --warning: #d97706;
+  --warning-soft: rgba(217, 119, 6, 0.12);
   --danger: #dc2626;
   --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
@@ -294,7 +298,7 @@ body {
   font-weight: 500;
 }
 
-/* Quote Banner — Đã sửa triệt để lỗi thụt nội dung, căn giữa cân đối */
+/* Quote Banner — Căn giữa cân đối, không thụt lùi */
 .quote-banner {
   position: relative;
   background: linear-gradient(135deg, var(--bg-surface), var(--bg-elevated));
@@ -434,7 +438,7 @@ body {
 /* Cards & Columns */
 .dashboard-columns {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: 1.3fr 1.1fr;
   gap: 24px;
 }
 
@@ -605,11 +609,9 @@ body {
   color: #fff;
 }
 
-.avatar-upload-btn input {
-  display: none;
-}
+.avatar-upload-btn input { display: none; }
 
-/* Custom Date Picker DD-MM-YYYY trong Cài đặt */
+/* Custom Date Picker DD-MM-YYYY */
 .custom-date-picker {
   position: relative;
   display: flex;
@@ -637,6 +639,296 @@ body {
   height: 0;
   right: 0;
   bottom: 0;
+}
+
+/* Danh sách Thư niêm phong (Time Capsule Cards) */
+.capsule-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.capsule-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.capsule-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+}
+
+.capsule-card.unlocked {
+  border-color: var(--success);
+  background: linear-gradient(135deg, var(--bg-elevated), var(--success-soft));
+}
+
+.capsule-card.locked {
+  border-left: 4px solid var(--warning);
+}
+
+.capsule-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.capsule-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+}
+
+.capsule-text {
+  min-width: 0;
+}
+
+.capsule-title {
+  font-weight: 700;
+  font-size: 0.96rem;
+  color: var(--text-main);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.capsule-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.capsule-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.capsule-badge.locked {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.capsule-badge.unlocked {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.capsule-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-open-letter {
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+
+.btn-open-letter.ready {
+  background: var(--success);
+  color: #fff;
+  box-shadow: 0 4px 12px var(--success-soft);
+}
+
+.btn-open-letter.ready:hover {
+  filter: brightness(1.08);
+  transform: translateY(-1px);
+}
+
+.btn-open-letter.sealed {
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  cursor: not-allowed;
+}
+
+/* MODAL ĐỌC THƯ NIÊM PHONG (HIỆN ĐẠI & RÕ RÀNG) */
+.letter-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 8, 17, 0.78);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 10000;
+  animation: fadeIn 0.2s ease;
+}
+
+.letter-modal-card {
+  width: 100%;
+  max-width: 660px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-top: 4px solid var(--accent);
+  border-radius: 20px;
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.letter-modal-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 26px;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.letter-seal-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--success);
+  background: var(--success-soft);
+  padding: 6px 12px;
+  border-radius: 99px;
+}
+
+.seal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.letter-close-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.letter-close-icon:hover {
+  color: var(--text-main);
+  border-color: var(--danger);
+}
+
+.letter-modal-header {
+  padding: 24px 28px 18px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.letter-modal-header h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin-bottom: 16px;
+  line-height: 1.35;
+}
+
+.letter-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.letter-meta-box {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.letter-meta-box.highlight {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.meta-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.meta-val {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+}
+
+.letter-modal-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.letter-paper {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 22px 24px;
+  font-size: 1rem;
+  line-height: 1.75;
+  color: var(--text-main);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.letter-modal-footer {
+  padding: 16px 28px;
+  background: var(--bg-elevated);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.letter-footer-note {
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 /* Forms & Buttons */
@@ -1076,4 +1368,5 @@ input:focus, select:focus, textarea:focus {
   .dashboard-columns { grid-template-columns: 1fr; }
   .task-form-grid { grid-template-columns: 1fr; }
   .quote-banner { padding: 14px 48px 14px 18px; }
+  .letter-meta-grid { grid-template-columns: 1fr; }
 }
