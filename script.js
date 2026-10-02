@@ -769,8 +769,8 @@ function renderQuickWeekdayPicker() {
   });
 }
 
-// Lưu trạng thái đóng/mở (minimize) của từng ngày trong trang Share
-let collapsedShareDays = new Set();
+// Lưu trạng thái các ngày được người dùng chủ động mở ra (Mặc định ban đầu thu gọn 100%)
+let expandedShareDays = new Set();
 
 // ---------- RENDER GIAO DIỆN TAB SHARE (THEO TỪNG NGÀY TRONG TUẦN & TẤT CẢ) ----------
 function createShareTaskRowElement(task, realIdx, counterEl) {
@@ -811,8 +811,8 @@ function createShareTaskRowElement(task, realIdx, counterEl) {
 }
 
 function createShareDayAccordionGroup(isoDate, titleLabel, dayTasks, showAddBtn, counterEl) {
-  // Mặc định thu gọn những ngày trống (0 nhiệm vụ) để giao diện gọn gàng
-  const isCollapsed = collapsedShareDays.has(isoDate);
+  // Mặc định thu gọn lúc đầu (chỉ mở khi nằm trong expandedShareDays)
+  const isCollapsed = !expandedShareDays.has(isoDate);
 
   const groupBox = document.createElement("div");
   groupBox.className = `share-day-group ${isCollapsed ? "collapsed" : ""}`;
@@ -852,8 +852,6 @@ function createShareDayAccordionGroup(isoDate, titleLabel, dayTasks, showAddBtn,
         if (allInDaySelected) selectedShareTaskIndices.delete(idx);
         else selectedShareTaskIndices.add(idx);
       });
-      // Mở rộng ngày đó ra khi người dùng bấm chọn
-      collapsedShareDays.delete(isoDate);
       renderShareTaskSelector();
     });
     actionsDiv.appendChild(selectDayBtn);
@@ -876,14 +874,14 @@ function createShareDayAccordionGroup(isoDate, titleLabel, dayTasks, showAddBtn,
     actionsDiv.appendChild(addForDayBtn);
   }
 
-  // Nhấn vào thanh tiêu đề hoặc nút [-] / [+] để đóng mở dropdown của ngày
+  // Nhấn vào thanh tiêu đề hoặc nút [+] / [-] để đóng/mở ngày đó
   const toggleCollapse = () => {
-    if (collapsedShareDays.has(isoDate)) {
-      collapsedShareDays.delete(isoDate);
+    if (expandedShareDays.has(isoDate)) {
+      expandedShareDays.delete(isoDate);
     } else {
-      collapsedShareDays.add(isoDate);
+      expandedShareDays.add(isoDate);
     }
-    const nowCollapsed = collapsedShareDays.has(isoDate);
+    const nowCollapsed = !expandedShareDays.has(isoDate);
     groupBox.classList.toggle("collapsed", nowCollapsed);
     minBtn.textContent = nowCollapsed ? "+" : "−";
     minBtn.title = nowCollapsed ? "Mở rộng ngày này" : "Thu gọn ngày này";
@@ -933,15 +931,6 @@ function renderShareTaskSelector() {
         .filter(t => toInputDateStr(t.date) === isoDate)
         .sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
 
-      // Tự động thu gọn những ngày 0 nhiệm vụ lần đầu để giao diện thoáng
-      if (tasksOfDay.length === 0 && !collapsedShareDays.has("__init_" + isoDate)) {
-        collapsedShareDays.add("__init_" + isoDate);
-        collapsedShareDays.add(isoDate);
-      } else if (tasksOfDay.length > 0 && collapsedShareDays.has("__init_" + isoDate)) {
-        collapsedShareDays.delete("__init_" + isoDate);
-        collapsedShareDays.delete(isoDate);
-      }
-
       const titleLabel = `${i === 0 ? "Hôm nay • " : ""}${dayName} — ${displayDate} (${tasksOfDay.length} nhiệm vụ)`;
       const groupEl = createShareDayAccordionGroup(isoDate, titleLabel, tasksOfDay, true, counterEl);
       listEl.appendChild(groupEl);
@@ -970,7 +959,6 @@ function renderShareTaskSelector() {
         const displayDate = formatDisplayDate(isoDate);
         const titleLabel = `${dayName} — ${displayDate} (${dayTasks.length} nhiệm vụ)`;
 
-        // Đảm bảo ở tab Tất cả nhiệm vụ luôn mở sẵn các ngày có nhiệm vụ
         const groupEl = createShareDayAccordionGroup(isoDate, titleLabel, dayTasks, true, counterEl);
         listEl.appendChild(groupEl);
       });
