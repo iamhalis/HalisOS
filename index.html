@@ -17,7 +17,7 @@
         <div class="brand-logo">S</div>
         <div class="brand-info">
           <h1 id="app-title">Study OS</h1>
-          <span class="version-badge">v7.01 Web</span>
+          <span class="version-badge">v7.00 Web</span>
         </div>
       </div>
 
@@ -56,7 +56,6 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           <span>Future Messages</span>
         </button>
-        <!-- OPTION MỚI: SHARE -->
         <button class="nav-item" data-tab="share">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
           <span>Share</span>
@@ -193,8 +192,20 @@
               <input type="text" id="task-name-input" placeholder="Nhập nội dung công việc hoặc bài học..." required />
             </div>
             <div class="form-group">
-              <label for="task-date-input">Ngày thực hiện</label>
-              <input type="date" id="task-date-input" required />
+              <label for="task-date-display">Ngày thực hiện (DD-MM-YYYY)</label>
+              <div class="custom-date-picker">
+                <input
+                  type="text"
+                  id="task-date-display"
+                  placeholder="DD-MM-YYYY"
+                  maxlength="10"
+                  required
+                />
+                <button type="button" class="btn-icon calendar-trigger-btn" id="task-date-trigger" title="Chọn ngày từ lịch">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                </button>
+                <input type="date" id="task-date-input" class="sr-only-date-picker" tabindex="-1" />
+              </div>
             </div>
             <div class="form-group">
               <label for="task-time-input">Thời gian</label>
@@ -205,6 +216,8 @@
               <button type="button" class="btn btn-ghost hidden" id="cancel-edit-btn">Huỷ</button>
             </div>
           </form>
+          <!-- Phím tắt chọn nhanh các ngày trong tuần khi tạo task -->
+          <div class="quick-weekday-bar" id="quick-weekday-picker"></div>
         </div>
 
         <div class="card">
@@ -231,11 +244,14 @@
 
       <!-- TAB 3: LỊCH TUẦN -->
       <section class="tab-pane" id="tab-calendar">
-        <div class="section-header">
+        <div class="fm-top-header">
           <div>
             <h3>Lịch trình 7 ngày tới</h3>
             <p class="text-muted">Tự động sắp xếp công việc theo khung giờ mỗi ngày</p>
           </div>
+          <button type="button" class="btn btn-primary" id="share-entire-week-from-cal-btn">
+            🔗 Chia sẻ lịch tuần này
+          </button>
         </div>
         <div id="weekly-calendar-grid" class="calendar-grid"></div>
       </section>
@@ -450,8 +466,8 @@
       <section class="tab-pane" id="tab-share">
         <div class="fm-top-header">
           <div>
-            <h3>🔗 Share Nhiệm vụ & Lịch học</h3>
-            <p class="text-muted">Chọn các nhiệm vụ (Tên — Ngày — Thời gian) để tạo mã chia sẻ hoặc nhập mã từ bạn bè vào lịch</p>
+            <h3>🔗 Share Nhiệm vụ & Lịch tuần</h3>
+            <p class="text-muted">Chọn nhiệm vụ theo từng ngày trong tuần hoặc toàn bộ lịch để tạo mã chia sẻ</p>
           </div>
           <div class="fm-mode-switcher">
             <button type="button" class="share-mode-btn active" data-sharemode="export">
@@ -466,15 +482,26 @@
         <!-- TAB CON 1: CHIA SẺ NHIỆM VỤ -->
         <div id="share-pane-export" class="dashboard-columns">
           <div class="card">
-            <div class="card-header">
+            <div class="card-header share-header-wrap">
               <div>
                 <h3>Chọn nhiệm vụ để chia sẻ</h3>
-                <p class="text-muted">Có thể chọn một hoặc nhiều nhiệm vụ ở các ngày khác nhau</p>
+                <p class="text-muted">Hiển thị đầy đủ 7 ngày trong tuần và tất cả các ngày khác</p>
               </div>
               <div class="share-select-actions">
+                <button type="button" class="action-chip" id="share-select-week-btn">Chọn nguyên tuần</button>
                 <button type="button" class="action-chip" id="share-select-all-btn">Chọn tất cả</button>
                 <button type="button" class="action-chip" id="share-deselect-all-btn">Bỏ chọn</button>
               </div>
+            </div>
+
+            <!-- Bộ lọc chế độ xem trong Share: Nguyên tuần (7 ngày) vs Tất cả các ngày -->
+            <div class="filter-tabs mb-16">
+              <button type="button" class="filter-btn active" data-sharefilter="week">
+                📅 Lịch nguyên tuần (7 ngày tới)
+              </button>
+              <button type="button" class="filter-btn" data-sharefilter="all">
+                📋 Tất cả nhiệm vụ (Mọi ngày)
+              </button>
             </div>
 
             <div id="share-task-selector-list" class="share-task-list"></div>

@@ -36,7 +36,7 @@ const DEFAULT_CONFIG = {
 
 const ITEMS_PER_PAGE = 6;
 const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
-const SHARE_ALPHABET = "0123456789ABCDEFGHJKLMNPQRSTVWXYZ"; // 32 ký tự chuẩn tạo mã XXXX-XXXX
+const SHARE_ALPHABET = "0123456789ABCDEFGHJKLMNPQRSTVWXYZ";
 
 // ---------- Quản lý Tài khoản & Lưu trữ ----------
 let users = loadJSON("studyos_users", {});
@@ -44,17 +44,18 @@ let currentUser = localStorage.getItem("studyos_current_user") || null;
 
 let config = { ...DEFAULT_CONFIG };
 let tasks = [];
-let futureMails = []; // Thư niêm phong cá nhân
-let sharedLetters = loadJSON("studyos_shared_letters", []); // Thư gửi giữa các người dùng
-let shareCodeRegistry = loadJSON("studyos_share_codes", {}); // Lưu cache mã ngắn gọn
+let futureMails = [];
+let sharedLetters = loadJSON("studyos_shared_letters", []);
+let shareCodeRegistry = loadJSON("studyos_share_codes", {});
 
 let currentFilter = "all";
 let searchQuery = "";
 let currentPage = 1;
-let activeSocialBox = "inbox"; // "inbox" | "sent"
+let activeSocialBox = "inbox";
 
 // Trạng thái cho tính năng Share Nhiệm vụ
 let selectedShareTaskIndices = new Set();
+let currentShareViewFilter = "week"; // "week" (7 ngày tới) | "all" (tất cả mọi ngày)
 let currentGeneratedShareCode = "";
 let pendingImportTasks = [];
 
@@ -152,6 +153,24 @@ function getCurrentTimeStr() {
   return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
 }
 
+function getVietnameseDayName(dateStrOrObj) {
+  const d = dateStrOrObj instanceof Date ? dateStrOrObj : new Date(toInputDateStr(dateStrOrObj) + "T00:00:00");
+  const names = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+  return isNaN(d) ? "" : names[d.getDay()];
+}
+
+// Lấy danh sách 7 ngày của Lịch tuần (từ hôm nay đến 6 ngày tới)
+function getUpcoming7DaysISOList() {
+  const today = new Date();
+  const list = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(today);
+    d.setDate(today.getDate() + i);
+    list.push(formatDateKey(d));
+  }
+  return list;
+}
+
 // =========================================================================
 // ENCODE / DECODE MÃ CHIA SẺ NHIỆM VỤ (CHỈ CHỨA NAME, DATE, TIME)
 // =========================================================================
@@ -199,7 +218,6 @@ function decodeShareCodeToBytes(codeStr) {
   return new Uint8Array(bytes);
 }
 
-// Tạo mã định danh ngắn 12 ký tự (VD: AB7K-X92P-Q41M) từ dữ liệu JSON
 function computeShortHashCode(jsonString) {
   let h1 = 0x811c9dc5;
   let h2 = 0x01000193;
@@ -228,7 +246,6 @@ function computeShortHashCode(jsonString) {
   return `${pick4(h1)}-${pick4(h2)}-${pick4(h3)}`;
 }
 
-// Kiểm tra tính hợp lệ nghiêm ngặt của mảng nhiệm vụ được giải mã (Đúng 3 trường: name, date, time)
 function validateDecodedSharePayload(parsedArray) {
   if (!Array.isArray(parsedArray) || parsedArray.length === 0) {
     return { valid: false, error: "Dữ liệu nhiệm vụ trong mã trống hoặc không đúng cấu trúc!" };
@@ -243,7 +260,6 @@ function validateDecodedSharePayload(parsedArray) {
     }
 
     const keys = Object.keys(item);
-    // Chỉ cho phép đúng 3 thuộc tính name, date, time
     if (
       keys.length !== 3 ||
       !keys.includes("name") ||
@@ -264,7 +280,6 @@ function validateDecodedSharePayload(parsedArray) {
       return { valid: false, error: `Tên nhiệm vụ thứ ${i + 1} không được để trống!` };
     }
 
-    // Hỗ trợ chuẩn DD-MM-YYYY (hoặc chuyển từ YYYY-MM-DD sang DD-MM-YYYY an toàn)
     const displayDate = formatDisplayDate(rawDate);
     const isoDate = parseAndValidateDDMMYYYY(displayDate);
     if (!isoDate) {
@@ -291,9 +306,7 @@ function validateDecodedSharePayload(parsedArray) {
   return { valid: true, data: sanitizedTasks };
 }
 
-// Serialize + Encode danh sách nhiệm vụ đã chọn
 async function serializeAndCreateShareCode(selectedTaskObjects) {
-  // Đảm bảo chỉ lấy đúng 3 trường: name, date (DD-MM-YYYY), time
   const cleanPayload = selectedTaskObjects.map(t => ({
     name: String(t.name).trim(),
     date: formatDisplayDate(t.date),
@@ -305,7 +318,6 @@ async function serializeAndCreateShareCode(selectedTaskObjects) {
   const selfContainedCode = encodeBytesToShareCode(utf8Bytes);
   const shortCode = computeShortHashCode(jsonStr);
 
-  // Lưu cả mã ngắn gọn vào localStorage và Firebase Cloud để dễ chia sẻ kiểu AB7K-X92P-Q41M
   shareCodeRegistry[shortCode] = cleanPayload;
   localStorage.setItem("studyos_share_codes", JSON.stringify(shareCodeRegistry));
 
@@ -318,26 +330,23 @@ async function serializeAndCreateShareCode(selectedTaskObjects) {
       });
       return { code: shortCode, payload: cleanPayload };
     } catch {
-      // Nếu không có mạng, trả về mã tự giải mã đầy đủ
+      // Fallback sang mã tự giải mã đầy đủ
     }
   }
 
   return { code: selfContainedCode, payload: cleanPayload };
 }
 
-// Decode + Parse mã chia sẻ do người dùng nhập vào
 async function decodeAndParseShareCode(rawInputCode) {
   const trimmed = String(rawInputCode || "").trim().toUpperCase();
   if (!trimmed) {
     return { valid: false, error: "Mã chia sẻ không được để trống!" };
   }
 
-  // Kiểm tra định dạng ký tự hợp lệ (Chỉ gồm chữ cái, số và dấu gạch ngang)
   if (!/^[A-Z0-9-]+$/.test(trimmed)) {
     return { valid: false, error: "Mã sai định dạng! Chỉ chấp nhận chữ cái, số và dấu gạch ngang (VD: AB7K-X92P-Q41M)." };
   }
 
-  // 1. Kiểm tra nếu là mã ngắn 3 cụm (XXXX-XXXX-XXXX) trong Registry hoặc trên Cloud
   if (/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(trimmed)) {
     if (shareCodeRegistry[trimmed]) {
       return validateDecodedSharePayload(shareCodeRegistry[trimmed]);
@@ -354,12 +363,11 @@ async function decodeAndParseShareCode(rawInputCode) {
           }
         }
       } catch {
-        // Tiếp tục thử giải mã trực tiếp bên dưới
+        // Thử giải mã trực tiếp bên dưới
       }
     }
   }
 
-  // 2. Giải mã trực tiếp từ chuỗi Base32 tự thân (Self-contained code)
   const decodedBytes = decodeShareCodeToBytes(trimmed);
   if (!decodedBytes || decodedBytes.length === 0) {
     return { valid: false, error: "Mã không hợp lệ hoặc không thể giải mã!" };
@@ -553,7 +561,16 @@ function migrateTasks() {
   const today = getTodayStr();
   let migrated = false;
   tasks.forEach(t => {
-    if (!t.date) { t.date = today; migrated = true; }
+    if (!t.date) {
+      t.date = today;
+      migrated = true;
+    } else {
+      const normalizedISO = toInputDateStr(t.date);
+      if (normalizedISO !== t.date) {
+        t.date = normalizedISO;
+        migrated = true;
+      }
+    }
     if (!t.time) { t.time = "00:00"; migrated = true; }
     if (typeof t.done !== "boolean") { t.done = Boolean(t.done); migrated = true; }
   });
@@ -715,6 +732,7 @@ function renderAll() {
   document.getElementById("setting-aim-week").value = aimWeek;
   document.getElementById("setting-aim-month").value = aimMonth;
 
+  renderQuickWeekdayPicker();
   renderProfileUI();
   renderSealedLettersList();
   renderSocialLettersList();
@@ -726,7 +744,69 @@ function renderAll() {
   renderShareTaskSelector();
 }
 
-// ---------- RENDER GIAO DIỆN TAB SHARE ----------
+// ---------- Thanh chọn nhanh các ngày trong tuần khi thêm Task ----------
+function renderQuickWeekdayPicker() {
+  const bar = document.getElementById("quick-weekday-picker");
+  if (!bar) return;
+  bar.innerHTML = `<span class="quick-weekday-label">Chọn nhanh ngày trong tuần:</span>`;
+
+  const weekISOList = getUpcoming7DaysISOList();
+  const currentSelectedISO = document.getElementById("task-date-input").value || getTodayStr();
+
+  weekISOList.forEach((iso, idx) => {
+    const dayName = getVietnameseDayName(iso);
+    const shortDisplay = formatDisplayDate(iso).slice(0, 5); // DD-MM
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = `weekday-chip ${currentSelectedISO === iso ? "active" : ""}`;
+    btn.textContent = idx === 0 ? `Hôm nay (${shortDisplay})` : `${dayName} (${shortDisplay})`;
+    btn.addEventListener("click", () => {
+      document.getElementById("task-date-input").value = iso;
+      document.getElementById("task-date-display").value = formatDisplayDate(iso);
+      renderQuickWeekdayPicker();
+    });
+    bar.appendChild(btn);
+  });
+}
+
+// ---------- RENDER GIAO DIỆN TAB SHARE (THEO TỪNG NGÀY TRONG TUẦN & TẤT CẢ) ----------
+function createShareTaskRowElement(task, realIdx, counterEl) {
+  const isChecked = selectedShareTaskIndices.has(realIdx);
+  const displayDate = formatDisplayDate(task.date);
+  const displayTime = task.time || "00:00";
+
+  const row = document.createElement("label");
+  row.className = `share-task-row ${isChecked ? "selected" : ""}`;
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.checked = isChecked;
+  checkbox.addEventListener("change", () => {
+    if (checkbox.checked) {
+      selectedShareTaskIndices.add(realIdx);
+      row.classList.add("selected");
+    } else {
+      selectedShareTaskIndices.delete(realIdx);
+      row.classList.remove("selected");
+    }
+    counterEl.textContent = `Đã chọn: ${selectedShareTaskIndices.size} nhiệm vụ`;
+  });
+
+  const textLine = document.createElement("div");
+  textLine.className = "share-task-line";
+  textLine.innerHTML = `
+    <span>${task.name}</span>
+    <span class="share-task-sep">—</span>
+    <span class="share-task-datetime">${displayDate}</span>
+    <span class="share-task-sep">—</span>
+    <span class="share-task-datetime">${displayTime}</span>
+  `;
+
+  row.appendChild(checkbox);
+  row.appendChild(textLine);
+  return row;
+}
+
 function renderShareTaskSelector() {
   const listEl = document.getElementById("share-task-selector-list");
   const counterEl = document.getElementById("share-selected-counter");
@@ -734,55 +814,135 @@ function renderShareTaskSelector() {
 
   listEl.innerHTML = "";
 
-  // Loại bỏ các index không còn tồn tại nếu người dùng vừa xoá task
+  // Loại bỏ các index không còn tồn tại
   Array.from(selectedShareTaskIndices).forEach(idx => {
     if (!tasks[idx]) selectedShareTaskIndices.delete(idx);
   });
 
-  if (tasks.length === 0) {
-    listEl.innerHTML = `<p class="text-muted">Chưa có nhiệm vụ nào để chia sẻ. Hãy tạo nhiệm vụ mới ở mục Nhiệm vụ!</p>`;
-    counterEl.textContent = "Đã chọn: 0 nhiệm vụ";
-    return;
-  }
+  const weekISOList = getUpcoming7DaysISOList();
 
-  const sorted = getSortedTasks();
-  sorted.forEach(task => {
-    const realIdx = tasks.indexOf(task);
-    const isChecked = selectedShareTaskIndices.has(realIdx);
-    const displayDate = formatDisplayDate(task.date);
-    const displayTime = task.time || "00:00";
+  if (currentShareViewFilter === "week") {
+    // Hiển thị đầy đủ cả 7 ngày của Lịch tuần (từ hôm nay đến 6 ngày tới)
+    weekISOList.forEach((isoDate, i) => {
+      const dayName = getVietnameseDayName(isoDate);
+      const displayDate = formatDisplayDate(isoDate);
+      const tasksOfDay = tasks
+        .filter(t => toInputDateStr(t.date) === isoDate)
+        .sort((a, b) => (a.time || "00:00").localeCompare(b.time || "00:00"));
 
-    const row = document.createElement("label");
-    row.className = `share-task-row ${isChecked ? "selected" : ""}`;
+      const groupBox = document.createElement("div");
+      groupBox.className = "share-day-group";
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = isChecked;
-    checkbox.addEventListener("change", () => {
-      if (checkbox.checked) {
-        selectedShareTaskIndices.add(realIdx);
-        row.classList.add("selected");
-      } else {
-        selectedShareTaskIndices.delete(realIdx);
-        row.classList.remove("selected");
+      const header = document.createElement("div");
+      header.className = "share-day-group-header";
+
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "share-day-title";
+      titleSpan.textContent = `${i === 0 ? "Hôm nay • " : ""}${dayName} — ${displayDate} (${tasksOfDay.length} nhiệm vụ)`;
+
+      const actionsDiv = document.createElement("div");
+      actionsDiv.className = "share-day-actions";
+
+      if (tasksOfDay.length > 0) {
+        const selectDayBtn = document.createElement("button");
+        selectDayBtn.type = "button";
+        selectDayBtn.className = "action-chip";
+        selectDayBtn.textContent = "Chọn ngày này";
+        selectDayBtn.addEventListener("click", () => {
+          tasksOfDay.forEach(t => selectedShareTaskIndices.add(tasks.indexOf(t)));
+          renderShareTaskSelector();
+        });
+        actionsDiv.appendChild(selectDayBtn);
       }
-      counterEl.textContent = `Đã chọn: ${selectedShareTaskIndices.size} nhiệm vụ`;
+
+      const addForDayBtn = document.createElement("button");
+      addForDayBtn.type = "button";
+      addForDayBtn.className = "action-chip";
+      addForDayBtn.textContent = "+ Thêm task";
+      addForDayBtn.addEventListener("click", () => {
+        switchTab("tasks");
+        resetTaskForm();
+        document.getElementById("task-date-input").value = isoDate;
+        document.getElementById("task-date-display").value = displayDate;
+        renderQuickWeekdayPicker();
+        document.getElementById("task-name-input").focus();
+      });
+      actionsDiv.appendChild(addForDayBtn);
+
+      header.appendChild(titleSpan);
+      header.appendChild(actionsDiv);
+      groupBox.appendChild(header);
+
+      const body = document.createElement("div");
+      body.className = "share-day-body";
+
+      if (tasksOfDay.length === 0) {
+        body.innerHTML = `<div class="share-empty-day"><span>Chưa có nhiệm vụ nào trong ngày ${displayDate}.</span></div>`;
+      } else {
+        tasksOfDay.forEach(task => {
+          const realIdx = tasks.indexOf(task);
+          body.appendChild(createShareTaskRowElement(task, realIdx, counterEl));
+        });
+      }
+
+      groupBox.appendChild(body);
+      listEl.appendChild(groupBox);
+    });
+  } else {
+    // Chế độ "Tất cả nhiệm vụ (Mọi ngày)" — Gom nhóm theo từng ngày
+    if (tasks.length === 0) {
+      listEl.innerHTML = `<p class="text-muted">Chưa có nhiệm vụ nào. Hãy tạo nhiệm vụ mới ở mục Nhiệm vụ!</p>`;
+      counterEl.textContent = "Đã chọn: 0 nhiệm vụ";
+      return;
+    }
+
+    const sorted = getSortedTasks();
+    const groupedByDate = {};
+    sorted.forEach(t => {
+      const iso = toInputDateStr(t.date);
+      if (!groupedByDate[iso]) groupedByDate[iso] = [];
+      groupedByDate[iso].push(t);
     });
 
-    const textLine = document.createElement("div");
-    textLine.className = "share-task-line";
-    textLine.innerHTML = `
-      <span>${task.name}</span>
-      <span class="share-task-sep">—</span>
-      <span class="share-task-datetime">${displayDate}</span>
-      <span class="share-task-sep">—</span>
-      <span class="share-task-datetime">${displayTime}</span>
-    `;
+    Object.keys(groupedByDate).forEach(isoDate => {
+      const dayTasks = groupedByDate[isoDate];
+      const dayName = getVietnameseDayName(isoDate);
+      const displayDate = formatDisplayDate(isoDate);
 
-    row.appendChild(checkbox);
-    row.appendChild(textLine);
-    listEl.appendChild(row);
-  });
+      const groupBox = document.createElement("div");
+      groupBox.className = "share-day-group";
+
+      const header = document.createElement("div");
+      header.className = "share-day-group-header";
+
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "share-day-title";
+      titleSpan.textContent = `${dayName} — ${displayDate} (${dayTasks.length} nhiệm vụ)`;
+
+      const selectDayBtn = document.createElement("button");
+      selectDayBtn.type = "button";
+      selectDayBtn.className = "action-chip";
+      selectDayBtn.textContent = "Chọn ngày này";
+      selectDayBtn.addEventListener("click", () => {
+        dayTasks.forEach(t => selectedShareTaskIndices.add(tasks.indexOf(t)));
+        renderShareTaskSelector();
+      });
+
+      header.appendChild(titleSpan);
+      header.appendChild(selectDayBtn);
+      groupBox.appendChild(header);
+
+      const body = document.createElement("div");
+      body.className = "share-day-body";
+      dayTasks.forEach(task => {
+        const realIdx = tasks.indexOf(task);
+        body.appendChild(createShareTaskRowElement(task, realIdx, counterEl));
+      });
+
+      groupBox.appendChild(body);
+      listEl.appendChild(groupBox);
+    });
+  }
 
   counterEl.textContent = `Đã chọn: ${selectedShareTaskIndices.size} nhiệm vụ`;
 }
@@ -1492,24 +1652,30 @@ function renderTasksTab() {
 function startEditTask(realIdx) {
   switchTab("tasks");
   const task = tasks[realIdx];
+  const isoDate = toInputDateStr(task.date) || getTodayStr();
   document.getElementById("edit-task-index").value = realIdx;
   document.getElementById("task-name-input").value = task.name;
-  document.getElementById("task-date-input").value = toInputDateStr(task.date);
+  document.getElementById("task-date-input").value = isoDate;
+  document.getElementById("task-date-display").value = formatDisplayDate(isoDate);
   document.getElementById("task-time-input").value = task.time;
   document.getElementById("task-form-title").textContent = "Chỉnh sửa nhiệm vụ";
   document.getElementById("save-task-btn").textContent = "Cập nhật";
   document.getElementById("cancel-edit-btn").classList.remove("hidden");
+  renderQuickWeekdayPicker();
   document.getElementById("task-name-input").focus();
 }
 
 function resetTaskForm() {
+  const todayISO = getTodayStr();
   document.getElementById("edit-task-index").value = "-1";
   document.getElementById("task-name-input").value = "";
-  document.getElementById("task-date-input").value = getTodayStr();
+  document.getElementById("task-date-input").value = todayISO;
+  document.getElementById("task-date-display").value = formatDisplayDate(todayISO);
   document.getElementById("task-time-input").value = getCurrentTimeStr();
   document.getElementById("task-form-title").textContent = "Thêm nhiệm vụ mới";
   document.getElementById("save-task-btn").textContent = "Lưu nhiệm vụ";
   document.getElementById("cancel-edit-btn").classList.add("hidden");
+  renderQuickWeekdayPicker();
 }
 
 // ---------- Lịch tuần 7 ngày ----------
@@ -1630,7 +1796,6 @@ function stopFocusSession(actionType) {
   document.getElementById("focus-start-btn").classList.remove("hidden");
   document.getElementById("focus-pause-btn").classList.add("hidden");
   document.getElementById("focus-done-btn").classList.add("hidden");
-  document.getElementById("focus-quit-btn").classList.remove("hidden");
   document.getElementById("focus-quit-btn").classList.add("hidden");
   document.getElementById("focus-task-select").disabled = false;
   document.getElementById("timer-ring").classList.remove("paused", "warning", "danger");
@@ -1683,10 +1848,11 @@ function downloadJSON(filename, dataObj) {
   URL.revokeObjectURL(url);
 }
 
-function bindCustomDateInput(textInputId, hiddenDateId, triggerBtnId) {
+function bindCustomDateInput(textInputId, hiddenDateId, triggerBtnId, onChangeCallback) {
   const textEl = document.getElementById(textInputId);
   const hiddenEl = document.getElementById(hiddenDateId);
   const btnEl = document.getElementById(triggerBtnId);
+  if (!textEl || !hiddenEl || !btnEl) return;
 
   btnEl.addEventListener("click", () => {
     if (typeof hiddenEl.showPicker === "function") {
@@ -1700,6 +1866,7 @@ function bindCustomDateInput(textInputId, hiddenDateId, triggerBtnId) {
   hiddenEl.addEventListener("change", () => {
     if (hiddenEl.value) {
       textEl.value = formatDisplayDate(hiddenEl.value);
+      if (typeof onChangeCallback === "function") onChangeCallback(hiddenEl.value);
     }
   });
 
@@ -1715,6 +1882,7 @@ function bindCustomDateInput(textInputId, hiddenDateId, triggerBtnId) {
     const iso = parseAndValidateDDMMYYYY(e.target.value);
     if (iso) {
       hiddenEl.value = iso;
+      if (typeof onChangeCallback === "function") onChangeCallback(iso);
     }
   });
 }
@@ -1742,7 +1910,10 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("ul-date").value = defaultCapsuleISO;
   document.getElementById("ul-date-display").value = formatDisplayDate(defaultCapsuleISO);
 
-  // Gắn sự kiện cho 3 bộ chọn ngày chuẩn DD-MM-YYYY
+  // Gắn sự kiện cho cả 4 bộ chọn ngày chuẩn DD-MM-YYYY (Bao gồm cả ô Ngày thực hiện Task)
+  bindCustomDateInput("task-date-display", "task-date-input", "task-date-trigger", () => {
+    renderQuickWeekdayPicker();
+  });
   bindCustomDateInput("setting-target-date-display", "setting-target-date", "setting-date-Trigger");
   bindCustomDateInput("fm-date-display", "fm-date", "fm-date-trigger");
   bindCustomDateInput("ul-date-display", "ul-date", "ul-date-trigger");
@@ -1753,6 +1924,30 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("letter-modal-overlay").addEventListener("click", e => {
     if (e.target.id === "letter-modal-overlay") closeLetterModal();
   });
+
+  // Nút "Chia sẻ lịch tuần này" từ tab Lịch tuần nhảy thẳng sang Share
+  const shareWeekFromCalBtn = document.getElementById("share-entire-week-from-cal-btn");
+  if (shareWeekFromCalBtn) {
+    shareWeekFromCalBtn.addEventListener("click", () => {
+      const weekISOList = new Set(getUpcoming7DaysISOList());
+      selectedShareTaskIndices.clear();
+      tasks.forEach((t, idx) => {
+        if (weekISOList.has(toInputDateStr(t.date))) {
+          selectedShareTaskIndices.add(idx);
+        }
+      });
+      currentShareViewFilter = "week";
+      document.querySelectorAll("[data-sharefilter]").forEach(b => {
+        b.classList.toggle("active", b.dataset.sharefilter === "week");
+      });
+      switchTab("share");
+      if (selectedShareTaskIndices.size > 0) {
+        showToast(`Đã chọn toàn bộ ${selectedShareTaskIndices.size} nhiệm vụ trong tuần! Nhấn "Tạo mã chia sẻ" để lấy mã.`);
+      } else {
+        showToast("Lịch 7 ngày tới hiện chưa có nhiệm vụ nào, hãy thêm nhiệm vụ vào các ngày trong tuần!", true);
+      }
+    });
+  }
 
   // =========================================================================
   // SỰ KIỆN CHO TRANG SHARE (CHIA SẺ & NHẬP MÃ NHIỆM VỤ)
@@ -1768,6 +1963,34 @@ document.addEventListener("DOMContentLoaded", () => {
         renderShareTaskSelector();
       }
     });
+  });
+
+  // Chuyển đổi bộ lọc "Lịch nguyên tuần (7 ngày tới)" vs "Tất cả nhiệm vụ"
+  document.querySelectorAll("[data-sharefilter]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-sharefilter]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentShareViewFilter = btn.dataset.sharefilter;
+      renderShareTaskSelector();
+    });
+  });
+
+  // Nút chọn toàn bộ nhiệm vụ trong 7 ngày của tuần
+  document.getElementById("share-select-week-btn").addEventListener("click", () => {
+    const weekSet = new Set(getUpcoming7DaysISOList());
+    let count = 0;
+    tasks.forEach((t, idx) => {
+      if (weekSet.has(toInputDateStr(t.date))) {
+        selectedShareTaskIndices.add(idx);
+        count++;
+      }
+    });
+    renderShareTaskSelector();
+    if (count === 0) {
+      showToast("Chưa có nhiệm vụ nào trong 7 ngày tới!", true);
+    } else {
+      showToast(`Đã chọn ${count} nhiệm vụ trong 7 ngày của tuần!`);
+    }
   });
 
   document.getElementById("share-select-all-btn").addEventListener("click", () => {
@@ -1835,7 +2058,6 @@ document.addEventListener("DOMContentLoaded", () => {
       await navigator.clipboard.writeText(currentGeneratedShareCode);
       showToast("Đã sao chép mã chia sẻ vào bộ nhớ tạm!");
     } catch {
-      // Fallback copy nếu trình duyệt chặn clipboard API
       const tempInput = document.createElement("textarea");
       tempInput.value = currentGeneratedShareCode;
       document.body.appendChild(tempInput);
@@ -1846,7 +2068,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Xử lý Nhập mã chia sẻ (Decode & Xem trước)
+  // Xử lý Nhập mã chia sẻ
   document.getElementById("import-share-code-form").addEventListener("submit", async e => {
     e.preventDefault();
     const rawCode = document.getElementById("share-code-input").value.trim();
@@ -1887,7 +2109,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Nút Hủy khi xem trước mã nhập
   document.getElementById("cancel-import-share-btn").addEventListener("click", () => {
     pendingImportTasks = [];
     document.getElementById("share-code-input").value = "";
@@ -1898,7 +2119,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Đã hủy nhập mã chia sẻ.");
   });
 
-  // Nút Thêm vào lịch
   document.getElementById("confirm-import-share-btn").addEventListener("click", () => {
     if (!Array.isArray(pendingImportTasks) || pendingImportTasks.length === 0) {
       showToast("Không có nhiệm vụ nào để thêm vào lịch!", true);
@@ -1915,7 +2135,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (!itemName || !itemISO || !validateTimeHHMM(itemTime)) return;
 
-      // Kiểm tra chống trùng lặp hoàn toàn về Tên + Ngày + Thời gian
       const isDuplicate = tasks.some(existing => {
         const existingName = String(existing.name || "").trim();
         const existingISO = toInputDateStr(existing.date);
@@ -1939,7 +2158,6 @@ document.addEventListener("DOMContentLoaded", () => {
     saveStorage();
     renderAll();
 
-    // Reset khu vực preview sau khi thêm thành công
     pendingImportTasks = [];
     document.getElementById("share-code-input").value = "";
     document.getElementById("import-preview-count-pill").textContent = "0 nhiệm vụ";
@@ -2355,23 +2573,30 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // THÊM / SỬA NHIỆM VỤ (Sử dụng chuẩn DD-MM-YYYY không bị đảo ngày/tháng)
   document.getElementById("task-form").addEventListener("submit", e => {
     e.preventDefault();
     const name = document.getElementById("task-name-input").value.trim();
-    const date = document.getElementById("task-date-input").value || getTodayStr();
+    const rawDateDisplay = document.getElementById("task-date-display").value.trim();
+    const validatedDateISO = parseAndValidateDDMMYYYY(rawDateDisplay);
     const time = document.getElementById("task-time-input").value || getCurrentTimeStr();
     const editIdx = parseInt(document.getElementById("edit-task-index").value, 10);
 
     if (!name) return;
+    if (!validatedDateISO) {
+      showToast("Ngày thực hiện không hợp lệ! Vui lòng nhập đúng DD-MM-YYYY (VD: 05-10-2026).", true);
+      document.getElementById("task-date-display").focus();
+      return;
+    }
 
     if (editIdx >= 0 && tasks[editIdx]) {
       tasks[editIdx].name = name;
-      tasks[editIdx].date = date;
+      tasks[editIdx].date = validatedDateISO;
       tasks[editIdx].time = time;
-      showToast("Đã cập nhật nhiệm vụ!");
+      showToast(`Đã cập nhật nhiệm vụ sang ngày ${formatDisplayDate(validatedDateISO)}!`);
     } else {
-      tasks.push({ name, done: false, date, time });
-      showToast(`Đã thêm "${name}" (${formatDisplayDate(date)})`);
+      tasks.push({ name, done: false, date: validatedDateISO, time });
+      showToast(`Đã thêm "${name}" vào ngày ${formatDisplayDate(validatedDateISO)}!`);
     }
 
     saveStorage();

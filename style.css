@@ -1706,3 +1706,98 @@ input:focus, select:focus, textarea:focus {
   .letter-meta-grid { grid-template-columns: repeat(2, 1fr); }
   .share-preview-item { grid-template-columns: 1fr; gap: 4px; }
 }
+/* Phím chọn nhanh các ngày trong tuần khi thêm Task */
+.quick-weekday-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border-color);
+}
+
+.quick-weekday-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-right: 4px;
+}
+
+.weekday-chip {
+  padding: 5px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.weekday-chip:hover,
+.weekday-chip.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+/* Nhóm nhiệm vụ theo từng ngày trong tuần ở trang Share */
+.share-header-wrap {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.share-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-height: 520px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.share-day-group {
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-elevated);
+  overflow: hidden;
+}
+
+.share-day-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(99, 102, 241, 0.08);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.share-day-title {
+  font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.share-day-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.share-day-body {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.share-empty-day {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
