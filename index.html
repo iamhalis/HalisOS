@@ -48,7 +48,6 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span>Focus Mode</span>
         </button>
-        <!-- MỤC MỚI: THỐNG KÊ (Nằm ngay dưới Focus Mode) -->
         <button class="nav-item" data-tab="analytics">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           <span>Thống kê</span>
@@ -67,7 +66,7 @@
         <div class="countdown-box">
           <span class="countdown-label">Đếm ngược mục tiêu</span>
           <div class="countdown-number" id="days-left-display">0 ngày</div>
-          <span class="countdown-target" id="target-date-display">2027-06-01</span>
+          <span class="countdown-target" id="target-date-display">01-06-2027</span>
         </div>
         <button class="theme-toggle" id="theme-toggle-btn">
           <span>Giao diện Sáng / Tối</span>
@@ -80,7 +79,7 @@
       <!-- Topbar -->
       <header class="topbar">
         <div class="datetime-group">
-          <h2 id="current-date-display">Thứ Năm, 01/10/2026</h2>
+          <h2 id="current-date-display">Thứ Sáu • 02-10-2026</h2>
           <span class="live-clock" id="live-clock">00:00:00</span>
         </div>
         <div class="topbar-actions">
@@ -89,10 +88,10 @@
         </div>
       </header>
 
-      <!-- Khối danh ngôn -->
+      <!-- Khối danh ngôn (Quote Banner) -->
       <section class="quote-banner">
         <div class="quote-content">
-          <span class="quote-tag">Cảm hứng hôm nay</span>
+          <span class="quote-tag">CẢM HỨNG HÔM NAY</span>
           <p id="quote-text">Đang tải danh ngôn...</p>
         </div>
         <button class="btn-icon" id="refresh-quote-btn" title="Đổi câu danh ngôn khác">
@@ -260,7 +259,7 @@
         </div>
       </section>
 
-      <!-- TAB 5: THỐNG KÊ BIỂU ĐỒ ĐƯỜNG (MỚI) -->
+      <!-- TAB 5: THỐNG KÊ BIỂU ĐỒ ĐƯỜNG -->
       <section class="tab-pane" id="tab-analytics">
         <div class="section-header">
           <div>
@@ -270,7 +269,6 @@
         </div>
 
         <div class="charts-stack">
-          <!-- Biểu đồ 1: Trong tuần (Per Day) -->
           <div class="card chart-card">
             <div class="card-header">
               <div>
@@ -282,7 +280,6 @@
             <div class="svg-chart-container" id="weekly-line-chart"></div>
           </div>
 
-          <!-- Biểu đồ 2: Trong tháng (Per Week) -->
           <div class="card chart-card">
             <div class="card-header">
               <div>
@@ -298,6 +295,7 @@
 
       <!-- TAB 6: HỒ SƠ & THƯ TƯƠNG LAI -->
       <section class="tab-pane" id="tab-profile">
+        <!-- Giao diện dành cho Tài khoản Khách (Chưa đăng nhập) -->
         <div id="auth-guest-view" class="auth-wrapper">
           <div class="card auth-card">
             <div class="auth-tabs">
@@ -319,7 +317,7 @@
             </form>
 
             <form id="register-form" class="form-stack hidden">
-              <p class="text-muted">Tạo hồ sơ mới để lưu trữ riêng biệt và mở khóa tính năng gửi thư đến tương lai.</p>
+              <p class="text-muted">Tạo hồ sơ mới để lưu trữ riêng biệt, đổi ảnh đại diện và mở khóa tính năng gửi thư đến tương lai.</p>
               <div class="form-group">
                 <label for="reg-username">Username (dùng để đăng nhập) <span class="req">*</span></label>
                 <input type="text" id="reg-username" placeholder="VD: hadachoang" required autocomplete="username" />
@@ -337,27 +335,53 @@
           </div>
         </div>
 
+        <!-- Giao diện dành cho Tài khoản đã đăng ký -->
         <div id="auth-user-view" class="dashboard-columns hidden">
           <div class="card">
             <div class="profile-header-box">
-              <div class="profile-big-avatar" id="profile-big-avatar">U</div>
-              <div>
+              <div class="profile-avatar-wrapper">
+                <div class="profile-big-avatar" id="profile-big-avatar">U</div>
+                <label class="avatar-upload-btn" for="avatar-file-input" title="Đổi ảnh đại diện (PNG, JPG, JPEG, WebP)">
+                  <span>Đổi ảnh</span>
+                  <input type="file" id="avatar-file-input" accept="image/png,image/jpeg,image/jpg,image/webp" />
+                </label>
+              </div>
+              <div class="profile-user-details">
                 <h3 id="profile-display-username">username</h3>
                 <p class="text-muted" id="profile-display-email">Chưa cập nhật email</p>
               </div>
             </div>
 
+            <!-- Cập nhật Email -->
             <form id="profile-update-form" class="form-stack">
               <div class="form-group">
                 <label for="profile-edit-email">Email nhận thư tương lai (Không bắt buộc)</label>
                 <input type="email" id="profile-edit-email" placeholder="Nhập email của bạn..." />
               </div>
+              <div class="form-actions">
+                <button type="submit" class="btn btn-secondary">Lưu Email</button>
+              </div>
+            </form>
+
+            <hr class="divider" />
+
+            <!-- Quy trình Đổi mật khẩu bắt buộc 3 bước -->
+            <h4 class="mb-12">Đổi mật khẩu tài khoản</h4>
+            <form id="password-change-form" class="form-stack">
               <div class="form-group">
-                <label for="profile-edit-password">Đổi mật khẩu mới (Để trống nếu giữ nguyên)</label>
-                <input type="password" id="profile-edit-password" placeholder="Nhập mật khẩu mới..." />
+                <label for="pwd-current">Bước 1: Nhập mật khẩu hiện tại (mật khẩu cũ) <span class="req">*</span></label>
+                <input type="password" id="pwd-current" placeholder="Nhập mật khẩu hiện tại..." required autocomplete="current-password" />
+              </div>
+              <div class="form-group">
+                <label for="pwd-new">Bước 2: Nhập mật khẩu mới <span class="req">*</span></label>
+                <input type="password" id="pwd-new" placeholder="Nhập mật khẩu mới (tối thiểu 4 ký tự)..." required autocomplete="new-password" />
+              </div>
+              <div class="form-group">
+                <label for="pwd-confirm">Bước 3: Nhập lại mật khẩu mới để xác nhận <span class="req">*</span></label>
+                <input type="password" id="pwd-confirm" placeholder="Nhập lại chính xác mật khẩu mới..." required autocomplete="new-password" />
               </div>
               <div class="form-actions">
-                <button type="submit" class="btn btn-primary">Cập nhật hồ sơ</button>
+                <button type="submit" class="btn btn-primary">Xác nhận đổi mật khẩu</button>
                 <button type="button" class="btn btn-danger" id="logout-btn">Đăng xuất</button>
               </div>
             </form>
@@ -406,8 +430,20 @@
                 <input type="text" id="setting-title" required />
               </div>
               <div class="form-group">
-                <label for="setting-target-date">Ngày mục tiêu (Target Date)</label>
-                <input type="date" id="setting-target-date" required />
+                <label for="setting-target-date-display">Ngày mục tiêu (Target Date — DD-MM-YYYY)</label>
+                <div class="custom-date-picker">
+                  <input
+                    type="text"
+                    id="setting-target-date-display"
+                    placeholder="DD-MM-YYYY (VD: 01-06-2027)"
+                    maxlength="10"
+                    required
+                  />
+                  <button type="button" class="btn-icon calendar-trigger-btn" id="setting-date-Trigger" title="Chọn ngày từ lịch">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  </button>
+                  <input type="date" id="setting-target-date" class="sr-only-date-picker" tabindex="-1" />
+                </div>
               </div>
               <div class="form-group">
                 <label for="setting-aim-week">Aim tuần</label>

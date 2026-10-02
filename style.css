@@ -131,6 +131,15 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.user-avatar img,
+.profile-big-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .user-meta { overflow: hidden; }
@@ -285,14 +294,15 @@ body {
   font-weight: 500;
 }
 
-/* Quote Banner (Đã căn giữa hoàn toàn, gọn gàng, không dư khoảng trống) */
+/* Quote Banner — Đã sửa triệt để lỗi thụt nội dung, căn giữa cân đối */
 .quote-banner {
   position: relative;
   background: linear-gradient(135deg, var(--bg-surface), var(--bg-elevated));
   border: 1px solid var(--border-color);
   border-left: 4px solid var(--accent);
   border-radius: 14px;
-  padding: 16px 56px;
+  padding: 14px 56px;
+  min-height: 68px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -306,27 +316,32 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   width: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .quote-tag {
-  display: inline-block;
+  display: block;
   font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--accent);
+  line-height: 1.2;
   margin: 0;
+  padding: 0;
 }
 
 #quote-text {
-  font-size: 1rem;
+  font-size: 0.98rem;
   font-style: italic;
   font-weight: 500;
   color: var(--text-main);
+  line-height: 1.4;
   margin: 0;
-  line-height: 1.45;
+  padding: 0;
 }
 
 .quote-banner .btn-icon {
@@ -449,7 +464,7 @@ body {
   font-weight: 700;
 }
 
-/* Biểu đồ đường (Analytics Line Charts) */
+/* Biểu đồ đường */
 .charts-stack {
   display: flex;
   flex-direction: column;
@@ -545,23 +560,83 @@ body {
 .profile-header-box {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px;
   padding-bottom: 20px;
   margin-bottom: 20px;
   border-bottom: 1px solid var(--border-color);
 }
 
+.profile-avatar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .profile-big-avatar {
-  width: 64px;
-  height: 64px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--accent), #ec4899);
   color: #fff;
-  font-size: 1.75rem;
+  font-size: 1.8rem;
   font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+}
+
+.avatar-upload-btn {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 4px 10px;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.avatar-upload-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
+
+.avatar-upload-btn input {
+  display: none;
+}
+
+/* Custom Date Picker DD-MM-YYYY trong Cài đặt */
+.custom-date-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-date-picker input[type="text"] {
+  flex: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+
+.calendar-trigger-btn {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+}
+
+.sr-only-date-picker {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  right: 0;
+  bottom: 0;
 }
 
 /* Forms & Buttons */
@@ -617,6 +692,7 @@ input:focus, select:focus, textarea:focus {
 .form-actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .btn {
@@ -938,7 +1014,7 @@ input:focus, select:focus, textarea:focus {
 .divider {
   border: none;
   border-top: 1px solid var(--border-color);
-  margin: 16px 0;
+  margin: 18px 0;
 }
 
 .file-upload-label {
@@ -982,6 +1058,10 @@ input:focus, select:focus, textarea:focus {
   font-weight: 500;
 }
 
+.toast.error {
+  border-left-color: var(--danger);
+}
+
 @media (max-width: 992px) {
   .app-layout { grid-template-columns: 1fr; }
   .sidebar {
@@ -995,4 +1075,5 @@ input:focus, select:focus, textarea:focus {
   .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .dashboard-columns { grid-template-columns: 1fr; }
   .task-form-grid { grid-template-columns: 1fr; }
+  .quote-banner { padding: 14px 48px 14px 18px; }
 }

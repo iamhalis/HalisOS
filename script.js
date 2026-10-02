@@ -1,6 +1,5 @@
 // =========================================================================
 // CẤU HÌNH ĐỒNG BỘ ĐÁM MÂY (FIREBASE REALTIME DATABASE)
-// Dán link Realtime Database của bạn vào giữa 2 dấu ngoặc kép bên dưới:
 // =========================================================================
 const CLOUD_DB_URL = "https://halisos-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
@@ -36,6 +35,7 @@ const DEFAULT_CONFIG = {
 };
 
 const ITEMS_PER_PAGE = 6;
+const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
 
 // ---------- Quản lý Tài khoản & Lưu trữ ----------
 let users = loadJSON("studyos_users", {});
@@ -65,7 +65,7 @@ function formatDateKey(dateObj) {
   return `${y}-${m}-${d}`;
 }
 
-// Chuyển đổi sang định dạng DD-MM-YYYY để hiển thị
+// Chuyển đổi mọi định dạng sang DD-MM-YYYY (2 số ngày - 2 số tháng - 4 số năm) để hiển thị
 function formatDisplayDate(dateInput) {
   if (!dateInput) return "";
   if (dateInput instanceof Date) {
@@ -75,25 +75,50 @@ function formatDisplayDate(dateInput) {
     return `${d}-${m}-${y}`;
   }
   const str = String(dateInput).trim();
-  if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(str)) {
+  if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(str)) {
     const [y, m, d] = str.split(/[-/]/);
-    return `${d}-${m}-${y}`;
+    return `${String(d).padStart(2, "0")}-${String(m).padStart(2, "0")}-${y}`;
   }
-  if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(str)) {
-    return str.replace(/\//g, "-");
+  if (/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/.test(str)) {
+    const [d, m, y] = str.split(/[-/]/);
+    return `${String(d).padStart(2, "0")}-${String(m).padStart(2, "0")}-${y}`;
   }
   return str;
 }
 
-// Chuẩn hóa định dạng YYYY-MM-DD để đưa vào thẻ <input type="date">
+// Chuyển đổi từ DD-MM-YYYY hoặc YYYY-MM-DD sang chuẩn nội bộ YYYY-MM-DD
 function toInputDateStr(dateInput) {
   if (!dateInput) return "";
   const str = String(dateInput).trim();
-  if (/^\d{2}[-/]\d{2}[-/]\d{4}$/.test(str)) {
+  if (/^\d{1,2}[-/]\d{1,2}[-/]\d{4}$/.test(str)) {
     const [d, m, y] = str.split(/[-/]/);
-    return `${y}-${m}-${d}`;
+    return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  }
+  if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}$/.test(str)) {
+    const [y, m, d] = str.split(/[-/]/);
+    return `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
   }
   return str;
+}
+
+// Kiểm tra chuỗi ngày hợp lệ theo chuẩn DD-MM-YYYY
+function parseAndValidateDDMMYYYY(str) {
+  const cleaned = String(str).trim().replace(/\//g, "-");
+  const match = cleaned.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (!match) return null;
+  const day = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10);
+  const year = parseInt(match[3], 10);
+  if (year < 1900 || year > 9999 || month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const checkDate = new Date(year, month - 1, day);
+  if (
+    checkDate.getFullYear() !== year ||
+    checkDate.getMonth() !== month - 1 ||
+    checkDate.getDate() !== day
+  ) {
+    return null;
+  }
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
 function getTodayStr() {
@@ -222,14 +247,64 @@ function migrateTasks() {
   if (migrated) saveLocalOnly();
 }
 
+// ---------- Xử lý & Nén ảnh đại diện (Avatar) ----------
+function processAvatarFile(file) {
+  return new Promise((resolve, reject) => {
+    if (!file) {
+      reject("Vui lòng chọn một file ảnh!");
+      return;
+    }
+    if (!ALLOWED_AVATAR_TYPES.includes(file.type.toLowerCase())) {
+      reject("Chỉ chấp nhận định dạng ảnh PNG, JPG, JPEG hoặc WebP!");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onerror = () => reject("Không thể đọc file ảnh đã chọn.");
+    reader.onload = ev => {
+      const img = new Image();
+      img.onerror = () => reject("File ảnh không hợp lệ hoặc bị hỏng.");
+      img.onload = () => {
+        const size = 240;
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+
+        // Cắt vuông chính giữa ảnh (center crop)
+        const minSide = Math.min(img.width, img.height);
+        const sx = (img.width - minSide) / 2;
+        const sy = (img.height - minSide) / 2;
+        ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+
+        const dataUrl = canvas.toDataURL("image/webp", 0.86);
+        resolve(dataUrl);
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderAvatarElement(containerEl, avatarDataUrl, fallbackLetter) {
+  containerEl.innerHTML = "";
+  if (avatarDataUrl) {
+    const img = document.createElement("img");
+    img.src = avatarDataUrl;
+    img.alt = "Avatar";
+    containerEl.appendChild(img);
+  } else {
+    containerEl.textContent = fallbackLetter;
+  }
+}
+
 // ---------- Tiện ích hiển thị ----------
-function showToast(msg) {
+function showToast(msg, isError = false) {
   const container = document.getElementById("toast-container");
   const el = document.createElement("div");
-  el.className = "toast";
+  el.className = `toast ${isError ? "error" : ""}`;
   el.textContent = msg;
   container.appendChild(el);
-  setTimeout(() => el.remove(), 3200);
+  setTimeout(() => el.remove(), 3400);
 }
 
 function updateClockAndHeader() {
@@ -323,10 +398,12 @@ function renderAll() {
   document.getElementById("quick-aim-week").value = aimWeek;
   document.getElementById("quick-aim-month").value = aimMonth;
   document.getElementById("setting-title").value = config.title;
-  
-  // Đảm bảo thẻ input date hiển thị đúng chuẩn YYYY-MM-DD
-  document.getElementById("setting-target-date").value = toInputDateStr(config.target_date);
-  
+
+  // Hiển thị chuẩn DD-MM-YYYY cho trường Target Date trong Cài đặt & Dữ liệu
+  const normalizedTargetISO = toInputDateStr(config.target_date) || "2027-06-01";
+  document.getElementById("setting-target-date").value = normalizedTargetISO;
+  document.getElementById("setting-target-date-display").value = formatDisplayDate(normalizedTargetISO);
+
   document.getElementById("setting-aim-week").value = aimWeek;
   document.getElementById("setting-aim-month").value = aimMonth;
 
@@ -400,7 +477,6 @@ function createSVGLineChart(labels, values, gradientId) {
 function renderAnalyticsCharts() {
   const now = new Date();
 
-  // 1. Biểu đồ Tuần hiện tại
   const dayOfWeek = (now.getDay() + 6) % 7;
   const monday = new Date(now);
   monday.setDate(now.getDate() - dayOfWeek);
@@ -430,7 +506,6 @@ function renderAnalyticsCharts() {
   document.getElementById("weekly-chart-total").textContent = `Tổng tuần: ${weekTotal} task`;
   document.getElementById("weekly-line-chart").innerHTML = createSVGLineChart(weekLabels, weekValues, "gradWeek");
 
-  // 2. Biểu đồ Tháng hiện tại
   const year = now.getFullYear();
   const month = now.getMonth();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -465,7 +540,7 @@ function renderAnalyticsCharts() {
   document.getElementById("monthly-line-chart").innerHTML = createSVGLineChart(monthLabels, monthValues, "gradMonth");
 }
 
-// ---------- Render Hồ sơ & Future Mail ----------
+// ---------- Render Hồ sơ, Avatar & Future Mail ----------
 function renderProfileUI() {
   const sidebarAvatar = document.getElementById("sidebar-avatar");
   const sidebarUsername = document.getElementById("sidebar-username");
@@ -474,12 +549,16 @@ function renderProfileUI() {
   const guestView = document.getElementById("auth-guest-view");
   const userView = document.getElementById("auth-user-view");
   const activeAccountLabel = document.getElementById("settings-active-account");
+  const profileBigAvatar = document.getElementById("profile-big-avatar");
 
   if (currentUser && users[currentUser]) {
     const u = users[currentUser];
     const initial = u.username.charAt(0).toUpperCase();
     const syncTag = isCloudEnabled() ? "☁️ Đã đồng bộ" : "Lưu nội bộ";
-    sidebarAvatar.textContent = initial;
+
+    renderAvatarElement(sidebarAvatar, u.avatar, initial);
+    renderAvatarElement(profileBigAvatar, u.avatar, initial);
+
     sidebarUsername.textContent = u.username;
     sidebarEmail.textContent = u.email ? `${u.email} • ${syncTag}` : syncTag;
     topProfileBtn.textContent = `@${u.username}`;
@@ -488,17 +567,16 @@ function renderProfileUI() {
     guestView.classList.add("hidden");
     userView.classList.remove("hidden");
 
-    document.getElementById("profile-big-avatar").textContent = initial;
     document.getElementById("profile-display-username").textContent = `@${u.username}`;
     document.getElementById("profile-display-email").textContent = u.email
       ? `Email: ${u.email} (${syncTag})`
       : `Chưa có email (${syncTag})`;
     document.getElementById("profile-edit-email").value = u.email || "";
-    document.getElementById("profile-edit-password").value = "";
 
     renderFutureMailList();
   } else {
-    sidebarAvatar.textContent = "G";
+    renderAvatarElement(sidebarAvatar, null, "G");
+    renderAvatarElement(profileBigAvatar, null, "G");
     sidebarUsername.textContent = "Khách (Guest)";
     sidebarEmail.textContent = "Nhấn để đăng nhập";
     topProfileBtn.textContent = "Đăng nhập";
@@ -551,7 +629,7 @@ function renderFutureMailList() {
     sendMailClientBtn.addEventListener("click", () => {
       const targetEmail = mail.email || (users[currentUser] && users[currentUser].email) || "";
       if (!targetEmail) {
-        showToast("Bạn chưa nhập Email trong hồ sơ!");
+        showToast("Bạn chưa nhập Email trong hồ sơ!", true);
         return;
       }
       const subject = encodeURIComponent(`[Study OS - Thư tương lai ${displayTargetDate}] ${mail.subject}`);
@@ -701,8 +779,6 @@ function startEditTask(realIdx) {
   switchTab("tasks");
   const task = tasks[realIdx];
   document.getElementById("edit-task-index").value = realIdx;
-  document.getElementById("task-name-input").value = toInputDateStr(task.date);
-  document.getElementById("task-date-input").value = toInputDateStr(task.date);
   document.getElementById("task-name-input").value = task.name;
   document.getElementById("task-date-input").value = toInputDateStr(task.date);
   document.getElementById("task-time-input").value = task.time;
@@ -941,22 +1017,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const password = document.getElementById("reg-password").value;
 
     if (!/^[a-zA-Z0-9_.-]{3,24}$/.test(username)) {
-      showToast("Username từ 3-24 ký tự, viết liền không dấu!");
+      showToast("Username từ 3-24 ký tự, viết liền không dấu!", true);
       return;
     }
     if (password.length < 4) {
-      showToast("Mật khẩu phải có ít nhất 4 ký tự!");
+      showToast("Mật khẩu phải có ít nhất 4 ký tự!", true);
       return;
     }
 
     if (isCloudEnabled()) {
       const existingCloud = await fetchAccountFromCloud(username);
       if (existingCloud && existingCloud.profile) {
-        showToast("Username này đã tồn tại trên hệ thống Cloud!");
+        showToast("Username này đã tồn tại trên hệ thống Cloud!", true);
         return;
       }
     } else if (users[username]) {
-      showToast("Username này đã tồn tại!");
+      showToast("Username này đã tồn tại!", true);
       return;
     }
 
@@ -966,6 +1042,7 @@ document.addEventListener("DOMContentLoaded", () => {
       username,
       email,
       password,
+      avatar: null,
       createdAt: getTodayStr()
     };
     saveUsersDB();
@@ -994,7 +1071,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const cloudData = await fetchAccountFromCloud(username);
       if (cloudData && cloudData.profile) {
         if (cloudData.profile.password !== password) {
-          showToast("Sai Username hoặc Mật khẩu!");
+          showToast("Sai Username hoặc Mật khẩu!", true);
           return;
         }
         users[username] = cloudData.profile;
@@ -1015,7 +1092,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const account = users[username];
     if (!account || account.password !== password) {
-      showToast("Sai Username hoặc Mật khẩu!");
+      showToast("Sai Username hoặc Mật khẩu!", true);
       return;
     }
 
@@ -1028,27 +1105,85 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast(`Chào mừng trở lại, @${username}!`);
   });
 
-  // Cập nhật Hồ sơ
+  // ĐỔI ẢNH ĐẠI DIỆN (AVATAR) — Chỉ cho tài khoản đã đăng ký
+  document.getElementById("avatar-file-input").addEventListener("change", async e => {
+    if (!currentUser || !users[currentUser]) {
+      showToast("Tài khoản khách không thể sử dụng tính năng đổi ảnh đại diện!", true);
+      e.target.value = "";
+      return;
+    }
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const avatarBase64 = await processAvatarFile(file);
+      users[currentUser].avatar = avatarBase64;
+      saveUsersDB();
+      await syncToCloud();
+      renderProfileUI();
+      showToast("Đã cập nhật ảnh đại diện mới!");
+    } catch (errMsg) {
+      showToast(String(errMsg), true);
+    } finally {
+      e.target.value = "";
+    }
+  });
+
+  // Cập nhật Email Hồ sơ
   document.getElementById("profile-update-form").addEventListener("submit", async e => {
     e.preventDefault();
     if (!currentUser || !users[currentUser]) return;
 
     const newEmail = document.getElementById("profile-edit-email").value.trim();
-    const newPass = document.getElementById("profile-edit-password").value;
-
     users[currentUser].email = newEmail;
-    if (newPass) {
-      if (newPass.length < 4) {
-        showToast("Mật khẩu mới phải từ 4 ký tự trở lên!");
-        return;
-      }
-      users[currentUser].password = newPass;
-    }
 
     saveUsersDB();
     await syncToCloud();
     renderAll();
-    showToast("Đã cập nhật & đồng bộ thông tin hồ sơ!");
+    showToast("Đã lưu địa chỉ Email vào hồ sơ!");
+  });
+
+  // QUY TRÌNH ĐỔI MẬT KHẨU BẮT BUỘC 3 BƯỚC
+  document.getElementById("password-change-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    if (!currentUser || !users[currentUser]) {
+      showToast("Tính năng đổi mật khẩu không áp dụng cho tài khoản Khách!", true);
+      return;
+    }
+
+    const currentPasswordInput = document.getElementById("pwd-current").value;
+    const newPasswordInput = document.getElementById("pwd-new").value;
+    const confirmPasswordInput = document.getElementById("pwd-confirm").value;
+
+    // Bước 1: Kiểm tra bắt buộc không bỏ qua mật khẩu hiện tại
+    if (!currentPasswordInput) {
+      showToast("Vui lòng nhập mật khẩu hiện tại (mật khẩu cũ)!", true);
+      return;
+    }
+
+    // Kiểm tra mật khẩu cũ chính xác
+    if (users[currentUser].password !== currentPasswordInput) {
+      showToast("Mật khẩu hiện tại (mật khẩu cũ) không chính xác!", true);
+      return;
+    }
+
+    // Bước 2: Kiểm tra độ dài mật khẩu mới
+    if (!newPasswordInput || newPasswordInput.length < 4) {
+      showToast("Mật khẩu mới phải có ít nhất 4 ký tự!", true);
+      return;
+    }
+
+    // Bước 3: Kiểm tra mật khẩu mới và xác nhận mật khẩu mới khớp tuyệt đối
+    if (newPasswordInput !== confirmPasswordInput) {
+      showToast("Mật khẩu mới và xác nhận mật khẩu mới không khớp!", true);
+      return;
+    }
+
+    // Cập nhật mật khẩu mới vào tài khoản
+    users[currentUser].password = newPasswordInput;
+    saveUsersDB();
+    await syncToCloud();
+    document.getElementById("password-change-form").reset();
+    showToast("Đổi mật khẩu thành công!");
   });
 
   // Đăng xuất
@@ -1165,7 +1300,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("focus-start-btn").addEventListener("click", () => {
     if (tasks.length === 0) {
-      showToast("Hãy thêm ít nhất 1 nhiệm vụ trước khi bắt đầu Focus!");
+      showToast("Hãy thêm ít nhất 1 nhiệm vụ trước khi bắt đầu Focus!", true);
       return;
     }
     isFocusRunning = true;
@@ -1209,11 +1344,56 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("focus-done-btn").addEventListener("click", () => stopFocusSession("done"));
   document.getElementById("focus-quit-btn").addEventListener("click", () => stopFocusSession("quit"));
 
+  // ---------- Xử lý chọn & hiển thị Target Date chuẩn DD-MM-YYYY trong Cài đặt ----------
+  const hiddenTargetPicker = document.getElementById("setting-target-date");
+  const displayTargetInput = document.getElementById("setting-target-date-display");
+  const calendarTriggerBtn = document.getElementById("setting-date-Trigger");
+
+  calendarTriggerBtn.addEventListener("click", () => {
+    if (typeof hiddenTargetPicker.showPicker === "function") {
+      hiddenTargetPicker.showPicker();
+    } else {
+      hiddenTargetPicker.focus();
+      hiddenTargetPicker.click();
+    }
+  });
+
+  hiddenTargetPicker.addEventListener("change", () => {
+    if (hiddenTargetPicker.value) {
+      displayTargetInput.value = formatDisplayDate(hiddenTargetPicker.value);
+    }
+  });
+
+  displayTargetInput.addEventListener("input", e => {
+    // Tự động thêm dấu gạch ngang khi người dùng gõ số
+    let digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+    if (digits.length >= 5) {
+      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2, 4)}-${digits.slice(4)}`;
+    } else if (digits.length >= 3) {
+      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2)}`;
+    } else {
+      e.target.value = digits;
+    }
+    const iso = parseAndValidateDDMMYYYY(e.target.value);
+    if (iso) {
+      hiddenTargetPicker.value = iso;
+    }
+  });
+
   // Cài đặt chung (Lưu cấu hình & Ngày mục tiêu)
   document.getElementById("settings-form").addEventListener("submit", e => {
     e.preventDefault();
+    const rawTargetStr = displayTargetInput.value.trim();
+    const validatedISO = parseAndValidateDDMMYYYY(rawTargetStr);
+
+    if (!validatedISO) {
+      showToast("Ngày mục tiêu không hợp lệ! Vui lòng nhập đúng định dạng DD-MM-YYYY (VD: 01-06-2027).", true);
+      displayTargetInput.focus();
+      return;
+    }
+
     config.title = document.getElementById("setting-title").value.trim() || "Study OS";
-    config.target_date = document.getElementById("setting-target-date").value || "2027-06-01";
+    config.target_date = validatedISO; // Lưu chuẩn YYYY-MM-DD bên dưới để không hỏng dữ liệu
     config.aim_week = Math.max(1, parseInt(document.getElementById("setting-aim-week").value, 10) || 20);
     config.aim_month = Math.max(1, parseInt(document.getElementById("setting-aim-month").value, 10) || 80);
     saveStorage();
@@ -1239,7 +1419,7 @@ document.addEventListener("DOMContentLoaded", () => {
           showToast("Đã nhập dữ liệu tasks.json thành công!");
         }
       } catch {
-        showToast("File tasks.json không hợp lệ!");
+        showToast("File tasks.json không hợp lệ!", true);
       }
     };
     reader.readAsText(file);
@@ -1254,12 +1434,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const parsed = JSON.parse(ev.target.result);
         if (parsed && typeof parsed === "object") {
           config = { ...DEFAULT_CONFIG, ...parsed };
+          config.target_date = toInputDateStr(config.target_date) || "2027-06-01";
           saveStorage();
           renderAll();
           showToast("Đã nhập dữ liệu config.json thành công!");
         }
       } catch {
-        showToast("File config.json không hợp lệ!");
+        showToast("File config.json không hợp lệ!", true);
       }
     };
     reader.readAsText(file);
