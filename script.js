@@ -1,4 +1,7 @@
-const CLOUD_DB_URL = "[https://halisos-default-rtdb.asia-southeast1.firebasedatabase.app/](https://halisos-default-rtdb.asia-southeast1.firebasedatabase.app/)";
+// =========================================================================
+// CẤU HÌNH ĐỒNG BỘ ĐÁM MÂY (FIREBASE REALTIME DATABASE)
+// =========================================================================
+const CLOUD_DB_URL = "https://halisos-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
 // ---------- Danh ngôn truyền cảm hứng ----------
 const QUOTES = [
@@ -33,6 +36,7 @@ const DEFAULT_CONFIG = {
 
 const ITEMS_PER_PAGE = 6;
 const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+const SHARE_ALPHABET = "0123456789ABCDEFGHJKLMNPQRSTVWXYZ"; // 32 ký tự chuẩn tạo mã XXXX-XXXX
 
 // ---------- Quản lý Tài khoản & Lưu trữ ----------
 let users = loadJSON("studyos_users", {});
@@ -42,11 +46,17 @@ let config = { ...DEFAULT_CONFIG };
 let tasks = [];
 let futureMails = []; // Thư niêm phong cá nhân
 let sharedLetters = loadJSON("studyos_shared_letters", []); // Thư gửi giữa các người dùng
+let shareCodeRegistry = loadJSON("studyos_share_codes", {}); // Lưu cache mã ngắn gọn
 
 let currentFilter = "all";
 let searchQuery = "";
 let currentPage = 1;
 let activeSocialBox = "inbox"; // "inbox" | "sent"
+
+// Trạng thái cho tính năng Share Nhiệm vụ
+let selectedShareTaskIndices = new Set();
+let currentGeneratedShareCode = "";
+let pendingImportTasks = [];
 
 // Biến Focus Session
 let focusInterval = null;
@@ -117,6 +127,15 @@ function parseAndValidateDDMMYYYY(str) {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
+function validateTimeHHMM(timeStr) {
+  const cleaned = String(timeStr || "").trim();
+  const match = cleaned.match(/^(\d{2}):(\d{2})$/);
+  if (!match) return false;
+  const hh = parseInt(match[1], 10);
+  const mm = parseInt(match[2], 10);
+  return hh >= 0 && hh <= 23 && mm >= 0 && mm <= 59;
+}
+
 function getDaysUntilDate(isoDateStr) {
   const target = new Date(toInputDateStr(isoDateStr) + "T00:00:00");
   const today = new Date();
@@ -131,6 +150,228 @@ function getTodayStr() {
 function getCurrentTimeStr() {
   const now = new Date();
   return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+}
+
+// =========================================================================
+// ENCODE / DECODE MÃ CHIA SẺ NHIỆM VỤ (CHỈ CHỨA NAME, DATE, TIME)
+// =========================================================================
+function encodeBytesToShareCode(bytes) {
+  let bits = 0;
+  let value = 0;
+  let output = "";
+
+  for (let i = 0; i < bytes.length; i++) {
+    value = (value << 8) | bytes[i];
+    bits += 8;
+    while (bits >= 5) {
+      output += SHARE_ALPHABET[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) {
+    output += SHARE_ALPHABET[(value << (5 - bits)) & 31];
+  }
+
+  return output.match(/.{1,4}/g).join("-");
+}
+
+function decodeShareCodeToBytes(codeStr) {
+  const cleaned = String(codeStr || "")
+    .toUpperCase()
+    .replace(/[-\s]/g, "");
+
+  if (!cleaned) return null;
+
+  let bits = 0;
+  let value = 0;
+  const bytes = [];
+
+  for (let i = 0; i < cleaned.length; i++) {
+    const idx = SHARE_ALPHABET.indexOf(cleaned[i]);
+    if (idx === -1) return null;
+    value = (value << 5) | idx;
+    bits += 5;
+    if (bits >= 8) {
+      bytes.push((value >>> (bits - 8)) & 255);
+      bits -= 8;
+    }
+  }
+  return new Uint8Array(bytes);
+}
+
+// Tạo mã định danh ngắn 12 ký tự (VD: AB7K-X92P-Q41M) từ dữ liệu JSON
+function computeShortHashCode(jsonString) {
+  let h1 = 0x811c9dc5;
+  let h2 = 0x01000193;
+  let h3 = 0x9e3779b9;
+
+  for (let i = 0; i < jsonString.length; i++) {
+    const ch = jsonString.charCodeAt(i);
+    h1 ^= ch;
+    h1 = Math.imul(h1, 0x01000193) >>> 0;
+    h2 ^= ch + i;
+    h2 = Math.imul(h2, 0x85ebca6b) >>> 0;
+    h3 ^= (ch << 3) ^ i;
+    h3 = Math.imul(h3, 0xc2b2ae35) >>> 0;
+  }
+
+  const pick4 = seed => {
+    let s = seed >>> 0;
+    let part = "";
+    for (let k = 0; k < 4; k++) {
+      part += SHARE_ALPHABET[s & 31];
+      s = (s >>> 5) ^ (s << 3);
+    }
+    return part;
+  };
+
+  return `${pick4(h1)}-${pick4(h2)}-${pick4(h3)}`;
+}
+
+// Kiểm tra tính hợp lệ nghiêm ngặt của mảng nhiệm vụ được giải mã (Đúng 3 trường: name, date, time)
+function validateDecodedSharePayload(parsedArray) {
+  if (!Array.isArray(parsedArray) || parsedArray.length === 0) {
+    return { valid: false, error: "Dữ liệu nhiệm vụ trong mã trống hoặc không đúng cấu trúc!" };
+  }
+
+  const sanitizedTasks = [];
+
+  for (let i = 0; i < parsedArray.length; i++) {
+    const item = parsedArray[i];
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      return { valid: false, error: `Nhiệm vụ thứ ${i + 1} trong mã không hợp lệ!` };
+    }
+
+    const keys = Object.keys(item);
+    // Chỉ cho phép đúng 3 thuộc tính name, date, time
+    if (
+      keys.length !== 3 ||
+      !keys.includes("name") ||
+      !keys.includes("date") ||
+      !keys.includes("time")
+    ) {
+      return {
+        valid: false,
+        error: "Cấu trúc dữ liệu mã không hợp lệ (mỗi nhiệm vụ chỉ được chứa name, date, time)!"
+      };
+    }
+
+    const name = String(item.name || "").trim();
+    const rawDate = String(item.date || "").trim();
+    const rawTime = String(item.time || "").trim();
+
+    if (!name) {
+      return { valid: false, error: `Tên nhiệm vụ thứ ${i + 1} không được để trống!` };
+    }
+
+    // Hỗ trợ chuẩn DD-MM-YYYY (hoặc chuyển từ YYYY-MM-DD sang DD-MM-YYYY an toàn)
+    const displayDate = formatDisplayDate(rawDate);
+    const isoDate = parseAndValidateDDMMYYYY(displayDate);
+    if (!isoDate) {
+      return {
+        valid: false,
+        error: `Ngày "${rawDate}" của nhiệm vụ "${name}" không đúng định dạng DD-MM-YYYY!`
+      };
+    }
+
+    if (!validateTimeHHMM(rawTime)) {
+      return {
+        valid: false,
+        error: `Thời gian "${rawTime}" của nhiệm vụ "${name}" không đúng định dạng HH:MM!`
+      };
+    }
+
+    sanitizedTasks.push({
+      name,
+      date: displayDate,
+      time: rawTime
+    });
+  }
+
+  return { valid: true, data: sanitizedTasks };
+}
+
+// Serialize + Encode danh sách nhiệm vụ đã chọn
+async function serializeAndCreateShareCode(selectedTaskObjects) {
+  // Đảm bảo chỉ lấy đúng 3 trường: name, date (DD-MM-YYYY), time
+  const cleanPayload = selectedTaskObjects.map(t => ({
+    name: String(t.name).trim(),
+    date: formatDisplayDate(t.date),
+    time: String(t.time || "00:00").trim()
+  }));
+
+  const jsonStr = JSON.stringify(cleanPayload);
+  const utf8Bytes = new TextEncoder().encode(jsonStr);
+  const selfContainedCode = encodeBytesToShareCode(utf8Bytes);
+  const shortCode = computeShortHashCode(jsonStr);
+
+  // Lưu cả mã ngắn gọn vào localStorage và Firebase Cloud để dễ chia sẻ kiểu AB7K-X92P-Q41M
+  shareCodeRegistry[shortCode] = cleanPayload;
+  localStorage.setItem("studyos_share_codes", JSON.stringify(shareCodeRegistry));
+
+  if (isCloudEnabled()) {
+    try {
+      await fetch(`${getCloudBase()}/studyos_share_codes/${encodeURIComponent(shortCode)}.json`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cleanPayload)
+      });
+      return { code: shortCode, payload: cleanPayload };
+    } catch {
+      // Nếu không có mạng, trả về mã tự giải mã đầy đủ
+    }
+  }
+
+  return { code: selfContainedCode, payload: cleanPayload };
+}
+
+// Decode + Parse mã chia sẻ do người dùng nhập vào
+async function decodeAndParseShareCode(rawInputCode) {
+  const trimmed = String(rawInputCode || "").trim().toUpperCase();
+  if (!trimmed) {
+    return { valid: false, error: "Mã chia sẻ không được để trống!" };
+  }
+
+  // Kiểm tra định dạng ký tự hợp lệ (Chỉ gồm chữ cái, số và dấu gạch ngang)
+  if (!/^[A-Z0-9-]+$/.test(trimmed)) {
+    return { valid: false, error: "Mã sai định dạng! Chỉ chấp nhận chữ cái, số và dấu gạch ngang (VD: AB7K-X92P-Q41M)." };
+  }
+
+  // 1. Kiểm tra nếu là mã ngắn 3 cụm (XXXX-XXXX-XXXX) trong Registry hoặc trên Cloud
+  if (/^[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(trimmed)) {
+    if (shareCodeRegistry[trimmed]) {
+      return validateDecodedSharePayload(shareCodeRegistry[trimmed]);
+    }
+    if (isCloudEnabled()) {
+      try {
+        const res = await fetch(`${getCloudBase()}/studyos_share_codes/${encodeURIComponent(trimmed)}.json`);
+        if (res.ok) {
+          const cloudPayload = await res.json();
+          if (cloudPayload) {
+            shareCodeRegistry[trimmed] = cloudPayload;
+            localStorage.setItem("studyos_share_codes", JSON.stringify(shareCodeRegistry));
+            return validateDecodedSharePayload(cloudPayload);
+          }
+        }
+      } catch {
+        // Tiếp tục thử giải mã trực tiếp bên dưới
+      }
+    }
+  }
+
+  // 2. Giải mã trực tiếp từ chuỗi Base32 tự thân (Self-contained code)
+  const decodedBytes = decodeShareCodeToBytes(trimmed);
+  if (!decodedBytes || decodedBytes.length === 0) {
+    return { valid: false, error: "Mã không hợp lệ hoặc không thể giải mã!" };
+  }
+
+  try {
+    const jsonString = new TextDecoder("utf-8", { fatal: true }).decode(decodedBytes);
+    const parsed = JSON.parse(jsonString);
+    return validateDecodedSharePayload(parsed);
+  } catch {
+    return { valid: false, error: "Mã chia sẻ không tồn tại hoặc không thể giải mã!" };
+  }
 }
 
 // ---------- Đồng bộ Firebase Cloud ----------
@@ -288,6 +529,7 @@ function loadActiveUserData() {
   tasks = loadJSON(tasksKey, []);
   futureMails = loadJSON(mailsKey, []);
   sharedLetters = loadJSON("studyos_shared_letters", []);
+  selectedShareTaskIndices.clear();
   migrateTasks();
 }
 
@@ -481,6 +723,98 @@ function renderAll() {
   renderWeeklyCalendar();
   renderFocusSelector();
   renderAnalyticsCharts();
+  renderShareTaskSelector();
+}
+
+// ---------- RENDER GIAO DIỆN TAB SHARE ----------
+function renderShareTaskSelector() {
+  const listEl = document.getElementById("share-task-selector-list");
+  const counterEl = document.getElementById("share-selected-counter");
+  if (!listEl || !counterEl) return;
+
+  listEl.innerHTML = "";
+
+  // Loại bỏ các index không còn tồn tại nếu người dùng vừa xoá task
+  Array.from(selectedShareTaskIndices).forEach(idx => {
+    if (!tasks[idx]) selectedShareTaskIndices.delete(idx);
+  });
+
+  if (tasks.length === 0) {
+    listEl.innerHTML = `<p class="text-muted">Chưa có nhiệm vụ nào để chia sẻ. Hãy tạo nhiệm vụ mới ở mục Nhiệm vụ!</p>`;
+    counterEl.textContent = "Đã chọn: 0 nhiệm vụ";
+    return;
+  }
+
+  const sorted = getSortedTasks();
+  sorted.forEach(task => {
+    const realIdx = tasks.indexOf(task);
+    const isChecked = selectedShareTaskIndices.has(realIdx);
+    const displayDate = formatDisplayDate(task.date);
+    const displayTime = task.time || "00:00";
+
+    const row = document.createElement("label");
+    row.className = `share-task-row ${isChecked ? "selected" : ""}`;
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = isChecked;
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        selectedShareTaskIndices.add(realIdx);
+        row.classList.add("selected");
+      } else {
+        selectedShareTaskIndices.delete(realIdx);
+        row.classList.remove("selected");
+      }
+      counterEl.textContent = `Đã chọn: ${selectedShareTaskIndices.size} nhiệm vụ`;
+    });
+
+    const textLine = document.createElement("div");
+    textLine.className = "share-task-line";
+    textLine.innerHTML = `
+      <span>${task.name}</span>
+      <span class="share-task-sep">—</span>
+      <span class="share-task-datetime">${displayDate}</span>
+      <span class="share-task-sep">—</span>
+      <span class="share-task-datetime">${displayTime}</span>
+    `;
+
+    row.appendChild(checkbox);
+    row.appendChild(textLine);
+    listEl.appendChild(row);
+  });
+
+  counterEl.textContent = `Đã chọn: ${selectedShareTaskIndices.size} nhiệm vụ`;
+}
+
+function renderSharePreviewItems(containerEl, itemsArray) {
+  containerEl.innerHTML = "";
+  const table = document.createElement("div");
+  table.className = "share-preview-table";
+
+  itemsArray.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "share-preview-item";
+
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "share-preview-date";
+    dateSpan.textContent = formatDisplayDate(item.date);
+
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "share-preview-time";
+    timeSpan.textContent = item.time;
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "share-preview-name";
+    nameSpan.textContent = item.name;
+
+    row.appendChild(dateSpan);
+    row.appendChild(timeSpan);
+    row.appendChild(nameSpan);
+    table.appendChild(row);
+  });
+
+  containerEl.appendChild(table);
 }
 
 // ---------- VẼ BIỂU ĐỒ ĐƯỜNG ----------
@@ -761,7 +1095,6 @@ function renderSealedLettersList() {
 }
 
 // ---------- PHẦN 2: TÌM NGƯỜI NHẬN CHÍNH XÁC & ẨN THÔNG TIN CHÉO ----------
-// matchedBy: "username" (ẩn email) | "email" (ẩn tên)
 function selectRecipientUser(userObj, matchedBy = "username") {
   const hiddenInput = document.getElementById("selected-recipient-username");
   const chipEl = document.getElementById("selected-recipient-chip");
@@ -783,7 +1116,6 @@ function selectRecipientUser(userObj, matchedBy = "username") {
   renderAvatarElement(avatarDiv, userObj.avatar, fallbackChar);
 
   const labelSpan = document.createElement("span");
-  // Nếu tìm bằng email thì chỉ hiện email (ẩn tên), nếu tìm bằng tên thì chỉ hiện @username (ẩn email)
   labelSpan.textContent =
     matchedBy === "email" && userObj.email
       ? userObj.email
@@ -823,7 +1155,6 @@ function renderRecipientSuggestions(queryText) {
   const rawQuery = String(queryText || "").trim().toLowerCase();
   const cleanUsernameQuery = rawQuery.replace(/^@/, "");
 
-  // Không hiện bất kỳ ai nếu chưa gõ chữ
   if (!cleanUsernameQuery) {
     dropdownEl.innerHTML = "";
     dropdownEl.classList.add("hidden");
@@ -832,7 +1163,6 @@ function renderRecipientSuggestions(queryText) {
 
   const allUserList = Object.values(users).filter(u => u && u.username);
 
-  // Chỉ lọc khi gõ khớp chính xác với tên (username) hoặc khớp chính xác với email
   const exactMatches = [];
   allUserList.forEach(u => {
     const isExactUsername = u.username.toLowerCase() === cleanUsernameQuery;
@@ -850,7 +1180,6 @@ function renderRecipientSuggestions(queryText) {
 
   dropdownEl.innerHTML = "";
 
-  // Chưa gõ đúng hoàn toàn tên hoặc email thì không hiển thị danh sách người dùng
   if (exactMatches.length === 0) {
     dropdownEl.classList.add("hidden");
     return;
@@ -873,13 +1202,11 @@ function renderRecipientSuggestions(queryText) {
     const isSelf = currentUser && u.username === currentUser;
 
     if (matchedBy === "email") {
-      // Tìm bằng email -> Ẩn tên (username), chỉ hiện email
       info.innerHTML = `
         <span class="suggestion-name">${u.email} ${isSelf ? "(Bạn)" : ""}</span>
         <span class="suggestion-email">Nhấn để chọn người nhận qua Email</span>
       `;
     } else {
-      // Tìm bằng tên (username) -> Ẩn email, chỉ hiện @username
       info.innerHTML = `
         <span class="suggestion-name">@${u.username} ${isSelf ? "(Bạn)" : ""}</span>
         <span class="suggestion-email">Nhấn để chọn người nhận</span>
@@ -923,7 +1250,6 @@ function renderSocialLettersList() {
   inboxCountEl.textContent = String(inboxLetters.length);
   sentCountEl.textContent = String(sentLetters.length);
 
-  // Render Hộp thư đến
   if (inboxLetters.length === 0) {
     inboxEl.innerHTML = `<p class="text-muted">Hộp thư đến trống. Chưa có người dùng nào gửi thư niêm phong cho @${currentUser}.</p>`;
   } else {
@@ -979,7 +1305,6 @@ function renderSocialLettersList() {
     });
   }
 
-  // Render Hộp thư đã gửi
   if (sentLetters.length === 0) {
     sentEl.innerHTML = `<p class="text-muted">Bạn chưa gửi bức thư niêm phong nào cho người dùng khác.</p>`;
   } else {
@@ -1117,6 +1442,7 @@ function createTaskRowElement(task, realIdx) {
   delBtn.addEventListener("click", () => {
     if (confirm(`Xoá nhiệm vụ "${task.name}"?`)) {
       tasks.splice(realIdx, 1);
+      selectedShareTaskIndices.clear();
       saveStorage();
       renderAll();
       showToast("Đã xoá nhiệm vụ.");
@@ -1304,6 +1630,7 @@ function stopFocusSession(actionType) {
   document.getElementById("focus-start-btn").classList.remove("hidden");
   document.getElementById("focus-pause-btn").classList.add("hidden");
   document.getElementById("focus-done-btn").classList.add("hidden");
+  document.getElementById("focus-quit-btn").classList.remove("hidden");
   document.getElementById("focus-quit-btn").classList.add("hidden");
   document.getElementById("focus-task-select").disabled = false;
   document.getElementById("timer-ring").classList.remove("paused", "warning", "danger");
@@ -1340,6 +1667,9 @@ function switchTab(tabId) {
     pullSharedLettersFromCloud();
     renderSealedLettersList();
     renderSocialLettersList();
+  }
+  if (tabId === "share") {
+    renderShareTaskSelector();
   }
 }
 
@@ -1424,7 +1754,211 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.id === "letter-modal-overlay") closeLetterModal();
   });
 
-  // Chuyển đổi 2 chế độ trong Future Messages (1. Cá nhân | 2. Gửi người dùng khác)
+  // =========================================================================
+  // SỰ KIỆN CHO TRANG SHARE (CHIA SẺ & NHẬP MÃ NHIỆM VỤ)
+  // =========================================================================
+  document.querySelectorAll(".share-mode-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".share-mode-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      const mode = btn.dataset.sharemode;
+      document.getElementById("share-pane-export").classList.toggle("hidden", mode !== "export");
+      document.getElementById("share-pane-import").classList.toggle("hidden", mode !== "import");
+      if (mode === "export") {
+        renderShareTaskSelector();
+      }
+    });
+  });
+
+  document.getElementById("share-select-all-btn").addEventListener("click", () => {
+    if (tasks.length === 0) {
+      showToast("Chưa có nhiệm vụ nào để chọn!", true);
+      return;
+    }
+    tasks.forEach((_, idx) => selectedShareTaskIndices.add(idx));
+    renderShareTaskSelector();
+  });
+
+  document.getElementById("share-deselect-all-btn").addEventListener("click", () => {
+    selectedShareTaskIndices.clear();
+    renderShareTaskSelector();
+  });
+
+  document.getElementById("generate-share-code-btn").addEventListener("click", async () => {
+    if (selectedShareTaskIndices.size === 0) {
+      showToast("Vui lòng chọn ít nhất một nhiệm vụ để tạo mã chia sẻ!", true);
+      return;
+    }
+
+    const chosenTasks = Array.from(selectedShareTaskIndices)
+      .map(idx => tasks[idx])
+      .filter(Boolean);
+
+    if (chosenTasks.length === 0) {
+      showToast("Danh sách nhiệm vụ đã chọn không hợp lệ!", true);
+      return;
+    }
+
+    const genBtn = document.getElementById("generate-share-code-btn");
+    genBtn.disabled = true;
+    genBtn.textContent = "Đang tạo mã...";
+
+    try {
+      const { code, payload } = await serializeAndCreateShareCode(chosenTasks);
+      currentGeneratedShareCode = code;
+
+      const codeOutputEl = document.getElementById("share-code-output");
+      codeOutputEl.className = "";
+      codeOutputEl.textContent = code;
+
+      document.getElementById("copy-share-code-btn").disabled = false;
+      document.getElementById("share-code-status-pill").textContent = `${payload.length} nhiệm vụ`;
+
+      const previewContainer = document.getElementById("share-exported-preview-list");
+      renderSharePreviewItems(previewContainer, payload);
+
+      showToast(`Đã tạo mã chia sẻ cho ${payload.length} nhiệm vụ!`);
+    } catch {
+      showToast("Không thể tạo mã chia sẻ, vui lòng thử lại!", true);
+    } finally {
+      genBtn.disabled = false;
+      genBtn.textContent = "Tạo mã chia sẻ";
+    }
+  });
+
+  document.getElementById("copy-share-code-btn").addEventListener("click", async () => {
+    if (!currentGeneratedShareCode) {
+      showToast("Chưa có mã chia sẻ để sao chép!", true);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(currentGeneratedShareCode);
+      showToast("Đã sao chép mã chia sẻ vào bộ nhớ tạm!");
+    } catch {
+      // Fallback copy nếu trình duyệt chặn clipboard API
+      const tempInput = document.createElement("textarea");
+      tempInput.value = currentGeneratedShareCode;
+      document.body.appendChild(tempInput);
+      tempInput.select();
+      document.execCommand("copy");
+      tempInput.remove();
+      showToast("Đã sao chép mã chia sẻ!");
+    }
+  });
+
+  // Xử lý Nhập mã chia sẻ (Decode & Xem trước)
+  document.getElementById("import-share-code-form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const rawCode = document.getElementById("share-code-input").value.trim();
+
+    if (!rawCode) {
+      showToast("Vui lòng nhập mã chia sẻ trước khi nhấn Nhập mã!", true);
+      document.getElementById("share-code-input").focus();
+      return;
+    }
+
+    const submitBtn = document.getElementById("decode-share-code-btn");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Đang kiểm tra...";
+
+    try {
+      const result = await decodeAndParseShareCode(rawCode);
+      const previewContainer = document.getElementById("import-preview-container");
+      const actionsBar = document.getElementById("import-preview-actions");
+      const countPill = document.getElementById("import-preview-count-pill");
+
+      if (!result.valid) {
+        pendingImportTasks = [];
+        countPill.textContent = "0 nhiệm vụ";
+        previewContainer.innerHTML = `<p class="text-muted">${result.error}</p>`;
+        actionsBar.classList.add("hidden");
+        showToast(result.error, true);
+        return;
+      }
+
+      pendingImportTasks = result.data;
+      countPill.textContent = `${pendingImportTasks.length} nhiệm vụ`;
+      renderSharePreviewItems(previewContainer, pendingImportTasks);
+      actionsBar.classList.remove("hidden");
+      showToast(`Đã giải mã thành công ${pendingImportTasks.length} nhiệm vụ!`);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Nhập mã";
+    }
+  });
+
+  // Nút Hủy khi xem trước mã nhập
+  document.getElementById("cancel-import-share-btn").addEventListener("click", () => {
+    pendingImportTasks = [];
+    document.getElementById("share-code-input").value = "";
+    document.getElementById("import-preview-count-pill").textContent = "0 nhiệm vụ";
+    document.getElementById("import-preview-container").innerHTML =
+      `<p class="text-muted">Đã hủy xem trước. Hãy nhập mã chia sẻ hợp lệ ở khung bên trái để hiển thị bản xem trước tại đây.</p>`;
+    document.getElementById("import-preview-actions").classList.add("hidden");
+    showToast("Đã hủy nhập mã chia sẻ.");
+  });
+
+  // Nút Thêm vào lịch
+  document.getElementById("confirm-import-share-btn").addEventListener("click", () => {
+    if (!Array.isArray(pendingImportTasks) || pendingImportTasks.length === 0) {
+      showToast("Không có nhiệm vụ nào để thêm vào lịch!", true);
+      return;
+    }
+
+    let addedCount = 0;
+    let duplicateCount = 0;
+
+    pendingImportTasks.forEach(item => {
+      const itemName = String(item.name).trim();
+      const itemISO = parseAndValidateDDMMYYYY(formatDisplayDate(item.date));
+      const itemTime = String(item.time).trim();
+
+      if (!itemName || !itemISO || !validateTimeHHMM(itemTime)) return;
+
+      // Kiểm tra chống trùng lặp hoàn toàn về Tên + Ngày + Thời gian
+      const isDuplicate = tasks.some(existing => {
+        const existingName = String(existing.name || "").trim();
+        const existingISO = toInputDateStr(existing.date);
+        const existingTime = String(existing.time || "00:00").trim();
+        return existingName === itemName && existingISO === itemISO && existingTime === itemTime;
+      });
+
+      if (isDuplicate) {
+        duplicateCount++;
+      } else {
+        tasks.push({
+          name: itemName,
+          date: itemISO,
+          time: itemTime,
+          done: false
+        });
+        addedCount++;
+      }
+    });
+
+    saveStorage();
+    renderAll();
+
+    // Reset khu vực preview sau khi thêm thành công
+    pendingImportTasks = [];
+    document.getElementById("share-code-input").value = "";
+    document.getElementById("import-preview-count-pill").textContent = "0 nhiệm vụ";
+    document.getElementById("import-preview-container").innerHTML =
+      `<p class="text-muted">Đã thêm nhiệm vụ vào lịch! Bạn có thể kiểm tra ngay trong mục Nhiệm vụ hoặc Lịch tuần.</p>`;
+    document.getElementById("import-preview-actions").classList.add("hidden");
+
+    if (addedCount > 0 && duplicateCount > 0) {
+      showToast(`Đã thêm ${addedCount} nhiệm vụ vào lịch (bỏ qua ${duplicateCount} nhiệm vụ trùng lặp)!`);
+    } else if (addedCount > 0) {
+      showToast(`Đã thêm thành công ${addedCount} nhiệm vụ vào lịch của bạn!`);
+    } else {
+      showToast(`Tất cả ${duplicateCount} nhiệm vụ trong mã đều đã có sẵn trong lịch của bạn!`);
+    }
+  });
+
+  // =========================================================================
+  // SỰ KIỆN FUTURE MESSAGES & CÁC TAB KHÁC
+  // =========================================================================
   document.querySelectorAll(".fm-mode-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll(".fm-mode-btn").forEach(b => b.classList.remove("active"));
@@ -1440,7 +1974,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Chuyển đổi Hộp thư đến / Đã gửi
   document.querySelectorAll("[data-socialbox]").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll("[data-socialbox]").forEach(b => b.classList.remove("active"));
@@ -1457,7 +1990,6 @@ document.addEventListener("DOMContentLoaded", () => {
     showToast("Đã làm mới danh sách người dùng và hộp thư!");
   });
 
-  // Ô tìm kiếm người nhận: Chỉ hiện khi gõ đúng tên hoặc đúng email
   const recipientSearchInput = document.getElementById("recipient-search-input");
   const recipientDropdown = document.getElementById("recipient-suggestions");
 
@@ -1484,7 +2016,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Gửi thư niêm phong cho người dùng khác
   document.getElementById("user-letter-form").addEventListener("submit", async e => {
     e.preventDefault();
     if (!currentUser || !users[currentUser]) {
@@ -1500,7 +2031,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const rawTyped = recipientSearchInput.value.trim().toLowerCase();
     const cleanTypedUsername = rawTyped.replace(/^@/, "");
 
-    // Nếu người dùng gõ trực tiếp đúng username hoặc đúng email mà chưa bấm vào gợi ý
     if (!recipientUsername && cleanTypedUsername) {
       const foundByEmail =
         !rawTyped.startsWith("@") &&

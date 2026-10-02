@@ -17,7 +17,7 @@
         <div class="brand-logo">S</div>
         <div class="brand-info">
           <h1 id="app-title">Study OS</h1>
-          <span class="version-badge">v7.00 Web</span>
+          <span class="version-badge">v7.01 Web</span>
         </div>
       </div>
 
@@ -52,12 +52,15 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
           <span>Thống kê</span>
         </button>
-        <!-- TÁCH RIÊNG TAB FUTURE MESSAGES -->
         <button class="nav-item" data-tab="future-messages">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           <span>Future Messages</span>
         </button>
-        <!-- TÁCH RIÊNG TAB HỒ SƠ -->
+        <!-- OPTION MỚI: SHARE -->
+        <button class="nav-item" data-tab="share">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          <span>Share</span>
+        </button>
         <button class="nav-item" data-tab="profile">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           <span>Hồ sơ</span>
@@ -299,14 +302,13 @@
         </div>
       </section>
 
-      <!-- TAB 6: FUTURE MESSAGES (TÁCH ĐỘC LẬP GỒM 2 PHẦN) -->
+      <!-- TAB 6: FUTURE MESSAGES -->
       <section class="tab-pane" id="tab-future-messages">
         <div class="fm-top-header">
           <div>
             <h3>✉️ Future Messages</h3>
             <p class="text-muted">Niêm phong thư gửi cho bản thân hoặc gửi thư hẹn ngày mở cho người dùng khác</p>
           </div>
-          <!-- Thanh chuyển đổi 2 chế độ trong Future Messages -->
           <div class="fm-mode-switcher">
             <button type="button" class="fm-mode-btn active" data-fmmode="personal">
               🔒 1. Niêm phong cá nhân
@@ -364,7 +366,7 @@
           </div>
         </div>
 
-        <!-- PHẦN 2: GỬI THƯ NIÊM PHONG CHO NGƯỜI DÙNG KHÁC (TÌM NGƯỜI DÙNG GIỐNG EMAIL) -->
+        <!-- PHẦN 2: GỬI THƯ NIÊM PHONG CHO NGƯỜI DÙNG KHÁC -->
         <div id="fm-pane-social" class="dashboard-columns hidden">
           <div class="card">
             <div class="card-header">
@@ -375,22 +377,19 @@
             </p>
 
             <form id="user-letter-form" class="form-stack">
-              <!-- Ô tìm kiếm người nhận kiểu Email Chip + Autocomplete -->
               <div class="form-group">
                 <label for="recipient-search-input">Người nhận (To:) <span class="req">*</span></label>
                 <div class="email-recipient-wrapper" id="recipient-box-wrapper">
                   <div class="email-recipient-box" id="email-recipient-box">
-                    <!-- Thẻ Chip người dùng đã chọn -->
                     <div id="selected-recipient-chip" class="recipient-chip hidden"></div>
                     <input
                       type="text"
                       id="recipient-search-input"
-                      placeholder="Nhập @username hoặc email để tìm người dùng..."
+                      placeholder="Nhập đúng @username hoặc email để tìm người nhận..."
                       autocomplete="off"
                     />
                   </div>
                   <input type="hidden" id="selected-recipient-username" value="" />
-                  <!-- Danh sách gợi ý thả xuống kiểu Gmail -->
                   <div id="recipient-suggestions" class="recipient-dropdown hidden"></div>
                 </div>
               </div>
@@ -426,7 +425,6 @@
             </form>
           </div>
 
-          <!-- Cột phải: Hộp thư đến & Thư đã gửi -->
           <div class="card">
             <div class="card-header">
               <div class="filter-tabs">
@@ -448,9 +446,127 @@
         </div>
       </section>
 
-      <!-- TAB 7: HỒ SƠ CÁ NHÂN (ĐÃ TÁCH RIÊNG GỌN GÀNG) -->
+      <!-- TAB 7: SHARE (CHIA SẺ & NHẬP MÃ NHIỆM VỤ) -->
+      <section class="tab-pane" id="tab-share">
+        <div class="fm-top-header">
+          <div>
+            <h3>🔗 Share Nhiệm vụ & Lịch học</h3>
+            <p class="text-muted">Chọn các nhiệm vụ (Tên — Ngày — Thời gian) để tạo mã chia sẻ hoặc nhập mã từ bạn bè vào lịch</p>
+          </div>
+          <div class="fm-mode-switcher">
+            <button type="button" class="share-mode-btn active" data-sharemode="export">
+              📤 Chia sẻ
+            </button>
+            <button type="button" class="share-mode-btn" data-sharemode="import">
+              📥 Nhập mã
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB CON 1: CHIA SẺ NHIỆM VỤ -->
+        <div id="share-pane-export" class="dashboard-columns">
+          <div class="card">
+            <div class="card-header">
+              <div>
+                <h3>Chọn nhiệm vụ để chia sẻ</h3>
+                <p class="text-muted">Có thể chọn một hoặc nhiều nhiệm vụ ở các ngày khác nhau</p>
+              </div>
+              <div class="share-select-actions">
+                <button type="button" class="action-chip" id="share-select-all-btn">Chọn tất cả</button>
+                <button type="button" class="action-chip" id="share-deselect-all-btn">Bỏ chọn</button>
+              </div>
+            </div>
+
+            <div id="share-task-selector-list" class="share-task-list"></div>
+
+            <div class="share-footer-bar">
+              <span class="text-muted" id="share-selected-counter">Đã chọn: 0 nhiệm vụ</span>
+              <button type="button" class="btn btn-primary" id="generate-share-code-btn">
+                Tạo mã chia sẻ
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>Mã chia sẻ của bạn</h3>
+              <span class="stat-pill" id="share-code-status-pill">Sẵn sàng</span>
+            </div>
+            <p class="text-muted mb-16">
+              Mã chia sẻ chỉ đóng gói đúng 3 thông tin của mỗi nhiệm vụ: <strong>Tên nhiệm vụ</strong>, <strong>Ngày (DD-MM-YYYY)</strong> và <strong>Thời gian (HH:MM)</strong>.
+            </p>
+
+            <div class="share-code-box" id="share-code-box">
+              <span class="share-code-placeholder" id="share-code-output">Chưa có mã. Hãy chọn nhiệm vụ bên trái và nhấn "Tạo mã chia sẻ".</span>
+            </div>
+
+            <div class="form-actions mt-16">
+              <button type="button" class="btn btn-primary" id="copy-share-code-btn" disabled>
+                Sao chép mã
+              </button>
+            </div>
+
+            <hr class="divider" />
+            <h4 class="mb-12">Nhiệm vụ nằm trong mã vừa tạo</h4>
+            <div id="share-exported-preview-list" class="share-preview-table">
+              <p class="text-muted">Chưa có dữ liệu xem trước.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CON 2: NHẬP MÃ CHIA SẺ -->
+        <div id="share-pane-import" class="dashboard-columns hidden">
+          <div class="card">
+            <div class="card-header">
+              <h3>Nhập mã chia sẻ</h3>
+            </div>
+            <p class="text-muted mb-16">
+              Dán mã chia sẻ nhận được từ bạn bè vào ô bên dưới để xem trước các nhiệm vụ trước khi thêm vào lịch.
+            </p>
+
+            <form id="import-share-code-form" class="form-stack">
+              <div class="form-group">
+                <label for="share-code-input">Mã chia sẻ <span class="req">*</span></label>
+                <div class="share-input-row">
+                  <input
+                    type="text"
+                    id="share-code-input"
+                    class="share-code-input-field"
+                    placeholder="VD: AB7K-X92P-Q41M..."
+                    autocomplete="off"
+                  />
+                  <button type="submit" class="btn btn-primary" id="decode-share-code-btn">
+                    Nhập mã
+                  </button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>NHIỆM VỤ ĐƯỢC CHIA SẺ</h3>
+              <span class="stat-pill" id="import-preview-count-pill">0 nhiệm vụ</span>
+            </div>
+
+            <div id="import-preview-container" class="share-preview-wrapper">
+              <p class="text-muted">Hãy nhập mã chia sẻ hợp lệ ở khung bên trái để hiển thị bản xem trước tại đây.</p>
+            </div>
+
+            <div id="import-preview-actions" class="form-actions mt-16 hidden">
+              <button type="button" class="btn btn-ghost" id="cancel-import-share-btn">
+                Hủy
+              </button>
+              <button type="button" class="btn btn-success" id="confirm-import-share-btn">
+                Thêm vào lịch
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 8: HỒ SƠ CÁ NHÂN -->
       <section class="tab-pane" id="tab-profile">
-        <!-- Giao diện dành cho Tài khoản Khách (Chưa đăng nhập) -->
         <div id="auth-guest-view" class="auth-wrapper">
           <div class="card auth-card">
             <div class="auth-tabs">
@@ -490,7 +606,6 @@
           </div>
         </div>
 
-        <!-- Giao diện dành cho Tài khoản đã đăng ký -->
         <div id="auth-user-view" class="dashboard-columns hidden">
           <div class="card">
             <div class="card-header">
@@ -547,7 +662,7 @@
         </div>
       </section>
 
-      <!-- TAB 8: CÀI ĐẶT & DỮ LIỆU -->
+      <!-- TAB 9: CÀI ĐẶT & DỮ LIỆU -->
       <section class="tab-pane" id="tab-settings">
         <div class="dashboard-columns">
           <div class="card">
@@ -613,7 +728,7 @@
     </main>
   </div>
 
-  <!-- MODAL MỞ THƯ NIÊM PHONG (DÙNG CHUNG CHO CẢ THƯ CÁ NHÂN & THƯ NGƯỜI DÙNG GỬI) -->
+  <!-- MODAL MỞ THƯ NIÊM PHONG -->
   <div id="letter-modal-overlay" class="letter-modal-overlay hidden">
     <div class="letter-modal-card" role="dialog" aria-modal="true">
       <div class="letter-modal-topbar">
