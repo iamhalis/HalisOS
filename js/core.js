@@ -4,26 +4,7 @@
 const CLOUD_DB_URL = "https://halisos-default-rtdb.asia-southeast1.firebasedatabase.app/";
 
 const QUOTES = [
-  "'Hãy sống như thể ngày mai bạn sẽ chết. Hãy học như thể bạn sẽ sống mãi mãi.' — Mahatma Gandhi",
-  "'Thành công không phải là cuối cùng, thất bại không phải là tận cùng: điều quan trọng là lòng can đảm để tiếp tục.' — Winston Churchill",
-  "'Mọi thứ luôn có vẻ bất khả thi cho đến khi nó được hoàn thành.' — Nelson Mandela",
-  "'Vinh quang lớn nhất của chúng ta không phải là không bao giờ ngã, mà là luôn đứng dậy sau mỗi lần vấp ngã.' — Khổng Tử",
-  "'Cách duy nhất để làm nên những điều vĩ đại là yêu điều mình làm.' — Steve Jobs",
-  "'Hãy tin rằng bạn có thể, và bạn đã đi được nửa chặng đường.' — Theodore Roosevelt",
-  "'Giáo dục là vũ khí mạnh nhất mà bạn có thể dùng để thay đổi thế giới.' — Nelson Mandela",
-  "'Đầu tư vào tri thức luôn mang lại lợi nhuận cao nhất.' — Benjamin Franklin",
-  "'Điều quan trọng là đừng bao giờ ngừng đặt câu hỏi.' — Albert Einstein",
-  "'Người chưa từng mắc sai lầm là người chưa từng thử điều gì mới.' — Albert Einstein",
-  "'Thành công thường đến với những người quá bận rộn để đi tìm nó.' — Henry David Thoreau",
-  "'Hãy làm những gì bạn có thể, với những gì bạn có, ở nơi bạn đang đứng.' — Theodore Roosevelt",
-  "'Chất lượng không phải là một hành động, mà là một thói quen.' — Aristotle",
-  "'Bí quyết để tiến lên phía trước là bắt đầu.' — Mark Twain",
-  "'Bạn sẽ bỏ lỡ 100% cơ hội nếu không dám thử.' — Wayne Gretzky",
-  "'Tôi càng làm việc chăm chỉ, tôi càng gặp nhiều may mắn.' — Samuel Goldwyn",
-  "'Chiến thắng bản thân là chiến thắng vĩ đại nhất.' — Khổng Tử",
-  "'Tôi không thất bại. Tôi chỉ tìm ra 10.000 cách không hiệu quả.' — Thomas Edison",
-  "'Tương lai thuộc về những người tin vào vẻ đẹp của ước mơ.' — Eleanor Roosevelt",
-  "'Thiên tài là 1% cảm hứng và 99% mồ hôi.' — Thomas Edison"
+  "'Kỷ luật là cầu nối giữa mục tiêu và thành tựu.' — Jim Rohn", "'Rễ của sự học thì đắng, nhưng quả của nó lại ngọt ngào.' — Aristotle", "'Không có thang máy dẫn đến thành công, bạn phải đi bằng cầu thang bộ.' — Zig Ziglar", "'Nỗ lực nhỏ được lặp lại mỗi ngày chính là chìa khóa tạo nên kỳ tích.' — Robert Collier", "'Học tập không làm cạn kiệt tâm trí, nó chỉ làm tâm trí thêm bừng sáng.' — Leonardo da Vinci", "'Sự chuẩn bị kỹ lưỡng ngày hôm nay là thành công của ngày mai.' — Malcolm X", "'Kiên trì không phải là một cuộc đua dài, mà là nhiều cuộc đua ngắn nối tiếp nhau.' — Walter Elliot", "'Đừng sợ đi chậm, chỉ sợ đứng yên một chỗ.' — Ngạn ngữ phương Đông", "'Không áp lực, không có kim cương.' — Thomas Carlyle", "'Hành trình vạn dặm luôn bắt đầu từ một bước chân.' — Lão Tử", "'Tri thức là kho báu, nhưng thực hành mới là chìa khóa mở kho báu đó.' — Thomas Fuller", "'Đừng giảm mục tiêu của bạn xuống, hãy tăng sự nỗ lực của bạn lên.' — Grant Cardone", "'Người muốn tỏa sáng thì phải chấp nhận những giờ phút miệt mài trong bóng tối.' — Khuyết danh", "'Sự khác biệt giữa người thành công và những người khác không phải là thiếu sức mạnh hay kiến thức, mà là thiếu ý chí.' — Vince Lombardi", "'Hôm nay bạn đọc một trang sách, ngày mai bạn tiến gần hơn một bước tới ước mơ.' — Khuyết danh", "'Đau đớn của sự kỷ luật chỉ nặng vài gam, nhưng nỗi đau của sự hối hận nặng tới hàng tấn.' — Jim Rohn", "'Chuyên gia trong bất kỳ lĩnh vực nào cũng từng là một người mới bắt đầu.' — Helen Hayes", "'Tập trung vào việc trở nên hiệu quả, chứ không phải chỉ bận rộn.' — Tim Ferriss", "'Giọt nước làm mòn tảng đá không phải bằng sức mạnh, mà bằng sự bền bỉ.' — Ovid", "'Nếu bạn không sẵn sàng học hỏi, không ai có thể giúp bạn. Nếu bạn quyết tâm học hỏi, không ai có thể ngăn cản bạn.' — Zig Ziglar", "'Đừng nhìn đồng hồ; hãy làm những gì nó làm: cứ tiếp tục tiến tới.' — Sam Levenson", "'Thời gian tốt nhất để trồng một cái cây là 20 năm trước. Thời gian tốt thứ hai là ngay bây giờ.' — Ngạn ngữ", "'Thất bại đơn giản là cơ hội để bắt đầu lại một cách thông minh hơn.' — Henry Ford", "'Ước mơ sẽ không thành hiện thực nếu bạn chỉ mơ mộng mà không bắt tay vào làm.' — John C. Maxwell", "'Cách tốt nhất để dự đoán tương lai là tự mình kiến tạo nên nó.' — Abraham Lincoln", "'Hãy nghiêm khắc với bản thân và bao dung với người khác.' — Khổng Tử", "'Sức mạnh không đến từ những điều bạn đã làm được, nó đến từ việc vượt qua những điều bạn từng nghĩ mình không thể.' — Rikki Rogers", "'Một giờ tập trung cao độ có giá trị hơn cả một ngày làm việc hời hợt.' — Cal Newport", "'Khó khăn ngày hôm nay chính là sức mạnh của bạn vào ngày mai.' — Khuyết danh", "'Đỉnh cao không dành cho người may mắn, nó dành cho người không bỏ cuộc giữa chừng.' — Khuyết danh"
 ];
 
 const DEFAULT_CONFIG = {
@@ -378,46 +359,28 @@ function calculateDaysLeft() {
   return diff >= 0 ? diff : 0;
 }
 
-function refreshQuote() {
-  const randomQuote = QUOTES[Math.floor(Math.random() * QUOTES.length)];
-  document.getElementById("quote-text").textContent = randomQuote;
+// Biến lưu vị trí câu danh ngôn hiện tại trong ngày
+let currentQuoteIndex = -1;
+
+function getDailyQuoteIndex() {
+  const now = new Date();
+  // Tính số ngày tính từ mốc cố định để mỗi ngày tăng đúng 1 đơn vị
+  const daysSinceEpoch = Math.floor(
+    Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000
+  );
+  return daysSinceEpoch % QUOTES.length;
 }
 
-function bindCustomDateInput(textInputId, hiddenDateId, triggerBtnId, onChangeCallback) {
-  const textEl = document.getElementById(textInputId);
-  const hiddenEl = document.getElementById(hiddenDateId);
-  const btnEl = document.getElementById(triggerBtnId);
-  if (!textEl || !hiddenEl || !btnEl) return;
+// Mặc định lấy đúng câu danh ngôn của ngày hôm nay; nếu truyền true thì chuyển sang câu kế tiếp
+function refreshQuote(forceNext = false) {
+  if (currentQuoteIndex === -1 || !forceNext) {
+    currentQuoteIndex = getDailyQuoteIndex();
+  } else {
+    currentQuoteIndex = (currentQuoteIndex + 1) % QUOTES.length;
+  }
 
-  btnEl.addEventListener("click", () => {
-    if (typeof hiddenEl.showPicker === "function") {
-      hiddenEl.showPicker();
-    } else {
-      hiddenEl.focus();
-      hiddenEl.click();
-    }
-  });
-
-  hiddenEl.addEventListener("change", () => {
-    if (hiddenEl.value) {
-      textEl.value = formatDisplayDate(hiddenEl.value);
-      if (typeof onChangeCallback === "function") onChangeCallback(hiddenEl.value);
-    }
-  });
-
-  textEl.addEventListener("input", e => {
-    const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
-    if (digits.length >= 5) {
-      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2, 4)}-${digits.slice(4)}`;
-    } else if (digits.length >= 3) {
-      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2)}`;
-    } else {
-      e.target.value = digits;
-    }
-    const iso = parseAndValidateDDMMYYYY(e.target.value);
-    if (iso) {
-      hiddenEl.value = iso;
-      if (typeof onChangeCallback === "function") onChangeCallback(iso);
-    }
-  });
+  const quoteEl = document.getElementById("quote-text");
+  if (quoteEl) {
+    quoteEl.textContent = QUOTES[currentQuoteIndex];
+  }
 }

@@ -117,8 +117,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("task-name-input").focus();
   });
 
-  document.getElementById("refresh-quote-btn").addEventListener("click", refreshQuote);
-
+  document.getElementById("refresh-quote-btn").addEventListener("click", () => refreshQuote(true));
+  
   document.getElementById("theme-toggle-btn").addEventListener("click", () => {
     const html = document.documentElement;
     const nextTheme = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
