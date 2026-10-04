@@ -389,3 +389,41 @@ function refreshQuote(forceNext = false) {
     quoteEl.textContent = QUOTES[currentQuoteIndex];
   }
 }
+function bindCustomDateInput(textInputId, hiddenDateId, triggerBtnId, onChangeCallback) {
+  const textEl = document.getElementById(textInputId);
+  const hiddenEl = document.getElementById(hiddenDateId);
+  const btnEl = document.getElementById(triggerBtnId);
+  if (!textEl || !hiddenEl || !btnEl) return;
+
+  btnEl.addEventListener("click", () => {
+    if (typeof hiddenEl.showPicker === "function") {
+      hiddenEl.showPicker();
+    } else {
+      hiddenEl.focus();
+      hiddenEl.click();
+    }
+  });
+
+  hiddenEl.addEventListener("change", () => {
+    if (hiddenEl.value) {
+      textEl.value = formatDisplayDate(hiddenEl.value);
+      if (typeof onChangeCallback === "function") onChangeCallback(hiddenEl.value);
+    }
+  });
+
+  textEl.addEventListener("input", e => {
+    const digits = e.target.value.replace(/\D/g, "").slice(0, 8);
+    if (digits.length >= 5) {
+      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2, 4)}-${digits.slice(4)}`;
+    } else if (digits.length >= 3) {
+      e.target.value = `${digits.slice(0, 2)}-${digits.slice(2)}`;
+    } else {
+      e.target.value = digits;
+    }
+    const iso = parseAndValidateDDMMYYYY(e.target.value);
+    if (iso) {
+      hiddenEl.value = iso;
+      if (typeof onChangeCallback === "function") onChangeCallback(iso);
+    }
+  });
+}
