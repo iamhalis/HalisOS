@@ -64,10 +64,40 @@ body {
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior-y: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.35) transparent;
+}
+
+/* Tùy chỉnh thanh cuộn cho Sidebar */
+.sidebar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.35);
+  border-radius: 9999px;
+  transition: background-color 0.2s ease;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.6);
+}
+
+.sidebar::-webkit-scrollbar-thumb:active {
+  background-color: var(--accent);
 }
 
 .brand {
@@ -76,6 +106,7 @@ body {
   gap: 12px;
   padding: 0 8px 18px;
   border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .brand-logo {
@@ -116,6 +147,7 @@ body {
   border-radius: 12px;
   cursor: pointer;
   transition: border-color 0.15s ease, background-color 0.15s ease;
+  flex-shrink: 0;
 }
 
 .sidebar-user-card:hover {
@@ -171,7 +203,7 @@ body {
   flex-direction: column;
   gap: 4px;
   margin-top: 14px;
-  flex: 1;
+  flex: 1 0 auto;
 }
 
 .nav-item {
@@ -190,6 +222,7 @@ body {
   transition: all 0.15s ease;
   text-align: left;
   font-family: inherit;
+  flex-shrink: 0;
 }
 
 .nav-item svg {
@@ -223,8 +256,10 @@ body {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .countdown-box {
@@ -1694,6 +1729,9 @@ input:focus, select:focus, textarea:focus {
   .sidebar {
     position: static;
     height: auto;
+    max-height: none;
+    overflow-y: visible;
+    overflow-x: visible;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
   }
