@@ -147,7 +147,7 @@ function getSortedTasks() {
 function isCloudEnabled() {
   return (
     CLOUD_DB_URL &&
-    CLOUD_DB_URL.startsWith("https://") &&
+    (CLOUD_DB_URL.startsWith("https://") || CLOUD_DB_URL.startsWith("http://localhost")) &&
     !CLOUD_DB_URL.includes("DAN-LINK-FIREBASE")
   );
 }
