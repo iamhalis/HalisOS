@@ -1987,3 +1987,147 @@ body.has-custom-bg .nav-item.active {
   background: rgba(255, 255, 255, 0.08) !important;
   border-left: 3px solid #6366f1 !important; /* Điểm nhấn Sidebar */
 }
+/* ==========================================================================
+   1. THANH BÊN MÀU ĐEN KIỂU GEMINI & ĐÓNG MỞ (COLLAPSIBLE SIDEBAR)
+   ========================================================================== */
+.sidebar {
+  background: #0e0f12 !important; /* Màu đen sâu đồng nhất */
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  width: 250px;
+  min-width: 250px;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s ease, padding 0.3s ease !important;
+  overflow: hidden;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Nút Logo có thể click thu gọn/mở rộng */
+.brand-logo {
+  cursor: pointer !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  user-select: none;
+}
+.brand-logo:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 14px rgba(99, 102, 241, 0.6);
+}
+
+/* KHI THANH BÊN THU GỌN (GIỐNG DẢI ICON CỦA GEMINI) */
+.sidebar.collapsed {
+  width: 72px !important;
+  min-width: 72px !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+
+/* Ẩn chữ và chi tiết phụ khi thu gọn */
+.sidebar.collapsed .brand-info,
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .nav-counter,
+.sidebar.collapsed .user-meta,
+.sidebar.collapsed .sidebar-footer {
+  opacity: 0;
+  pointer-events: none;
+  display: none !important;
+}
+
+.sidebar.collapsed .brand {
+  justify-content: center;
+  padding: 0;
+  margin-bottom: 24px;
+}
+
+.sidebar.collapsed .sidebar-user-card {
+  justify-content: center;
+  padding: 8px 0;
+  border-radius: 50%;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 16px auto;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center;
+  padding: 12px 0;
+  border-radius: 12px;
+}
+
+.sidebar.collapsed .nav-item svg {
+  margin: 0;
+  width: 20px;
+  height: 20px;
+}
+
+/* ==========================================================================
+   2. KHUNG THỨ NGÀY THÁNG BO GÓC DẠNG KHỐI KÍNH
+   ========================================================================== */
+.topbar {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 12px 24px !important;
+}
+
+.datetime-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  background: rgba(15, 18, 26, 0.75) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 20px !important;
+  padding: 8px 20px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
+}
+
+.datetime-group h2 {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  margin: 0 !important;
+  letter-spacing: -0.2px;
+}
+
+.datetime-group .live-clock {
+  font-family: monospace, ui-monospace, sans-serif !important;
+  font-size: 0.95rem !important;
+  color: #94a3b8 !important;
+  padding-left: 12px !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+/* ==========================================================================
+   3. ĐỒNG BỘ BLUR CHO TOÀN BỘ DASHBOARD (RÕ RÀNG, DỄ NHÌN)
+   ========================================================================== */
+body.has-custom-bg .card,
+body.has-custom-bg .stat-card,
+body.has-custom-bg .quote-banner,
+body.has-custom-bg .focus-container {
+  /* Tông tối vừa phải để chữ luôn nổi bật trên mọi hình nền */
+  background: rgba(18, 20, 29, 0.78) !important;
+  backdrop-filter: blur(28px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38) !important;
+  border-radius: 16px !important;
+}
+
+/* Đồng bộ độ nét cho thẻ nhiệm vụ con trong Dashboard */
+body.has-custom-bg .task-item,
+body.has-custom-bg #dashboard-upcoming-list .task-item {
+  background: rgba(30, 35, 48, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+}
+
+/* Các ô input nhập Aim và tìm kiếm */
+body.has-custom-bg input,
+body.has-custom-bg select,
+body.has-custom-bg textarea {
+  background: rgba(15, 18, 25, 0.6) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border-radius: 10px !important;
+}
