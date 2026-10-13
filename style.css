@@ -1988,19 +1988,34 @@ body.has-custom-bg .nav-item.active {
   border-left: 3px solid #6366f1 !important; /* Điểm nhấn Sidebar */
 }
 /* ==========================================================================
-   1. THANH BÊN MÀU ĐEN KIỂU GEMINI & ĐÓNG MỞ (COLLAPSIBLE SIDEBAR)
+   FIX THANH BÊN (SIDEBAR) & CẤU TRÚC LAYOUT TỰ CO GIÃN
    ========================================================================== */
-.sidebar {
-  background: #0e0f12 !important; /* Màu đen sâu đồng nhất */
+.app-layout {
+  display: grid;
+  grid-template-columns: auto 1fr !important; /* Tự co giãn theo chiều rộng sidebar, không để khoảng trống */
+  min-height: 100vh;
+}
+
+/* Luôn giữ thanh bên màu đen nguyên bản, không bị ảnh hưởng bởi ảnh nền */
+.sidebar,
+body.has-custom-bg .sidebar {
+  background: #0e0f12 !important;
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   width: 250px;
   min-width: 250px;
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.3s ease, padding 0.3s ease !important;
-  overflow: hidden;
+  max-width: 250px;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.25s ease !important;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-/* Nút Logo có thể click thu gọn/mở rộng */
+/* Nút Logo bấm đóng/mở */
 .brand-logo {
   cursor: pointer !important;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -2011,38 +2026,39 @@ body.has-custom-bg .nav-item.active {
   box-shadow: 0 0 14px rgba(99, 102, 241, 0.6);
 }
 
-/* KHI THANH BÊN THU GỌN (GIỐNG DẢI ICON CỦA GEMINI) */
+/* TRẠNG THÁI THU GỌN (COLLAPSED) CHUẨN GEMINI */
 .sidebar.collapsed {
   width: 72px !important;
   min-width: 72px !important;
+  max-width: 72px !important;
   padding-left: 10px !important;
   padding-right: 10px !important;
+  scrollbar-width: none;
+}
+.sidebar.collapsed::-webkit-scrollbar {
+  display: none;
 }
 
-/* Ẩn chữ và chi tiết phụ khi thu gọn */
+.sidebar.collapsed .brand {
+  justify-content: center;
+  padding: 0 0 16px 0;
+}
+
 .sidebar.collapsed .brand-info,
 .sidebar.collapsed .nav-item span,
 .sidebar.collapsed .nav-counter,
 .sidebar.collapsed .user-meta,
 .sidebar.collapsed .sidebar-footer {
-  opacity: 0;
-  pointer-events: none;
   display: none !important;
-}
-
-.sidebar.collapsed .brand {
-  justify-content: center;
-  padding: 0;
-  margin-bottom: 24px;
 }
 
 .sidebar.collapsed .sidebar-user-card {
   justify-content: center;
-  padding: 8px 0;
-  border-radius: 50%;
+  padding: 6px 0;
   width: 44px;
   height: 44px;
-  margin: 0 auto 16px auto;
+  margin: 12px auto;
+  border-radius: 12px;
 }
 
 .sidebar.collapsed .nav-item {
@@ -2055,6 +2071,32 @@ body.has-custom-bg .nav-item.active {
   margin: 0;
   width: 20px;
   height: 20px;
+}
+
+/* ==========================================================================
+   FIX TOPBAR: CĂN THẲNG HÀNG VỚI CÁC THẺ DASHBOARD
+   ========================================================================== */
+.topbar {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 0 20px 0 !important;
+  margin-bottom: 8px !important;
+}
+
+.datetime-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  background: rgba(15, 18, 26, 0.75) !important;
+  backdrop-filter: blur(24px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 16px !important;
+  padding: 8px 18px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35) !important;
 }
 
 /* ==========================================================================
