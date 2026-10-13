@@ -1,10 +1,20 @@
+// ==========================================================================
+// STUDY OS — MAIN ENGINE & APPLICATION CONTROLLER
+// ==========================================================================
+
 function switchTab(tabId) {
+  // Đưa màn hình về đỉnh trang ngay lập tức khi đổi tab, chống trôi giao diện
+  window.scrollTo({ top: 0, behavior: "instant" });
+  const mainEl = document.querySelector(".main-content");
+  if (mainEl) mainEl.scrollTop = 0;
+
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.tab === tabId);
   });
   document.querySelectorAll(".tab-pane").forEach(pane => {
     pane.classList.toggle("active", pane.id === `tab-${tabId}`);
   });
+
   if (tabId === "analytics") {
     renderAnalyticsCharts();
   }
@@ -16,6 +26,9 @@ function switchTab(tabId) {
   }
   if (tabId === "share") {
     renderShareTaskSelector();
+  }
+  if (tabId === "focus") {
+    syncCustomFocusDropdown();
   }
 }
 
@@ -66,10 +79,77 @@ function renderAll() {
   renderTasksTab();
   renderWeeklyCalendar();
   renderFocusSelector();
+  syncCustomFocusDropdown();
   renderAnalyticsCharts();
   renderShareTaskSelector();
 }
 
+// ==========================================================================
+// HÀM ĐỒNG BỘ DROPDOWN TÙY BIẾN CỦA FOCUS MODE VỚI DỮ LIỆU GỐC
+// ==========================================================================
+function syncCustomFocusDropdown() {
+  const nativeSelect = document.getElementById("focus-task-select");
+  const headerText = document.getElementById("custom-dropdown-selected-text");
+  const menu = document.getElementById("custom-dropdown-menu");
+  const dropdownBox = document.getElementById("custom-focus-dropdown");
+  if (!nativeSelect || !headerText || !menu) return;
+
+  menu.innerHTML = "";
+  const options = Array.from(nativeSelect.options);
+
+  if (options.length === 0) {
+    headerText.textContent = "Chưa có nhiệm vụ nào";
+    return;
+  }
+
+  const selectedOpt = nativeSelect.options[nativeSelect.selectedIndex] || options[0];
+  headerText.textContent = selectedOpt ? selectedOpt.text : "Chọn nhiệm vụ";
+
+  options.forEach((opt, idx) => {
+    const item = document.createElement("div");
+    item.className = "custom-dropdown-item";
+    if (idx === nativeSelect.selectedIndex) item.classList.add("selected");
+    item.textContent = opt.text;
+
+    // Khi chọn 1 nhiệm vụ trong danh sách xổ xuống
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      nativeSelect.selectedIndex = idx;
+      nativeSelect.dispatchEvent(new Event("change"));
+      headerText.textContent = opt.text;
+      
+      // Đóng menu và xoay mũi tên chúc xuống dưới trở lại
+      menu.classList.add("hidden");
+      if (dropdownBox) dropdownBox.classList.remove("open");
+
+      document.querySelectorAll(".custom-dropdown-item").forEach(el => el.classList.remove("selected"));
+      item.classList.add("selected");
+    });
+
+    menu.appendChild(item);
+  });
+}
+
+// ==========================================================================
+// HÀM ĐÓNG / MỞ THANH BÊN (SIDEBAR)
+// ==========================================================================
+function toggleSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  const brandLogoBtn = document.getElementById("brand-logo-btn");
+  if (!sidebar) return;
+
+  sidebar.classList.toggle("collapsed");
+  const isCol = sidebar.classList.contains("collapsed");
+  localStorage.setItem("studyos_sidebar_collapsed", isCol ? "true" : "false");
+
+  if (brandLogoBtn) {
+    brandLogoBtn.setAttribute("title", isCol ? "Mở thanh bên" : "Đóng thanh bên");
+  }
+}
+
+// ==========================================================================
+// KHỞI CHẠY ỨNG DỤNG KHI DOM SẴN SÀNG (DUY NHẤT 1 LISTENER)
+// ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
   loadActiveUserData();
   resetTaskForm();
@@ -77,7 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
   updateClockAndHeader();
   setInterval(updateClockAndHeader, 1000);
 
-  // Khởi tạo từng module tính năng
+  // 1. Khởi tạo từng module tính năng
   initDashboardFeature();
   initTasksFeature();
   initCalendarFeature();
@@ -87,6 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
   initProfileFeature();
   initSettingsFeature();
 
+  // 2. Nạp dữ liệu và đồng bộ tài khoản từ Cloud
   renderAll();
   pullCurrentUserFromCloud();
 
@@ -96,7 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Sự kiện điều hướng chung (Sidebar & Topbar)
+  // 3. Sự kiện điều hướng Sidebar & Topbar
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
@@ -115,122 +196,56 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("refresh-quote-btn").addEventListener("click", () => refreshQuote(true));
-  
+
   document.getElementById("theme-toggle-btn").addEventListener("click", () => {
     const html = document.documentElement;
     const nextTheme = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
     html.setAttribute("data-theme", nextTheme);
   });
 
-  // Khôi phục trạng thái thu gọn thanh bên từ bộ nhớ
+  // 4. Khôi phục trạng thái thu gọn thanh bên từ bộ nhớ
   const savedCollapsedState = localStorage.getItem("studyos_sidebar_collapsed") === "true";
   if (savedCollapsedState) {
     const sb = document.querySelector(".sidebar");
     if (sb) sb.classList.add("collapsed");
   }
-}); // <-- ĐÓNG DOMContentLoaded DUY NHẤT TẠI ĐÂY
 
-// ==========================================================================
-// HÀM ĐÓNG / MỞ THANH BÊN (TOÀN CỤC — CHẮC CHẮN HOẠT ĐỘNG 100%)
-// ==========================================================================
-function toggleSidebar() {
-  const sidebar = document.querySelector(".sidebar");
-  const brandLogoBtn = document.getElementById("brand-logo-btn");
-  if (!sidebar) return;
-
-  sidebar.classList.toggle("collapsed");
-  const isCol = sidebar.classList.contains("collapsed");
-  localStorage.setItem("studyos_sidebar_collapsed", isCol ? "true" : "false");
-
-  if (brandLogoBtn) {
-    brandLogoBtn.setAttribute("title", isCol ? "Mở thanh bên" : "Đóng thanh bên");
-  }
-}
-// ==========================================================================
-// TÍNH NĂNG DROPDOWN TÙY BIẾN CHO FOCUS MODE & ĐỒNG BỘ TRẠNG THÁI
-// ==========================================================================
-function syncCustomFocusDropdown() {
-  const nativeSelect = document.getElementById("focus-task-select");
-  const headerText = document.getElementById("custom-dropdown-selected-text");
-  const menu = document.getElementById("custom-dropdown-menu");
-  if (!nativeSelect || !headerText || !menu) return;
-
-  menu.innerHTML = "";
-  const options = Array.from(nativeSelect.options);
-
-  if (options.length === 0) {
-    headerText.textContent = "Chưa có nhiệm vụ nào";
-    return;
-  }
-
-  const selectedOpt = nativeSelect.options[nativeSelect.selectedIndex] || options[0];
-  headerText.textContent = selectedOpt ? selectedOpt.text : "Chọn nhiệm vụ";
-
-  options.forEach((opt, idx) => {
-    const item = document.createElement("div");
-    item.className = "custom-dropdown-item";
-    if (idx === nativeSelect.selectedIndex) item.classList.add("selected");
-    item.textContent = opt.text;
-
-    item.addEventListener("click", (e) => {
-      e.stopPropagation();
-      nativeSelect.selectedIndex = idx;
-      nativeSelect.dispatchEvent(new Event("change"));
-      headerText.textContent = opt.text;
-      menu.classList.add("hidden");
-      document.querySelectorAll(".custom-dropdown-item").forEach(el => el.classList.remove("selected"));
-      item.classList.add("selected");
-    });
-
-    menu.appendChild(item);
-  });
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-const header = document.getElementById("custom-dropdown-header");
+  // 5. Cấu hình Dropdown Focus Mode & Xoay mũi tên Chevron
+  const header = document.getElementById("custom-dropdown-header");
   const menu = document.getElementById("custom-dropdown-menu");
   const dropdownBox = document.getElementById("custom-focus-dropdown");
+  const nativeSelect = document.getElementById("focus-task-select");
+  const focusCard = document.getElementById("focus-card");
+  const startBtn = document.getElementById("focus-start-btn");
 
   if (header && menu && dropdownBox) {
     header.addEventListener("click", (e) => {
       e.stopPropagation();
       const isClosed = menu.classList.contains("hidden");
-      
       if (isClosed) {
         menu.classList.remove("hidden");
-        dropdownBox.classList.add("open"); // Xoay mũi tên lên trên
+        dropdownBox.classList.add("open"); // Mũi tên xoay ngược lên trên
       } else {
         menu.classList.add("hidden");
-        dropdownBox.classList.remove("open"); // Xoay mũi tên xuống dưới
+        dropdownBox.classList.remove("open"); // Mũi tên chúc xuống dưới
       }
     });
 
+    // Bấm ra ngoài màn hình thì tự đóng menu và trả mũi tên về vị trí cũ
     document.addEventListener("click", () => {
       menu.classList.add("hidden");
       dropdownBox.classList.remove("open");
     });
   }
 
-  // 1. Bật/tắt menu xổ xuống khi bấm vào Dropdown
-  if (header && menu) {
-    header.addEventListener("click", (e) => {
-      e.stopPropagation();
-      menu.classList.toggle("hidden");
-    });
-
-    document.addEventListener("click", () => {
-      menu.classList.add("hidden");
-    });
-  }
-
-  // 2. Tự động đồng bộ mỗi khi danh sách nhiệm vụ thay đổi
+  // Tự động cập nhật menu tùy biến khi danh sách task trong thẻ select gốc thay đổi
   if (nativeSelect) {
     const obs = new MutationObserver(() => syncCustomFocusDropdown());
     obs.observe(nativeSelect, { childList: true, subtree: true });
     syncCustomFocusDropdown();
   }
 
-  // 3. Quản lý trạng thái chuyển đổi giữa [Chọn nhiệm vụ] và [Đang đếm giờ]
+  // Tự động chuyển đổi giữa [Màn hình Chọn Task] và [Khung Chữ Nhật Đếm Giờ]
   if (startBtn && focusCard) {
     const updateRunningState = () => {
       const isRunning = startBtn.classList.contains("hidden");
@@ -242,48 +257,3 @@ const header = document.getElementById("custom-dropdown-header");
     updateRunningState();
   }
 });
-function syncCustomFocusDropdown() {
-  const nativeSelect = document.getElementById("focus-task-select");
-  const headerText = document.getElementById("custom-dropdown-selected-text");
-  const menu = document.getElementById("custom-dropdown-menu");
-  const dropdownBox = document.getElementById("custom-focus-dropdown"); // Lấy khung dropdown
-  if (!nativeSelect || !headerText || !menu) return;
-
-  menu.innerHTML = "";
-  const options = Array.from(nativeSelect.options);
-
-  if (options.length === 0) {
-    headerText.textContent = "Chưa có nhiệm vụ nào";
-    return;
-  }
-
-  const selectedOpt = nativeSelect.options[nativeSelect.selectedIndex] || options[0];
-  headerText.textContent = selectedOpt ? selectedOpt.text : "Chọn nhiệm vụ";
-
-  options.forEach((opt, idx) => {
-    const item = document.createElement("div");
-    item.className = "custom-dropdown-item";
-    if (idx === nativeSelect.selectedIndex) item.classList.add("selected");
-    item.textContent = opt.text;
-
-    // SỰ KIỆN KHI BẤM CHỌN 1 NHIỆM VỤ TRONG DANH SÁCH:
-    item.addEventListener("click", (e) => {
-      e.stopPropagation();
-      nativeSelect.selectedIndex = idx;
-      nativeSelect.dispatchEvent(new Event("change"));
-      headerText.textContent = opt.text;
-      
-      // 1. Đóng menu lại
-      menu.classList.add("hidden");
-
-      // 2. Xoay mũi tên chúc xuống dưới trở lại
-      if (dropdownBox) dropdownBox.classList.remove("open");
-
-      // 3. Đánh dấu nhiệm vụ vừa chọn
-      document.querySelectorAll(".custom-dropdown-item").forEach(el => el.classList.remove("selected"));
-      item.classList.add("selected");
-    });
-
-    menu.appendChild(item);
-  });
-}
