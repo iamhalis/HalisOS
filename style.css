@@ -2154,3 +2154,52 @@ body.has-custom-bg textarea {
   color: #ffffff !important;
   border-radius: 10px !important;
 }
+/* ==========================================================================
+   KHUNG TOPBAR BO GÓC DẠNG KÍNH MỜ (FLOATING NAVBAR)
+   ========================================================================== */
+.topbar,
+body.has-custom-bg .topbar {
+  background: rgba(18, 20, 29, 0.72) !important;
+  backdrop-filter: blur(28px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 18px !important; /* Bo góc mềm mại cho toàn bộ khung */
+  padding: 10px 18px !important;
+  margin-bottom: 22px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+/* Tinh chỉnh viên nang ngày giờ bên trong cho cân đối */
+.datetime-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: rgba(10, 14, 22, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 99px !important;
+  padding: 6px 16px !important;
+}
+
+.datetime-group h2 {
+  font-size: 0.98rem !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  margin: 0 !important;
+}
+
+.datetime-group .live-clock {
+  font-family: monospace, ui-monospace, sans-serif !important;
+  font-size: 0.9rem !important;
+  color: #94a3b8 !important;
+  padding-left: 10px !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.topbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
