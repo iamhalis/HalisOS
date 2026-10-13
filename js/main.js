@@ -3,7 +3,6 @@
 // ==========================================================================
 
 function switchTab(tabId) {
-  // Đưa màn hình về đỉnh trang ngay lập tức khi đổi tab, chống trôi giao diện
   window.scrollTo({ top: 0, behavior: "instant" });
   const mainEl = document.querySelector(".main-content");
   if (mainEl) mainEl.scrollTop = 0;
@@ -15,21 +14,15 @@ function switchTab(tabId) {
     pane.classList.toggle("active", pane.id === `tab-${tabId}`);
   });
 
-  if (tabId === "analytics") {
-    renderAnalyticsCharts();
-  }
+  if (tabId === "analytics" && typeof renderAnalyticsCharts === "function") renderAnalyticsCharts();
   if (tabId === "future-messages") {
-    syncAllDirectoryUsersFromCloud();
-    pullSharedLettersFromCloud();
-    renderSealedLettersList();
-    renderSocialLettersList();
+    if (typeof syncAllDirectoryUsersFromCloud === "function") syncAllDirectoryUsersFromCloud();
+    if (typeof pullSharedLettersFromCloud === "function") pullSharedLettersFromCloud();
+    if (typeof renderSealedLettersList === "function") renderSealedLettersList();
+    if (typeof renderSocialLettersList === "function") renderSocialLettersList();
   }
-  if (tabId === "share") {
-    renderShareTaskSelector();
-  }
-  if (tabId === "focus") {
-    syncCustomFocusDropdown();
-  }
+  if (tabId === "share" && typeof renderShareTaskSelector === "function") renderShareTaskSelector();
+  if (tabId === "focus") syncCustomFocusDropdown();
 }
 
 function renderAll() {
@@ -71,22 +64,20 @@ function renderAll() {
   document.getElementById("setting-aim-week").value = aimWeek;
   document.getElementById("setting-aim-month").value = aimMonth;
 
-  renderQuickWeekdayPicker();
-  renderProfileUI();
-  renderSealedLettersList();
-  renderSocialLettersList();
-  renderDashboardUpcoming();
-  renderTasksTab();
-  renderWeeklyCalendar();
-  renderFocusSelector();
-  syncCustomFocusDropdown();
-  renderAnalyticsCharts();
-  renderShareTaskSelector();
+  // Render bảo vệ đa lớp (Không để lỗi thẻ làm ảnh hưởng đến hiển thị tài khoản)
+  try { if (typeof renderProfileUI === "function") renderProfileUI(); } catch (e) { console.error(e); }
+  try { if (typeof renderQuickWeekdayPicker === "function") renderQuickWeekdayPicker(); } catch (e) { console.error(e); }
+  try { if (typeof renderSealedLettersList === "function") renderSealedLettersList(); } catch (e) { console.error(e); }
+  try { if (typeof renderSocialLettersList === "function") renderSocialLettersList(); } catch (e) { console.error(e); }
+  try { if (typeof renderDashboardUpcoming === "function") renderDashboardUpcoming(); } catch (e) { console.error(e); }
+  try { if (typeof renderTasksTab === "function") renderTasksTab(); } catch (e) { console.error(e); }
+  try { if (typeof renderWeeklyCalendar === "function") renderWeeklyCalendar(); } catch (e) { console.error(e); }
+  try { if (typeof renderFocusSelector === "function") renderFocusSelector(); } catch (e) { console.error(e); }
+  try { syncCustomFocusDropdown(); } catch (e) { console.error(e); }
+  try { if (typeof renderAnalyticsCharts === "function") renderAnalyticsCharts(); } catch (e) { console.error(e); }
+  try { if (typeof renderShareTaskSelector === "function") renderShareTaskSelector(); } catch (e) { console.error(e); }
 }
 
-// ==========================================================================
-// HÀM ĐỒNG BỘ DROPDOWN TÙY BIẾN CỦA FOCUS MODE VỚI DỮ LIỆU GỐC
-// ==========================================================================
 function syncCustomFocusDropdown() {
   const nativeSelect = document.getElementById("focus-task-select");
   const headerText = document.getElementById("custom-dropdown-selected-text");
@@ -111,14 +102,12 @@ function syncCustomFocusDropdown() {
     if (idx === nativeSelect.selectedIndex) item.classList.add("selected");
     item.textContent = opt.text;
 
-    // Khi chọn 1 nhiệm vụ trong danh sách xổ xuống
     item.addEventListener("click", (e) => {
       e.stopPropagation();
       nativeSelect.selectedIndex = idx;
       nativeSelect.dispatchEvent(new Event("change"));
       headerText.textContent = opt.text;
       
-      // Đóng menu và xoay mũi tên chúc xuống dưới trở lại
       menu.classList.add("hidden");
       if (dropdownBox) dropdownBox.classList.remove("open");
 
@@ -130,9 +119,6 @@ function syncCustomFocusDropdown() {
   });
 }
 
-// ==========================================================================
-// HÀM ĐÓNG / MỞ THANH BÊN (SIDEBAR)
-// ==========================================================================
 function toggleSidebar() {
   const sidebar = document.querySelector(".sidebar");
   const brandLogoBtn = document.getElementById("brand-logo-btn");
@@ -147,9 +133,6 @@ function toggleSidebar() {
   }
 }
 
-// ==========================================================================
-// KHỞI CHẠY ỨNG DỤNG KHI DOM SẴN SÀNG (DUY NHẤT 1 LISTENER)
-// ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
   loadActiveUserData();
   resetTaskForm();
@@ -157,27 +140,30 @@ document.addEventListener("DOMContentLoaded", () => {
   updateClockAndHeader();
   setInterval(updateClockAndHeader, 1000);
 
-  // 1. Khởi tạo từng module tính năng
-  initDashboardFeature();
-  initTasksFeature();
-  initCalendarFeature();
-  initFocusFeature();
-  initFutureMessagesFeature();
-  initShareFeature();
-  initProfileFeature();
-  initSettingsFeature();
+  // Khởi tạo các module tính năng với cơ chế bắt lỗi an toàn
+  const safeInit = (fnName, fn) => {
+    try { if (typeof fn === "function") fn(); } 
+    catch (err) { console.warn(`Module ${fnName} bỏ qua lỗi DOM:`, err); }
+  };
 
-  // 2. Nạp dữ liệu và đồng bộ tài khoản từ Cloud
+  safeInit("Dashboard", initDashboardFeature);
+  safeInit("Tasks", initTasksFeature);
+  safeInit("Calendar", initCalendarFeature);
+  safeInit("Focus", initFocusFeature);
+  safeInit("FutureMessages", initFutureMessagesFeature);
+  safeInit("Share", initShareFeature);
+  safeInit("Profile", initProfileFeature);
+  safeInit("Settings", initSettingsFeature);
+
+  // Hiển thị giao diện & đồng bộ Cloud
   renderAll();
   pullCurrentUserFromCloud();
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      pullCurrentUserFromCloud();
-    }
+    if (document.visibilityState === "visible") pullCurrentUserFromCloud();
   });
 
-  // 3. Sự kiện điều hướng Sidebar & Topbar
+  // Điều hướng
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.addEventListener("click", () => switchTab(btn.dataset.tab));
   });
@@ -186,31 +172,40 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", () => switchTab(btn.dataset.goto));
   });
 
-  document.getElementById("sidebar-user-btn").addEventListener("click", () => switchTab("profile"));
-  document.getElementById("top-profile-btn").addEventListener("click", () => switchTab("profile"));
+  const sidebarUserBtn = document.getElementById("sidebar-user-btn");
+  if (sidebarUserBtn) sidebarUserBtn.addEventListener("click", () => switchTab("profile"));
 
-  document.getElementById("quick-add-btn").addEventListener("click", () => {
-    switchTab("tasks");
-    resetTaskForm();
-    document.getElementById("task-name-input").focus();
-  });
+  const topProfileBtn = document.getElementById("top-profile-btn");
+  if (topProfileBtn) topProfileBtn.addEventListener("click", () => switchTab("profile"));
 
-  document.getElementById("refresh-quote-btn").addEventListener("click", () => refreshQuote(true));
+  const quickAddBtn = document.getElementById("quick-add-btn");
+  if (quickAddBtn) {
+    quickAddBtn.addEventListener("click", () => {
+      switchTab("tasks");
+      resetTaskForm();
+      document.getElementById("task-name-input").focus();
+    });
+  }
 
-  document.getElementById("theme-toggle-btn").addEventListener("click", () => {
-    const html = document.documentElement;
-    const nextTheme = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
-    html.setAttribute("data-theme", nextTheme);
-  });
+  const refreshQuoteBtn = document.getElementById("refresh-quote-btn");
+  if (refreshQuoteBtn) refreshQuoteBtn.addEventListener("click", () => refreshQuote(true));
 
-  // 4. Khôi phục trạng thái thu gọn thanh bên từ bộ nhớ
+  const themeToggleBtn = document.getElementById("theme-toggle-btn");
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+      const html = document.documentElement;
+      const nextTheme = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      html.setAttribute("data-theme", nextTheme);
+    });
+  }
+
   const savedCollapsedState = localStorage.getItem("studyos_sidebar_collapsed") === "true";
   if (savedCollapsedState) {
     const sb = document.querySelector(".sidebar");
     if (sb) sb.classList.add("collapsed");
   }
 
-  // 5. Cấu hình Dropdown Focus Mode & Xoay mũi tên Chevron
+  // Khởi tạo tương tác Dropdown Focus Mode
   const header = document.getElementById("custom-dropdown-header");
   const menu = document.getElementById("custom-dropdown-menu");
   const dropdownBox = document.getElementById("custom-focus-dropdown");
@@ -224,28 +219,25 @@ document.addEventListener("DOMContentLoaded", () => {
       const isClosed = menu.classList.contains("hidden");
       if (isClosed) {
         menu.classList.remove("hidden");
-        dropdownBox.classList.add("open"); // Mũi tên xoay ngược lên trên
+        dropdownBox.classList.add("open");
       } else {
         menu.classList.add("hidden");
-        dropdownBox.classList.remove("open"); // Mũi tên chúc xuống dưới
+        dropdownBox.classList.remove("open");
       }
     });
 
-    // Bấm ra ngoài màn hình thì tự đóng menu và trả mũi tên về vị trí cũ
     document.addEventListener("click", () => {
       menu.classList.add("hidden");
       dropdownBox.classList.remove("open");
     });
   }
 
-  // Tự động cập nhật menu tùy biến khi danh sách task trong thẻ select gốc thay đổi
   if (nativeSelect) {
     const obs = new MutationObserver(() => syncCustomFocusDropdown());
     obs.observe(nativeSelect, { childList: true, subtree: true });
     syncCustomFocusDropdown();
   }
 
-  // Tự động chuyển đổi giữa [Màn hình Chọn Task] và [Khung Chữ Nhật Đếm Giờ]
   if (startBtn && focusCard) {
     const updateRunningState = () => {
       const isRunning = startBtn.classList.contains("hidden");

@@ -13,13 +13,14 @@
   <div class="app-layout">
     <!-- Sidebar Điều hướng -->
     <aside class="sidebar">
-<div class="brand">
-  <div class="brand-logo" id="brand-logo-btn" onclick="toggleSidebar()" title="Nhấn để Đóng / Mở thanh bên">S</div>
-  <div class="brand-info">
-    <h1 id="app-title">Study OS</h1>
-    <span class="version-badge">v7.02 Web</span>    
-  </div>
-</div>
+      <div class="brand">
+        <div class="brand-logo" id="brand-logo-btn" onclick="toggleSidebar()" title="Nhấn để Đóng / Mở thanh bên">S</div>
+        <div class="brand-info">
+          <h1 id="app-title">Study OS</h1>
+          <span class="version-badge">v7.02 Web</span>    
+        </div>
+      </div>
+
       <!-- Thẻ tóm tắt Hồ sơ trên Sidebar -->
       <div class="sidebar-user-card" id="sidebar-user-btn" title="Nhấn để quản lý hồ sơ">
         <div class="user-avatar" id="sidebar-avatar">G</div>
@@ -29,7 +30,7 @@
         </div>
       </div>
 
-<nav class="nav-menu">
+      <nav class="nav-menu">
         <button class="nav-item active" data-tab="dashboard" title="Tổng quan">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>
           <span>Tổng quan</span>
@@ -95,10 +96,8 @@
         </div>
       </header>
 
-<!-- TAB 1: TỔNG QUAN -->
+      <!-- TAB 1: TỔNG QUAN -->
       <section class="tab-pane active" id="tab-dashboard">
-        
-        <!-- Khối danh ngôn: ĐÃ CHUYỂN VÀO ĐÂY ĐỂ CHỈ HIỆN Ở TỔNG QUAN -->
         <section class="quote-banner">
           <div class="quote-content">
             <span class="quote-tag">Today's Quotes</span>
@@ -108,6 +107,7 @@
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
           </button>
         </section>
+
         <div class="stats-grid">
           <div class="stat-card">
             <div class="stat-header">
@@ -215,7 +215,6 @@
               <button type="button" class="btn btn-ghost hidden" id="cancel-edit-btn">Huỷ</button>
             </div>
           </form>
-          <!-- Phím tắt chọn nhanh các ngày trong tuần khi tạo task -->
           <div class="quick-weekday-bar" id="quick-weekday-picker"></div>
         </div>
 
@@ -255,7 +254,7 @@
         <div id="weekly-calendar-grid" class="calendar-grid"></div>
       </section>
 
-<!-- TAB 4: FOCUS MODE -->
+      <!-- TAB 4: FOCUS MODE -->
       <section class="tab-pane" id="tab-focus">
         <div class="focus-container" id="focus-card">
           <div class="focus-status-badge hidden" id="focus-status-badge"></div>
@@ -266,7 +265,7 @@
             
             <div class="custom-focus-dropdown-frame">
               <div class="custom-focus-dropdown" id="custom-focus-dropdown">
-<div class="custom-dropdown-header" id="custom-dropdown-header">
+                <div class="custom-dropdown-header" id="custom-dropdown-header">
                   <span id="custom-dropdown-selected-text">Chọn nhiệm vụ...</span>
                   <span class="dropdown-chevron" id="dropdown-chevron-icon">
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -274,7 +273,15 @@
                     </svg>
                   </span>
                 </div>
-                
+                <!-- Menu xổ xuống -->
+                <div class="custom-dropdown-menu hidden" id="custom-dropdown-menu"></div>
+              </div>
+            </div>
+
+            <!-- Thẻ select ẩn gốc để đồng bộ 100% logic với focus.js -->
+            <select id="focus-task-select" class="sr-only"></select>
+          </div>
+
           <!-- 2. KHỐI ĐỒNG HỒ ĐẾM GIỜ CHỮ NHẬT (CHỈ HIỆN KHI ĐANG BẤM GIỜ) -->
           <div class="timer-display-wrapper" id="timer-display-wrapper">
             <div class="timer-box-frame" id="timer-ring">
@@ -294,6 +301,7 @@
           <div id="focus-result-banner" class="focus-result hidden"></div>
         </div>
       </section>
+
       <!-- TAB 5: THỐNG KÊ BIỂU ĐỒ ĐƯỜNG -->
       <section class="tab-pane" id="tab-analytics">
         <div class="section-header">
@@ -345,7 +353,6 @@
           </div>
         </div>
 
-        <!-- PHẦN 1: NIÊM PHONG THƯ CHO CÁ NHÂN -->
         <div id="fm-pane-personal" class="dashboard-columns">
           <div class="card">
             <div class="card-header">
@@ -392,7 +399,6 @@
           </div>
         </div>
 
-        <!-- PHẦN 2: GỬI THƯ NIÊM PHONG CHO NGƯỜI DÙNG KHÁC -->
         <div id="fm-pane-social" class="dashboard-columns hidden">
           <div class="card">
             <div class="card-header">
@@ -472,7 +478,7 @@
         </div>
       </section>
 
-      <!-- TAB 7: SHARE (CHIA SẺ & NHẬP MÃ NHIỆM VỤ) -->
+      <!-- TAB 7: SHARE -->
       <section class="tab-pane" id="tab-share">
         <div class="fm-top-header">
           <div>
@@ -489,7 +495,6 @@
           </div>
         </div>
 
-        <!-- TAB CON 1: CHIA SẺ NHIỆM VỤ -->
         <div id="share-pane-export" class="dashboard-columns">
           <div class="card">
             <div class="card-header share-header-wrap">
@@ -504,7 +509,6 @@
               </div>
             </div>
 
-            <!-- Bộ lọc chế độ xem trong Share: Nguyên tuần (7 ngày) vs Tất cả các ngày -->
             <div class="filter-tabs mb-16">
               <button type="button" class="filter-btn active" data-sharefilter="week">
                 📅 Lịch nguyên tuần (7 ngày tới)
@@ -551,7 +555,6 @@
           </div>
         </div>
 
-        <!-- TAB CON 2: NHẬP MÃ CHIA SẺ -->
         <div id="share-pane-import" class="dashboard-columns hidden">
           <div class="card">
             <div class="card-header">
@@ -699,11 +702,9 @@
         </div>
       </section>
 
-<!-- TAB 9: CÀI ĐẶT & DỮ LIỆU -->
+      <!-- TAB 9: CÀI ĐẶT & DỮ LIỆU -->
       <section class="tab-pane" id="tab-settings">
-        <!-- HÀNG 1: 2 KHỐI QUẢN LÝ JSON NGUYÊN BẢN -->
         <div class="dashboard-columns">
-          <!-- 1. Cấu hình hệ thống -->
           <div class="card">
             <div class="card-header">
               <h3>Cấu hình chung (config.json)</h3>
@@ -741,7 +742,6 @@
             </form>
           </div>
 
-          <!-- 2. Xuất/Nhập file JSON -->
           <div class="card">
             <div class="card-header">
               <h3>Sao lưu & Đồng bộ JSON</h3>
@@ -765,7 +765,6 @@
           </div>
         </div>
 
-        <!-- HÀNG 2: THẺ CARD ĐỘC LẬP CHO HÌNH NỀN (NẰM DƯỚI 2 KHỐI JSON) -->
         <div class="card mt-24">
           <div class="card-header">
             <h3>Tùy biến giao diện (Custom Wallpaper)</h3>
@@ -786,6 +785,9 @@
           </div>
         </div>
       </section>
+    </main>
+  </div>
+
   <!-- MODAL MỞ THƯ NIÊM PHONG -->
   <div id="letter-modal-overlay" class="letter-modal-overlay hidden">
     <div class="letter-modal-card" role="dialog" aria-modal="true">
@@ -832,7 +834,7 @@
 
   <div id="toast-container" class="toast-container"></div>
 
-  <!-- DANH SÁCH CÁC FILE TÍNH NĂNG ĐÃ TÁCH RIÊNG -->
+  <!-- Scripts -->
   <script src="js/core.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/tasks.js"></script>

@@ -52,27 +52,26 @@ body {
 }
 
 /* ==========================================================================
-   1. SỬA BỐ CỤC CHÍNH: DÙNG clip THAY VÌ hidden ĐỂ KHÔNG CHẶN STICKY
+   1. BỐ CỤC CHÍNH (APP LAYOUT): CHỐNG LỆCH & CHỐNG MẤT STICKY
    ========================================================================== */
 .app-layout {
   display: flex !important;
   width: 100% !important;
   min-height: 100vh !important;
-  /* Dùng overflow-x: clip để chống tràn ngang mà KHÔNG làm mất tính năng cố định của Sidebar */
   overflow-x: clip !important;
 }
 
 /* ==========================================================================
-   2. THANH BÊN (SIDEBAR): LUÔN CỐ ĐỊNH 100% Ở MÉP TRÁI, KHÔNG BAO GIỜ TRÔI
+   2. THANH BÊN (SIDEBAR): LUÔN CỐ ĐỊNH 100% Ở MÉP TRÁI, KHÔNG TRÔI THEO CUỘN
    ========================================================================== */
 .sidebar,
 body.has-custom-bg .sidebar {
-  position: sticky !important;          /* Ghim chặt vào khung nhìn màn hình */
-  top: 0 !important;                     /* Luôn bắt đầu từ đỉnh */
+  position: sticky !important;
+  top: 0 !important;
   left: 0 !important;
-  height: 100vh !important;             /* Chiều cao đúng bằng màn hình */
+  height: 100vh !important;
   height: 100dvh !important;
-  align-self: flex-start !important;    /* Ngăn thanh bên bị kéo dãn theo độ dài của nội dung tab */
+  align-self: flex-start !important;
   flex-shrink: 0 !important;
   
   background: #0e0f12 !important;
@@ -83,7 +82,7 @@ body.has-custom-bg .sidebar {
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto !important;          /* Tự cuộn riêng menu nếu icon quá nhiều */
+  overflow-y: auto !important;
   overflow-x: hidden !important;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: none !important;
@@ -343,7 +342,7 @@ body.has-custom-bg .sidebar.collapsed {
 .sidebar.collapsed .nav-item svg { margin: 0 !important; width: 20px !important; height: 20px !important; }
 
 /* ==========================================================================
-   NỘI DUNG CHÍNH (MAIN CONTENT)
+   3. NỘI DUNG CHÍNH (MAIN CONTENT)
    ========================================================================== */
 .main-content {
   flex: 1 1 0% !important;
@@ -356,7 +355,7 @@ body.has-custom-bg .sidebar.collapsed {
 }
 
 /* ==========================================================================
-   TOPBAR: KHỐI KÍNH BO GÓC MỀM MẠI
+   4. TOPBAR: KHỐI KÍNH BO GÓC MỀM MẠI
    ========================================================================== */
 .topbar,
 body.has-custom-bg .topbar {
@@ -408,7 +407,7 @@ body.has-custom-bg .topbar {
 }
 
 /* ==========================================================================
-   QUOTE BANNER (TỔNG QUAN)
+   5. QUOTE BANNER (TỔNG QUAN)
    ========================================================================== */
 .quote-banner {
   position: relative;
@@ -460,7 +459,7 @@ body.has-custom-bg .topbar {
 }
 
 /* ==========================================================================
-   CÁC TAB & GRID THỐNG KÊ
+   6. CÁC TAB & GRID THỐNG KÊ
    ========================================================================== */
 .tab-pane {
   display: none;
@@ -548,6 +547,7 @@ body.has-custom-bg .topbar {
 .mb-16 { margin-bottom: 16px; }
 .mb-12 { margin-bottom: 12px; }
 .mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
 .text-muted { color: var(--text-muted); font-size: 0.9rem; }
 .req { color: var(--danger); }
 
@@ -560,7 +560,7 @@ body.has-custom-bg .topbar {
 .card-header h3 { font-size: 1.05rem; font-weight: 700; }
 
 /* ==========================================================================
-   BIỂU ĐỒ & NHIỆM VỤ
+   7. BIỂU ĐỒ & NHIỆM VỤ
    ========================================================================== */
 .charts-stack { display: flex; flex-direction: column; gap: 24px; }
 .chart-card { padding: 24px; }
@@ -631,7 +631,7 @@ body.has-custom-bg .topbar {
 }
 
 /* ==========================================================================
-   LỊCH TUẦN & FOCUS MODE
+   8. LỊCH TUẦN
    ========================================================================== */
 .section-header { margin-bottom: 20px; }
 .calendar-grid {
@@ -675,15 +675,19 @@ body.has-custom-bg .topbar {
 .cal-time { font-size: 0.75rem; color: var(--accent); font-weight: 600; flex-shrink: 0; }
 
 /* ==========================================================================
-   FOCUS MODE: GIAO DIỆN MỚI (TRONG SUỐT, DROPDOWN VIÊN NANG & KHUNG CHỮ NHẬT)
+   9. FOCUS MODE: HOÀN CHỈNH (TRONG SUỐT, CAO RỘNG, XOAY CHEVRON & KHUNG CHỮ NHẬT)
    ========================================================================== */
+.focus-status-badge,
+#focus-status-badge {
+  display: none !important;
+}
 
-/* 1. KÉO DÀI KHUNG TRONG SUỐT XUỐNG DƯỚI (PHỦ THOÁNG MÀN HÌNH NHƯ BAN ĐẦU) */
+/* Khung kính lớn phủ đều màn hình */
 .focus-container,
 body.has-custom-bg .focus-container {
   width: 100% !important;
   max-width: 100% !important;
-  min-height: calc(100vh - 170px) !important; /* Kéo dài khung phủ đều xuống đáy trang */
+  min-height: calc(100vh - 170px) !important;
   box-sizing: border-box !important;
   padding: 60px 40px !important;
   border-radius: 26px !important;
@@ -691,7 +695,7 @@ body.has-custom-bg .focus-container {
 
   display: flex !important;
   flex-direction: column !important;
-  justify-content: center !important;         /* Căn giữa toàn bộ nội dung theo chiều dọc */
+  justify-content: center !important;
   align-items: center !important;
 
   background: rgba(10, 14, 24, 0.18) !important;
@@ -703,51 +707,7 @@ body.has-custom-bg .focus-container {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }
 
-/* 2. KÉO CAO HỘP ĐỒNG HỒ ĐẾM GIỜ XUỐNG DƯỚI */
-.timer-display-wrapper {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-}
-
-.timer-box-frame {
-  width: 100%;
-  max-width: 780px;
-  min-height: 330px !important;               /* Tăng chiều cao hộp đếm giờ từ 230px lên 330px */
-  border: 3px solid #002b49 !important;
-  border-radius: 40px !important;
-  background: rgba(5, 18, 32, 0.15) !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 10px auto 40px auto !important;     /* Tạo khoảng cách thông thoáng với hàng nút bấm */
-  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
-}
-
-.timer-box-frame .timer-digits {
-  font-size: 6.8rem !important;               /* Kích thước số lớn rõ ràng */
-  font-weight: 800 !important;
-  color: #cbd5e1 !important;
-  letter-spacing: 2px;
-  line-height: 1;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7) !important;
-}
-
-/* 3. MŨI TÊN XOAY ĐỔI CHIỀU LÊN TRÊN KHI BẤM */
-.dropdown-chevron {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #cbd5e1;
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* Hiệu ứng xoay mượt */
-}
-
-/* Khi mở menu: xoay 180 độ hướng mũi tên lên trên */
-.custom-focus-dropdown.open .dropdown-chevron {
-  transform: rotate(180deg);
-}
-
-/* 2. TIÊU ĐỀ "CHỌN NHIỆM VỤ" */
+/* Tiêu đề CHỌN NHIỆM VỤ */
 .focus-task-picker-section {
   display: flex;
   flex-direction: column;
@@ -766,7 +726,7 @@ body.has-custom-bg .focus-container {
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 }
 
-/* 3. DROPDOWN VIÊN NANG CÓ VIỀN ĐÔI (ẢNH 1 & 2) */
+/* Dropdown dạng viên nang có viền đôi */
 .custom-focus-dropdown-frame {
   width: 100%;
   max-width: 480px;
@@ -803,12 +763,17 @@ body.has-custom-bg .focus-container {
 }
 
 .dropdown-chevron {
-  font-size: 1.1rem;
-  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: #cbd5e1;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Menu xổ xuống khi bấm (Ảnh 2) */
+.custom-focus-dropdown.open .dropdown-chevron {
+  transform: rotate(180deg);
+}
+
 .custom-dropdown-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -841,7 +806,7 @@ body.has-custom-bg .focus-container {
   color: #ffffff;
 }
 
-/* 4. KHUNG ĐẾM GIỜ CHỮ NHẬT VIỀN XANH ĐEN (ẢNH 3) */
+/* Khung chữ nhật đếm giờ viền xanh đen */
 .timer-display-wrapper {
   display: flex;
   justify-content: center;
@@ -850,20 +815,20 @@ body.has-custom-bg .focus-container {
 
 .timer-box-frame {
   width: 100%;
-  max-width: 720px;
-  min-height: 230px;
+  max-width: 780px;
+  min-height: 330px !important;
   border: 3px solid #002b49 !important;
   border-radius: 40px !important;
   background: rgba(5, 18, 32, 0.15) !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 10px auto 32px auto;
+  margin: 10px auto 40px auto !important;
   box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
 }
 
 .timer-box-frame .timer-digits {
-  font-size: 6.2rem !important;
+  font-size: 6.8rem !important;
   font-weight: 800 !important;
   color: #cbd5e1 !important;
   letter-spacing: 2px;
@@ -871,7 +836,7 @@ body.has-custom-bg .focus-container {
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7) !important;
 }
 
-/* 5. CÁC NÚT ĐIỀU KHIỂN CHUẨN MÀU THEO MẪU */
+/* Nút điều khiển Focus Mode */
 .focus-controls {
   display: flex;
   justify-content: center;
@@ -879,7 +844,6 @@ body.has-custom-bg .focus-container {
   flex-wrap: wrap;
 }
 
-/* Nút Bắt đầu */
 .focus-btn-start {
   background: rgba(180, 185, 195, 0.75) !important;
   border: 2px solid #233548 !important;
@@ -892,7 +856,6 @@ body.has-custom-bg .focus-container {
   cursor: pointer;
 }
 
-/* Nút Tạm dừng */
 .focus-btn-pause {
   background: rgba(165, 170, 180, 0.75) !important;
   border: 2px solid #233548 !important;
@@ -904,7 +867,6 @@ body.has-custom-bg .focus-container {
   cursor: pointer;
 }
 
-/* Nút Hoàn thành */
 .focus-btn-done {
   background: #15803d !important;
   border: 2px solid #0f5128 !important;
@@ -916,7 +878,6 @@ body.has-custom-bg .focus-container {
   cursor: pointer;
 }
 
-/* Nút Kết thúc */
 .focus-btn-quit {
   background: #ff0000 !important;
   border: 2px solid #991b1b !important;
@@ -928,7 +889,7 @@ body.has-custom-bg .focus-container {
   cursor: pointer;
 }
 
-/* 6. LOGIC CHUYỂN MÀN HÌNH */
+/* Logic ẩn hiện màn hình đếm giờ */
 .focus-container:not(.is-running) #timer-display-wrapper {
   display: none !important;
 }
@@ -950,8 +911,8 @@ body.has-custom-bg .focus-container {
 }
 
 /* ==========================================================================
-   FUTURE MESSAGES & SHARE
-   ========================================================================= */
+   10. FUTURE MESSAGES & SHARE
+   ========================================================================== */
 .fm-top-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 22px; }
 .fm-mode-switcher { display: flex; gap: 8px; background: var(--bg-surface); padding: 6px; border-radius: 12px; border: 1px solid var(--border-color); }
 .fm-mode-btn, .share-mode-btn {
@@ -1043,7 +1004,7 @@ body.has-custom-bg .focus-container {
 .share-preview-time { font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 .share-preview-name { font-weight: 600; color: var(--text-main); word-break: break-word; }
 
-/* RECIPIENT EMAIL SEARCH */
+/* Người nhận email */
 .email-recipient-wrapper { position: relative; }
 .email-recipient-box {
   display: flex;
@@ -1071,7 +1032,7 @@ body.has-custom-bg .focus-container {
 .suggestion-name { font-size: 0.9rem; font-weight: 700; color: var(--text-main); }
 .suggestion-email { font-size: 0.78rem; color: var(--text-muted); }
 
-/* AUTH & PROFILE */
+/* Hồ sơ & Auth */
 .auth-wrapper { max-width: 480px; margin: 0 auto; }
 .auth-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; background: var(--bg-elevated); padding: 6px; border-radius: 10px; margin-bottom: 20px; }
 .auth-tab-btn { padding: 10px; border: none; border-radius: 8px; background: transparent; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; cursor: pointer; font-family: inherit; }
@@ -1083,7 +1044,7 @@ body.has-custom-bg .focus-container {
 .avatar-upload-btn:hover { background: var(--accent); color: #fff; }
 .avatar-upload-btn input { display: none; }
 
-/* DATE PICKER & CAPSULE */
+/* Custom Date Picker & Thư niêm phong */
 .custom-date-picker { position: relative; display: flex; align-items: center; gap: 8px; }
 .custom-date-picker input[type="text"] { flex: 1; font-variant-numeric: tabular-nums; letter-spacing: 0.03em; }
 .calendar-trigger-btn { flex-shrink: 0; width: 40px; height: 40px; }
@@ -1107,7 +1068,7 @@ body.has-custom-bg .focus-container {
 .btn-open-letter.ready:hover { filter: brightness(1.08); transform: translateY(-1px); }
 .btn-open-letter.sealed { background: var(--bg-surface); color: var(--text-muted); border: 1px solid var(--border-color); cursor: not-allowed; }
 
-/* MODAL ĐỌC THƯ */
+/* Modal đọc thư */
 .letter-modal-overlay { position: fixed; inset: 0; background: rgba(5, 8, 17, 0.78); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 10000; animation: fadeIn 0.2s ease; }
 .letter-modal-card { width: 100%; max-width: 680px; background: var(--bg-surface); border: 1px solid var(--border-color); border-top: 4px solid var(--accent); border-radius: 20px; box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.65); overflow: hidden; display: flex; flex-direction: column; max-height: 90vh; }
 .letter-modal-topbar { display: flex; justify-content: space-between; align-items: center; padding: 18px 26px; background: var(--bg-elevated); border-bottom: 1px solid var(--border-color); }
@@ -1127,9 +1088,7 @@ body.has-custom-bg .focus-container {
 .letter-modal-footer { padding: 16px 28px; background: var(--bg-elevated); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
 .letter-footer-note { font-size: 0.8rem; color: var(--text-muted); }
 
-/* ==========================================================================
-   FORMS, BUTTONS & TOAST
-   ========================================================================== */
+/* Form, button & toast */
 .form-stack { display: flex; flex-direction: column; gap: 16px; }
 .task-form-grid { display: grid; grid-template-columns: 2fr 1fr 1fr auto; gap: 14px; align-items: end; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -1203,7 +1162,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
 
 /* ==========================================================================
-   HÌNH NỀN TÙY CHỈNH & HIỆU ỨNG GLASSMORPHISM TOÀN TRANG
+   11. HÌNH NỀN TÙY CHỈNH & GLASSMORPHISM TOÀN TRANG
    ========================================================================== */
 body.has-custom-bg {
   background-size: cover !important;
@@ -1252,7 +1211,9 @@ body.has-custom-bg .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.18) !important;
 }
 
-/* RESPONSIVE CHO MÀN HÌNH NHỎ */
+/* ==========================================================================
+   12. RESPONSIVE MÀN HÌNH NHỎ
+   ========================================================================== */
 @media (max-width: 992px) {
   .app-layout { flex-direction: column !important; }
   .sidebar {
