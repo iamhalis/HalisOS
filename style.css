@@ -52,38 +52,39 @@ body {
 }
 
 /* ==========================================================================
-   BỐ CỤC CHÍNH (APP LAYOUT)
+   1. SỬA BỐ CỤC CHÍNH: DÙNG clip THAY VÌ hidden ĐỂ KHÔNG CHẶN STICKY
    ========================================================================== */
 .app-layout {
   display: flex !important;
   width: 100% !important;
   min-height: 100vh !important;
-  overflow-x: hidden !important;
+  /* Dùng overflow-x: clip để chống tràn ngang mà KHÔNG làm mất tính năng cố định của Sidebar */
+  overflow-x: clip !important;
 }
 
 /* ==========================================================================
-   THANH BÊN (SIDEBAR) & CHẾ ĐỘ THU GỌN GEMINI
+   2. THANH BÊN (SIDEBAR): LUÔN CỐ ĐỊNH 100% Ở MÉP TRÁI, KHÔNG BAO GIỜ TRÔI
    ========================================================================== */
 .sidebar,
 body.has-custom-bg .sidebar {
+  position: sticky !important;          /* Ghim chặt vào khung nhìn màn hình */
+  top: 0 !important;                     /* Luôn bắt đầu từ đỉnh */
+  left: 0 !important;
+  height: 100vh !important;             /* Chiều cao đúng bằng màn hình */
+  height: 100dvh !important;
+  align-self: flex-start !important;    /* Ngăn thanh bên bị kéo dãn theo độ dài của nội dung tab */
+  flex-shrink: 0 !important;
+  
   background: #0e0f12 !important;
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   width: 250px !important;
   min-width: 250px !important;
   max-width: 250px !important;
-  flex-shrink: 0 !important;
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  height: 100dvh;
-  max-height: 100vh;
-  max-height: 100dvh;
-  overflow-y: auto !important;
+  overflow-y: auto !important;          /* Tự cuộn riêng menu nếu icon quá nhiều */
   overflow-x: hidden !important;
-  overscroll-behavior-y: contain;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
