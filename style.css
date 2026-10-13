@@ -2231,7 +2231,7 @@ body.has-custom-bg .topbar {
 /* 2. LÀM KHUNG TRONG SUỐT NHÌN THẤY RÕ HÌNH NỀN */
 .focus-container,
 body.has-custom-bg .focus-container {
-  max-width: 880px !important;              /* Độ rộng của khung */
+  max-width: 1150px !important;              /* Độ rộng của khung */
   padding: 44px 36px !important;            /* Khoảng cách viền trong */
   border-radius: 26px !important;           /* Độ bo tròn 4 góc */
   margin: 12px auto 30px auto !important;
