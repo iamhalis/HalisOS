@@ -1580,21 +1580,22 @@ input:focus, select:focus, textarea:focus {
    ========================================================================== */
 .focus-container,
 body.has-custom-bg .focus-container {
-  /* 1. Mở rộng kích thước khung */
-  max-width: 880px !important;            /* Tăng chiều rộng từ 640px lên 880px */
-  padding: 48px 40px !important;          /* Khoảng đệm rộng rãi, cân đối */
-  border-radius: 26px !important;         /* Bo góc mềm mại hơn */
+  max-width: 880px !important;
+  padding: 48px 40px !important;
+  border-radius: 28px !important;
   margin: 10px auto 30px auto !important;
 
-  /* 2. Hiệu ứng kính mờ cực sâu CHỈ CHO RIÊNG KHUNG NÀY */
-  background: rgba(13, 17, 26, 0.42) !important; /* Hạ độ đục đen để đón ánh sáng nền */
-  backdrop-filter: blur(45px) saturate(190%) !important; /* Tăng blur lên 45px tán sắc mịn màng */
-  -webkit-backdrop-filter: blur(45px) saturate(190%) !important;
+  /* 1. Nền siêu trong suốt (chỉ 25% màu tối) */
+  background: rgba(10, 14, 24, 0.25) !important;
 
-  /* 3. Viền kính phản quang & đổ bóng nổi khối */
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45),
-              inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  /* 2. Blur cực sâu 65px + Tươi màu 210% */
+  backdrop-filter: blur(65px) saturate(210%) !important;
+  -webkit-backdrop-filter: blur(65px) saturate(210%) !important;
+
+  /* 3. Viền phản quang mép kính siêu thực */
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4),
+              inset 0 1px 2px rgba(255, 255, 255, 0.3) !important;
 }
 
 /* Nới rộng thanh chọn nhiệm vụ bên trong cho cân đối với khung mới */
