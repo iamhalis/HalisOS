@@ -121,29 +121,28 @@ document.addEventListener("DOMContentLoaded", () => {
     const nextTheme = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
     html.setAttribute("data-theme", nextTheme);
   });
-  // ==========================================================================
-// TÍNH NĂNG ĐÓNG / MỞ THANH BÊN KHI NHẤN LOGO WEB (GEMINI STYLE)
-// ==========================================================================
-document.addEventListener('DOMContentLoaded', () => {
-  const brandLogoBtn = document.getElementById('brand-logo-btn');
-  const sidebar = document.querySelector('.sidebar');
 
-  if (brandLogoBtn && sidebar) {
-    // 1. Khôi phục trạng thái thu gọn trước đó (nếu có)
-    const isCollapsed = localStorage.getItem('studyos_sidebar_collapsed') === 'true';
-    if (isCollapsed) {
-      sidebar.classList.add('collapsed');
-    }
-
-    // 2. Bắt sự kiện click vào Logo
-    brandLogoBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      sidebar.classList.toggle('collapsed');
-      
-      // Lưu lại trạng thái vào bộ nhớ
-      const state = sidebar.classList.contains('collapsed');
-      localStorage.setItem('studyos_sidebar_collapsed', state ? 'true' : 'false');
-    });
+  // Khôi phục trạng thái thu gọn thanh bên từ bộ nhớ
+  const savedCollapsedState = localStorage.getItem("studyos_sidebar_collapsed") === "true";
+  if (savedCollapsedState) {
+    const sb = document.querySelector(".sidebar");
+    if (sb) sb.classList.add("collapsed");
   }
-});
-});
+}); // <-- ĐÓNG DOMContentLoaded DUY NHẤT TẠI ĐÂY
+
+// ==========================================================================
+// HÀM ĐÓNG / MỞ THANH BÊN (TOÀN CỤC — CHẮC CHẮN HOẠT ĐỘNG 100%)
+// ==========================================================================
+function toggleSidebar() {
+  const sidebar = document.querySelector(".sidebar");
+  const brandLogoBtn = document.getElementById("brand-logo-btn");
+  if (!sidebar) return;
+
+  sidebar.classList.toggle("collapsed");
+  const isCol = sidebar.classList.contains("collapsed");
+  localStorage.setItem("studyos_sidebar_collapsed", isCol ? "true" : "false");
+
+  if (brandLogoBtn) {
+    brandLogoBtn.setAttribute("title", isCol ? "Mở thanh bên" : "Đóng thanh bên");
+  }
+}

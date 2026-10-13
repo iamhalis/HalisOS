@@ -1987,23 +1987,14 @@ body.has-custom-bg .nav-item.active {
   background: rgba(255, 255, 255, 0.08) !important;
   border-left: 3px solid #6366f1 !important; /* Điểm nhấn Sidebar */
 }
-/* ==========================================================================
-   FIX THANH BÊN (SIDEBAR) & CẤU TRÚC LAYOUT TỰ CO GIÃN
-   ========================================================================== */
-.app-layout {
-  display: grid;
-  grid-template-columns: auto 1fr !important; /* Tự co giãn theo chiều rộng sidebar, không để khoảng trống */
-  min-height: 100vh;
-}
-
-/* Luôn giữ thanh bên màu đen nguyên bản, không bị ảnh hưởng bởi ảnh nền */
+/* Cấu hình thanh bên mở rộng */
 .sidebar,
 body.has-custom-bg .sidebar {
   background: #0e0f12 !important;
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
-  width: 250px;
-  min-width: 250px;
-  max-width: 250px;
+  width: 250px !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
   transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
               min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
               max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
@@ -2015,19 +2006,9 @@ body.has-custom-bg .sidebar {
   -webkit-backdrop-filter: none !important;
 }
 
-/* Nút Logo bấm đóng/mở */
-.brand-logo {
-  cursor: pointer !important;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  user-select: none;
-}
-.brand-logo:hover {
-  transform: scale(1.08);
-  box-shadow: 0 0 14px rgba(99, 102, 241, 0.6);
-}
-
-/* TRẠNG THÁI THU GỌN (COLLAPSED) CHUẨN GEMINI */
-.sidebar.collapsed {
+/* TRẠNG THÁI THU GỌN: Thêm body.has-custom-bg để không bao giờ bị ảnh hưởng bởi ảnh nền */
+.sidebar.collapsed,
+body.has-custom-bg .sidebar.collapsed {
   width: 72px !important;
   min-width: 72px !important;
   max-width: 72px !important;
@@ -2040,8 +2021,8 @@ body.has-custom-bg .sidebar {
 }
 
 .sidebar.collapsed .brand {
-  justify-content: center;
-  padding: 0 0 16px 0;
+  justify-content: center !important;
+  padding: 0 0 16px 0 !important;
 }
 
 .sidebar.collapsed .brand-info,
@@ -2053,24 +2034,24 @@ body.has-custom-bg .sidebar {
 }
 
 .sidebar.collapsed .sidebar-user-card {
-  justify-content: center;
-  padding: 6px 0;
-  width: 44px;
-  height: 44px;
-  margin: 12px auto;
-  border-radius: 12px;
+  justify-content: center !important;
+  padding: 6px 0 !important;
+  width: 44px !important;
+  height: 44px !important;
+  margin: 12px auto !important;
+  border-radius: 12px !important;
 }
 
 .sidebar.collapsed .nav-item {
-  justify-content: center;
-  padding: 12px 0;
-  border-radius: 12px;
+  justify-content: center !important;
+  padding: 12px 0 !important;
+  border-radius: 12px !important;
 }
 
 .sidebar.collapsed .nav-item svg {
-  margin: 0;
-  width: 20px;
-  height: 20px;
+  margin: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
 }
 
 /* ==========================================================================
