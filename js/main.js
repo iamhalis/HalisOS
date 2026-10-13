@@ -187,11 +187,29 @@ function syncCustomFocusDropdown() {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const header = document.getElementById("custom-dropdown-header");
+const header = document.getElementById("custom-dropdown-header");
   const menu = document.getElementById("custom-dropdown-menu");
-  const focusCard = document.getElementById("focus-card");
-  const startBtn = document.getElementById("focus-start-btn");
-  const nativeSelect = document.getElementById("focus-task-select");
+  const dropdownBox = document.getElementById("custom-focus-dropdown");
+
+  if (header && menu && dropdownBox) {
+    header.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isClosed = menu.classList.contains("hidden");
+      
+      if (isClosed) {
+        menu.classList.remove("hidden");
+        dropdownBox.classList.add("open"); // Xoay mũi tên lên trên
+      } else {
+        menu.classList.add("hidden");
+        dropdownBox.classList.remove("open"); // Xoay mũi tên xuống dưới
+      }
+    });
+
+    document.addEventListener("click", () => {
+      menu.classList.add("hidden");
+      dropdownBox.classList.remove("open");
+    });
+  }
 
   // 1. Bật/tắt menu xổ xuống khi bấm vào Dropdown
   if (header && menu) {
@@ -224,3 +242,48 @@ document.addEventListener("DOMContentLoaded", () => {
     updateRunningState();
   }
 });
+function syncCustomFocusDropdown() {
+  const nativeSelect = document.getElementById("focus-task-select");
+  const headerText = document.getElementById("custom-dropdown-selected-text");
+  const menu = document.getElementById("custom-dropdown-menu");
+  const dropdownBox = document.getElementById("custom-focus-dropdown"); // Lấy khung dropdown
+  if (!nativeSelect || !headerText || !menu) return;
+
+  menu.innerHTML = "";
+  const options = Array.from(nativeSelect.options);
+
+  if (options.length === 0) {
+    headerText.textContent = "Chưa có nhiệm vụ nào";
+    return;
+  }
+
+  const selectedOpt = nativeSelect.options[nativeSelect.selectedIndex] || options[0];
+  headerText.textContent = selectedOpt ? selectedOpt.text : "Chọn nhiệm vụ";
+
+  options.forEach((opt, idx) => {
+    const item = document.createElement("div");
+    item.className = "custom-dropdown-item";
+    if (idx === nativeSelect.selectedIndex) item.classList.add("selected");
+    item.textContent = opt.text;
+
+    // SỰ KIỆN KHI BẤM CHỌN 1 NHIỆM VỤ TRONG DANH SÁCH:
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      nativeSelect.selectedIndex = idx;
+      nativeSelect.dispatchEvent(new Event("change"));
+      headerText.textContent = opt.text;
+      
+      // 1. Đóng menu lại
+      menu.classList.add("hidden");
+
+      // 2. Xoay mũi tên chúc xuống dưới trở lại
+      if (dropdownBox) dropdownBox.classList.remove("open");
+
+      // 3. Đánh dấu nhiệm vụ vừa chọn
+      document.querySelectorAll(".custom-dropdown-item").forEach(el => el.classList.remove("selected"));
+      item.classList.add("selected");
+    });
+
+    menu.appendChild(item);
+  });
+}

@@ -678,20 +678,22 @@ body.has-custom-bg .topbar {
    FOCUS MODE: GIAO DIỆN MỚI (TRONG SUỐT, DROPDOWN VIÊN NANG & KHUNG CHỮ NHẬT)
    ========================================================================== */
 
-/* 1. KHUNG BAO NGOÀI: TRONG SUỐT, BLUR NHẸ 5px, THẲNG HÀNG VỚI TOPBAR */
-.focus-status-badge,
-#focus-status-badge {
-  display: none !important;
-}
-
+/* 1. KÉO DÀI KHUNG TRONG SUỐT XUỐNG DƯỚI (PHỦ THOÁNG MÀN HÌNH NHƯ BAN ĐẦU) */
 .focus-container,
 body.has-custom-bg .focus-container {
   width: 100% !important;
   max-width: 100% !important;
+  min-height: calc(100vh - 170px) !important; /* Kéo dài khung phủ đều xuống đáy trang */
   box-sizing: border-box !important;
-  padding: 50px 36px !important;
+  padding: 60px 40px !important;
   border-radius: 26px !important;
   margin: 0 0 30px 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;         /* Căn giữa toàn bộ nội dung theo chiều dọc */
+  align-items: center !important;
+
   background: rgba(10, 14, 24, 0.18) !important;
   backdrop-filter: blur(5px) saturate(130%) !important;
   -webkit-backdrop-filter: blur(5px) saturate(130%) !important;
@@ -699,6 +701,50 @@ body.has-custom-bg .focus-container {
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35),
               inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* 2. KÉO CAO HỘP ĐỒNG HỒ ĐẾM GIỜ XUỐNG DƯỚI */
+.timer-display-wrapper {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.timer-box-frame {
+  width: 100%;
+  max-width: 780px;
+  min-height: 330px !important;               /* Tăng chiều cao hộp đếm giờ từ 230px lên 330px */
+  border: 3px solid #002b49 !important;
+  border-radius: 40px !important;
+  background: rgba(5, 18, 32, 0.15) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px auto 40px auto !important;     /* Tạo khoảng cách thông thoáng với hàng nút bấm */
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.3);
+}
+
+.timer-box-frame .timer-digits {
+  font-size: 6.8rem !important;               /* Kích thước số lớn rõ ràng */
+  font-weight: 800 !important;
+  color: #cbd5e1 !important;
+  letter-spacing: 2px;
+  line-height: 1;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7) !important;
+}
+
+/* 3. MŨI TÊN XOAY ĐỔI CHIỀU LÊN TRÊN KHI BẤM */
+.dropdown-chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* Hiệu ứng xoay mượt */
+}
+
+/* Khi mở menu: xoay 180 độ hướng mũi tên lên trên */
+.custom-focus-dropdown.open .dropdown-chevron {
+  transform: rotate(180deg);
 }
 
 /* 2. TIÊU ĐỀ "CHỌN NHIỆM VỤ" */
