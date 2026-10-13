@@ -2218,3 +2218,48 @@ body.has-custom-bg .topbar {
   align-items: center !important;
   gap: 10px !important;
 }
+/* ==========================================================================
+   TÙY CHỈNH KHUNG FOCUS MODE: TRONG SUỐT XUYÊN THẤU & ẨN BADGE TRẠNG THÁI
+   ========================================================================== */
+
+/* 1. ẨN HOÀN TOÀN CHỮ "SẴN SÀNG TẬP TRUNG" */
+.focus-status-badge,
+#focus-status-badge {
+  display: none !important;
+}
+
+/* 2. LÀM KHUNG TRONG SUỐT NHÌN THẤY RÕ HÌNH NỀN */
+.focus-container,
+body.has-custom-bg .focus-container {
+  max-width: 880px !important;              /* Độ rộng của khung */
+  padding: 44px 36px !important;            /* Khoảng cách viền trong */
+  border-radius: 26px !important;           /* Độ bo tròn 4 góc */
+  margin: 12px auto 30px auto !important;
+
+  /* NỀN TRONG SUỐT (Chỉ giữ 18% màu tối để nhìn rõ hình nền phía sau) */
+  background: rgba(12, 16, 26, 0.18) !important;
+
+  /* ĐỘ MỜ VỪA PHẢI (Để hình nhân vật và cây cối phía sau hiện rõ, không bị đục ngầu) */
+  backdrop-filter: blur(16px) saturate(170%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(170%) !important;
+
+  /* Viền kính mỏng & đổ bóng nổi khối */
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35),
+              inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 3. TINH CHỈNH Ô CHỌN NHIỆM VỤ ĐỒNG BỘ TRONG SUỐT */
+.focus-task-selector {
+  max-width: 520px !important;
+  margin: 0 auto 26px auto !important;
+}
+
+.focus-task-selector select {
+  background: rgba(15, 20, 32, 0.45) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+}
