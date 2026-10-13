@@ -1892,3 +1892,30 @@ input:focus, select:focus, textarea:focus {
   font-size: 0.82rem;
   color: var(--text-muted);
 }
+/* Ẩn input file mặc định nhưng vẫn bấm được qua nhãn label */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+/* Lớp phủ khi kích hoạt Custom Wallpaper */
+body.has-custom-bg {
+  background-size: cover !important;
+  background-position: center center !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+  transition: background-image 0.3s ease-in-out;
+}
+
+/* Tăng nhẹ độ tương phản cho các khung card khi có ảnh nền phía sau */
+body.has-custom-bg .card,
+body.has-custom-bg .sidebar {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}

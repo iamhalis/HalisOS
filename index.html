@@ -754,7 +754,33 @@
       </section>
     </main>
   </div>
+<!-- KHỐI CÀI ĐẶT HÌNH NỀN TÙY CHỈNH -->
+<div class="card mt-16">
+  <div class="card-header">
+    <h3>Hình nền tùy chỉnh (Custom Wallpaper)</h3>
+  </div>
+  <p class="text-muted mb-16">
+    Tải lên ảnh bất kỳ làm hình nền. Hệ thống sẽ tự động tối ưu hóa và nén nhẹ để máy chạy mượt nhất.
+  </p>
 
+  <div class="wallpaper-settings-stack">
+    <div class="form-actions">
+      <!-- Nút chọn file tùy biến đẹp mắt -->
+      <label class="btn btn-secondary" for="bg-upload-input" style="cursor: pointer;">
+        🖼️ Tải ảnh từ máy tính
+        <input type="file" id="bg-upload-input" accept="image/png, image/jpeg, image/webp" class="sr-only" />
+      </label>
+
+      <!-- Nút khôi phục hình nền gốc -->
+      <button type="button" class="btn btn-ghost" id="remove-bg-btn">
+        Xóa ảnh nền
+      </button>
+    </div>
+
+    <!-- Thông báo trạng thái nén -->
+    <span class="text-muted" id="bg-status-text" style="font-size: 0.85rem; display: block; margin-top: 8px;"></span>
+  </div>
+</div>
   <!-- MODAL MỞ THƯ NIÊM PHONG -->
   <div id="letter-modal-overlay" class="letter-modal-overlay hidden">
     <div class="letter-modal-card" role="dialog" aria-modal="true">

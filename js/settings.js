@@ -76,3 +76,119 @@ function initSettingsFeature() {
     reader.readAsText(file);
   });
 }
+// ========================================================
+// TÍNH NĂNG TỰ ĐỘNG NÉN ẢNH NỀN VÀ LƯU LOCALSTORAGE
+// ========================================================
+
+const bgInput = document.getElementById('bg-upload-input');
+const removeBgBtn = document.getElementById('remove-bg-btn');
+const bgStatusText = document.getElementById('bg-status-text');
+
+// 1. Hàm vẽ ảnh lên giao diện kèm lớp phủ tối bảo vệ mắt
+function applyWallpaper(imageDataUrl) {
+  if (!imageDataUrl) {
+    document.body.classList.remove('has-custom-bg');
+    document.body.style.backgroundImage = '';
+    return;
+  }
+  
+  // Phủ thêm 1 lớp màu đen mờ 65% (rgba(15, 23, 42, 0.65)) để chữ trắng luôn nổi bật
+  document.body.classList.add('has-custom-bg');
+  document.body.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), url("${imageDataUrl}")`;
+}
+
+// 2. Hàm nén ảnh bằng HTML5 Canvas (Tối đa Full HD 1920px, chất lượng 72%)
+function compressImage(file, callback) {
+  const reader = new FileReader();
+  
+  reader.onload = function(event) {
+    const img = new Image();
+    
+    img.onload = function() {
+      // Giới hạn chiều rộng tối đa là 1920px (chuẩn Full HD)
+      const MAX_WIDTH = 1920;
+      const MAX_HEIGHT = 1080;
+      let width = img.width;
+      let height = img.height;
+
+      // Giữ nguyên tỉ lệ ảnh khi thu nhỏ
+      if (width > height) {
+        if (width > MAX_WIDTH) {
+          height = Math.round((height * MAX_WIDTH) / width);
+          width = MAX_WIDTH;
+        }
+      } else {
+        if (height > MAX_HEIGHT) {
+          width = Math.round((width * MAX_HEIGHT) / height);
+          height = MAX_HEIGHT;
+        }
+      }
+
+      // Tạo canvas ảo để vẽ lại ảnh
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+
+      // Xuất ra định dạng JPEG với chất lượng 0.72 (giảm dung lượng còn ~150KB - 250KB)
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.72);
+      callback(compressedDataUrl);
+    };
+
+    img.src = event.target.result;
+  };
+
+  reader.readAsDataURL(file);
+}
+
+// 3. Lắng nghe sự kiện khi người dùng chọn ảnh
+if (bgInput) {
+  bgInput.addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (bgStatusText) bgStatusText.innerText = 'Đang tối ưu hóa & nén hình ảnh...';
+
+    // Tiến hành nén
+    compressImage(file, function(compressedBase64) {
+      try {
+        // Lưu vào localStorage
+        localStorage.setItem('studyos_custom_bg', compressedBase64);
+        
+        // Cập nhật ngay lên giao diện
+        applyWallpaper(compressedBase64);
+
+        if (bgStatusText) {
+          bgStatusText.innerText = '✅ Đã áp dụng hình nền thành công!';
+          setTimeout(() => { bgStatusText.innerText = ''; }, 3000);
+        }
+      } catch (err) {
+        console.error('Lỗi khi lưu ảnh:', err);
+        alert('Không thể lưu ảnh do dung lượng bộ nhớ trình duyệt đã đầy. Vui lòng chọn ảnh khác.');
+      }
+    });
+  });
+}
+
+// 4. Lắng nghe nút Xóa ảnh nền
+if (removeBgBtn) {
+  removeBgBtn.addEventListener('click', function() {
+    localStorage.removeItem('studyos_custom_bg');
+    applyWallpaper(null);
+    if (bgInput) bgInput.value = '';
+    if (bgStatusText) {
+      bgStatusText.innerText = 'Đã khôi phục giao diện mặc định.';
+      setTimeout(() => { bgStatusText.innerText = ''; }, 2500);
+    }
+  });
+}
+
+// 5. Tự động áp dụng ảnh nền khi vừa mở trang web
+document.addEventListener('DOMContentLoaded', function() {
+  const savedBg = localStorage.getItem('studyos_custom_bg');
+  if (savedBg) {
+    applyWallpaper(savedBg);
+  }
+});
