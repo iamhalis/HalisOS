@@ -1,151 +1,203 @@
-let focusInterval = null;
-let focusStartTime = 0;
-let focusPausedTime = 0;
-let pauseStartTimestamp = 0;
-let isFocusPaused = false;
+// ==========================================================================
+// STUDY OS — FOCUS MODE CONTROLLER (CHUẨN HÓA MỐC THỜI GIAN THỰC DATE.NOW)
+// ==========================================================================
+
+let focusTimerInterval = null;
+let focusStartTime = null;          // Mốc thời gian thực bắt đầu bấm giờ
+let focusElapsedBeforePause = 0;   // Tổng số mili-giây đã trôi qua trước khi tạm dừng
 let isFocusRunning = false;
+let isFocusPaused = false;
+let currentFocusTaskIndex = -1;
+
+function formatFocusTime(totalSeconds) {
+  const hrs = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  const secs = totalSeconds % 60;
+
+  if (hrs > 0) {
+    return `${String(hrs).padStart(2, "0")}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+  }
+  return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
+}
+
+function updateFocusTimerDisplay() {
+  const displayEl = document.getElementById("focus-timer-display");
+  if (!displayEl) return;
+
+  if (!isFocusRunning && !isFocusPaused) {
+    displayEl.textContent = "00:00";
+    return;
+  }
+
+  let totalElapsedMs = focusElapsedBeforePause;
+  if (isFocusRunning && !isFocusPaused && focusStartTime) {
+    // Tính khoảng chênh lệch theo mili-giây thực tế của hệ thống
+    totalElapsedMs += (Date.now() - focusStartTime);
+  }
+
+  const totalSeconds = Math.floor(totalElapsedMs / 1000);
+  displayEl.textContent = formatFocusTime(totalSeconds);
+}
+
+function stopFocusInterval() {
+  if (focusTimerInterval) {
+    clearInterval(focusTimerInterval);
+    focusTimerInterval = null;
+  }
+}
+
+function startFocusTimer() {
+  // 1. Luôn xóa triệt để interval cũ trước khi tạo interval mới để tránh lặp tốc độ
+  stopFocusInterval();
+
+  isFocusRunning = true;
+  isFocusPaused = false;
+  focusStartTime = Date.now();
+
+  // 2. Chạy cập nhật giao diện mỗi 250ms để bắt chuẩn nhịp 1 giây của đồng hồ thực
+  updateFocusTimerDisplay();
+  focusTimerInterval = setInterval(() => {
+    updateFocusTimerDisplay();
+  }, 250);
+
+  updateFocusControlsUI();
+}
+
+function pauseFocusTimer() {
+  if (!isFocusRunning || isFocusPaused) return;
+
+  // Lưu lại chính xác mili-giây đã trôi qua trước khi ngắt nhịp
+  if (focusStartTime) {
+    focusElapsedBeforePause += (Date.now() - focusStartTime);
+    focusStartTime = null;
+  }
+
+  stopFocusInterval();
+  isFocusPaused = true;
+  updateFocusTimerDisplay();
+  updateFocusControlsUI();
+}
+
+function resumeFocusTimer() {
+  if (!isFocusRunning || !isFocusPaused) return;
+  startFocusTimer();
+}
+
+function resetFocusState() {
+  stopFocusInterval();
+  focusStartTime = null;
+  focusElapsedBeforePause = 0;
+  isFocusRunning = false;
+  isFocusPaused = false;
+  currentFocusTaskIndex = -1;
+
+  updateFocusTimerDisplay();
+  updateFocusControlsUI();
+}
+
+function updateFocusControlsUI() {
+  const startBtn = document.getElementById("focus-start-btn");
+  const pauseBtn = document.getElementById("focus-pause-btn");
+  const doneBtn = document.getElementById("focus-done-btn");
+  const quitBtn = document.getElementById("focus-quit-btn");
+  const focusCard = document.getElementById("focus-card");
+
+  if (!startBtn || !pauseBtn || !doneBtn || !quitBtn) return;
+
+  if (!isFocusRunning && !isFocusPaused) {
+    // Trạng thái chưa bắt đầu
+    startBtn.classList.remove("hidden");
+    pauseBtn.classList.add("hidden");
+    doneBtn.classList.add("hidden");
+    quitBtn.classList.add("hidden");
+    if (focusCard) focusCard.classList.remove("is-running");
+  } else {
+    // Trạng thái đang bấm giờ hoặc tạm dừng
+    startBtn.classList.add("hidden");
+    pauseBtn.classList.remove("hidden");
+    doneBtn.classList.remove("hidden");
+    quitBtn.classList.remove("hidden");
+    if (focusCard) focusCard.classList.add("is-running");
+
+    pauseBtn.textContent = isFocusPaused ? "Tiếp tục" : "Tạm dừng";
+  }
+}
 
 function renderFocusSelector() {
   const select = document.getElementById("focus-task-select");
   if (!select) return;
-  const prevValue = select.value;
-  select.innerHTML = "";
 
-  if (tasks.length === 0) {
+  select.innerHTML = "";
+  const pendingTasks = tasks.filter(t => !t.done);
+
+  if (pendingTasks.length === 0) {
     const opt = document.createElement("option");
-    opt.value = "";
-    opt.textContent = "-- Chưa có nhiệm vụ nào --";
+    opt.value = "-1";
+    opt.textContent = "Không có nhiệm vụ nào cần làm";
     select.appendChild(opt);
-    updateFocusPreviewName();
     return;
   }
 
-  getSortedTasks().forEach(task => {
-    const realIdx = tasks.indexOf(task);
+  pendingTasks.forEach(t => {
+    const originalIndex = tasks.indexOf(t);
     const opt = document.createElement("option");
-    opt.value = String(realIdx);
-    opt.textContent = `${task.done ? "[Đã xong]" : "[Chưa xong]"} ${task.name} (${formatDisplayDate(task.date)})`;
+    opt.value = originalIndex;
+    opt.textContent = `${t.name} (${formatDisplayDate(t.date)} - ${t.time})`;
     select.appendChild(opt);
   });
-
-  if (prevValue && tasks[Number(prevValue)]) {
-    select.value = prevValue;
-  }
-  updateFocusPreviewName();
-}
-
-function updateFocusPreviewName() {
-  const select = document.getElementById("focus-task-select");
-  const idx = Number(select.value);
-  const label = document.getElementById("focus-active-task-name");
-  if (select.value !== "" && tasks[idx]) {
-    label.textContent = tasks[idx].name;
-  } else {
-    label.textContent = "Chọn một nhiệm vụ để bắt đầu";
-  }
-}
-
-function formatHMS(totalSeconds) {
-  const h = Math.floor(totalSeconds / 3600);
-  const m = Math.floor((totalSeconds % 3600) / 60);
-  const s = totalSeconds % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-function getFocusElapsedSeconds() {
-  if (!isFocusRunning) return 0;
-  const now = isFocusPaused ? pauseStartTimestamp : Date.now();
-  return Math.max(0, Math.floor((now - focusStartTime - focusPausedTime) / 1000));
-}
-
-function tickFocusTimer() {
-  const elapsed = getFocusElapsedSeconds();
-  document.getElementById("focus-timer-display").textContent = formatHMS(elapsed);
-
-  const hours = Math.floor(elapsed / 3600);
-  const ring = document.getElementById("timer-ring");
-  ring.classList.remove("warning", "danger");
-  if (hours >= 2) ring.classList.add("danger");
-  else if (hours >= 1) ring.classList.add("warning");
-}
-
-function stopFocusSession(actionType) {
-  const elapsed = getFocusElapsedSeconds();
-  const timeFormatted = formatHMS(elapsed);
-  clearInterval(focusInterval);
-  isFocusRunning = false;
-  isFocusPaused = false;
-
-  document.getElementById("focus-start-btn").classList.remove("hidden");
-  document.getElementById("focus-pause-btn").classList.add("hidden");
-  document.getElementById("focus-done-btn").classList.add("hidden");
-  document.getElementById("focus-quit-btn").classList.add("hidden");
-  document.getElementById("focus-task-select").disabled = false;
-  document.getElementById("timer-ring").classList.remove("paused", "warning", "danger");
-  document.getElementById("focus-status-badge").textContent = "SẴN SÀNG TẬP TRUNG";
-  document.getElementById("focus-timer-display").textContent = "00:00:00";
-
-  const idx = Number(document.getElementById("focus-task-select").value);
-  const resultBanner = document.getElementById("focus-result-banner");
-  resultBanner.classList.remove("hidden");
-
-  if (actionType === "done" && tasks[idx]) {
-    tasks[idx].done = true;
-    saveStorage();
-    renderAll();
-    resultBanner.innerHTML = `<strong>Hoàn thành xuất sắc!</strong><br>Nhiệm vụ: ${tasks[idx].name} • Thời gian tập trung: <strong>${timeFormatted}</strong>`;
-    showToast("Đã đánh dấu hoàn thành nhiệm vụ!");
-  } else {
-    resultBanner.innerHTML = `Đã kết thúc phiên tập trung. Tổng thời gian: <strong>${timeFormatted}</strong>`;
-  }
 }
 
 function initFocusFeature() {
-  document.getElementById("focus-task-select").addEventListener("change", updateFocusPreviewName);
+  const startBtn = document.getElementById("focus-start-btn");
+  const pauseBtn = document.getElementById("focus-pause-btn");
+  const doneBtn = document.getElementById("focus-done-btn");
+  const quitBtn = document.getElementById("focus-quit-btn");
+  const select = document.getElementById("focus-task-select");
 
-  document.getElementById("focus-start-btn").addEventListener("click", () => {
-    if (tasks.length === 0) {
-      showToast("Hãy thêm ít nhất 1 nhiệm vụ trước khi bắt đầu Focus!", true);
-      return;
-    }
-    isFocusRunning = true;
-    isFocusPaused = false;
-    focusStartTime = Date.now();
-    focusPausedTime = 0;
+  if (startBtn) {
+    startBtn.onclick = () => {
+      const selectedIndex = parseInt(select.value, 10);
+      if (isNaN(selectedIndex) || selectedIndex < 0 || !tasks[selectedIndex]) {
+        showToast("Vui lòng chọn một nhiệm vụ hợp lệ để bắt đầu!", true);
+        return;
+      }
 
-    document.getElementById("focus-result-banner").classList.add("hidden");
-    document.getElementById("focus-start-btn").classList.add("hidden");
-    document.getElementById("focus-pause-btn").classList.remove("hidden");
-    document.getElementById("focus-pause-btn").textContent = "Tạm dừng";
-    document.getElementById("focus-done-btn").classList.remove("hidden");
-    document.getElementById("focus-quit-btn").classList.remove("hidden");
-    document.getElementById("focus-task-select").disabled = true;
-    document.getElementById("focus-status-badge").textContent = "ĐANG TẬP TRUNG";
+      currentFocusTaskIndex = selectedIndex;
+      focusElapsedBeforePause = 0;
+      startFocusTimer();
+    };
+  }
 
-    tickFocusTimer();
-    focusInterval = setInterval(tickFocusTimer, 250);
-  });
+  if (pauseBtn) {
+    pauseBtn.onclick = () => {
+      if (isFocusPaused) {
+        resumeFocusTimer();
+      } else {
+        pauseFocusTimer();
+      }
+    };
+  }
 
-  document.getElementById("focus-pause-btn").addEventListener("click", () => {
-    if (!isFocusRunning) return;
-    isFocusPaused = !isFocusPaused;
-    const ring = document.getElementById("timer-ring");
-    const badge = document.getElementById("focus-status-badge");
-    const btn = document.getElementById("focus-pause-btn");
+  if (doneBtn) {
+    doneBtn.onclick = () => {
+      if (currentFocusTaskIndex >= 0 && tasks[currentFocusTaskIndex]) {
+        tasks[currentFocusTaskIndex].done = true;
+        saveStorage();
+        renderAll();
+        showToast(`🎉 Đã hoàn thành nhiệm vụ: ${tasks[currentFocusTaskIndex].name}!`);
+      }
+      resetFocusState();
+    };
+  }
 
-    if (isFocusPaused) {
-      pauseStartTimestamp = Date.now();
-      ring.classList.add("paused");
-      badge.textContent = "ĐANG TẠM DỪNG";
-      btn.textContent = "Tiếp tục";
-    } else {
-      focusPausedTime += Date.now() - pauseStartTimestamp;
-      ring.classList.remove("paused");
-      badge.textContent = "ĐANG TẬP TRUNG";
-      btn.textContent = "Tạm dừng";
-    }
-  });
+  if (quitBtn) {
+    quitBtn.onclick = () => {
+      resetFocusState();
+      showToast("Đã dừng phiên tập trung.");
+    };
+  }
 
-  document.getElementById("focus-done-btn").addEventListener("click", () => stopFocusSession("done"));
-  document.getElementById("focus-quit-btn").addEventListener("click", () => stopFocusSession("quit"));
+  renderFocusSelector();
+  updateFocusTimerDisplay();
+  updateFocusControlsUI();
 }
