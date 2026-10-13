@@ -13,8 +13,8 @@
   <div class="app-layout">
     <!-- Sidebar Điều hướng -->
     <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-logo">S</div>
+<div class="brand">
+        <div class="brand-logo" id="brand-logo-btn" title="Nhấn để Đóng / Mở thanh bên">S</div>
         <div class="brand-info">
           <h1 id="app-title">Study OS</h1>
           <span class="version-badge">v7.02 Web</span>    
@@ -689,9 +689,11 @@
         </div>
       </section>
 
-      <!-- TAB 9: CÀI ĐẶT & DỮ LIỆU -->
+<!-- TAB 9: CÀI ĐẶT & DỮ LIỆU -->
       <section class="tab-pane" id="tab-settings">
+        <!-- HÀNG 1: 2 KHỐI QUẢN LÝ JSON NGUYÊN BẢN -->
         <div class="dashboard-columns">
+          <!-- 1. Cấu hình hệ thống -->
           <div class="card">
             <div class="card-header">
               <h3>Cấu hình chung (config.json)</h3>
@@ -729,6 +731,7 @@
             </form>
           </div>
 
+          <!-- 2. Xuất/Nhập file JSON -->
           <div class="card">
             <div class="card-header">
               <h3>Sao lưu & Đồng bộ JSON</h3>
@@ -751,36 +754,28 @@
             </div>
           </div>
         </div>
+
+        <!-- HÀNG 2: THẺ CARD ĐỘC LẬP CHO HÌNH NỀN (NẰM DƯỚI 2 KHỐI JSON) -->
+        <div class="card mt-24">
+          <div class="card-header">
+            <h3>Tùy biến giao diện (Custom Wallpaper)</h3>
+          </div>
+          <p class="text-muted mb-16">
+            Tải ảnh từ máy tính để làm hình nền kính mờ. Hệ thống sẽ tự động nén tối ưu bộ nhớ trình duyệt mà không ảnh hưởng tới file cấu hình JSON.
+          </p>
+
+          <div class="wallpaper-settings-stack">
+            <div class="form-actions" style="display: flex; gap: 12px; align-items: center;">
+              <label class="btn btn-secondary" for="bg-upload-input" style="cursor: pointer;">
+                🖼️ Tải ảnh từ máy tính
+                <input type="file" id="bg-upload-input" accept="image/png, image/jpeg, image/webp" class="sr-only" />
+              </label>
+              <button type="button" class="btn btn-ghost" id="remove-bg-btn">Xóa ảnh nền</button>
+            </div>
+            <span class="text-muted" id="bg-status-text" style="font-size: 0.85rem; display: block; margin-top: 10px;"></span>
+          </div>
+        </div>
       </section>
-    </main>
-  </div>
-<!-- KHỐI CÀI ĐẶT HÌNH NỀN TÙY CHỈNH -->
-<div class="card mt-16">
-  <div class="card-header">
-    <h3>Hình nền tùy chỉnh (Custom Wallpaper)</h3>
-  </div>
-  <p class="text-muted mb-16">
-    Tải lên ảnh bất kỳ làm hình nền. Hệ thống sẽ tự động tối ưu hóa và nén nhẹ để máy chạy mượt nhất.
-  </p>
-
-  <div class="wallpaper-settings-stack">
-    <div class="form-actions">
-      <!-- Nút chọn file tùy biến đẹp mắt -->
-      <label class="btn btn-secondary" for="bg-upload-input" style="cursor: pointer;">
-        🖼️ Tải ảnh từ máy tính
-        <input type="file" id="bg-upload-input" accept="image/png, image/jpeg, image/webp" class="sr-only" />
-      </label>
-
-      <!-- Nút khôi phục hình nền gốc -->
-      <button type="button" class="btn btn-ghost" id="remove-bg-btn">
-        Xóa ảnh nền
-      </button>
-    </div>
-
-    <!-- Thông báo trạng thái nén -->
-    <span class="text-muted" id="bg-status-text" style="font-size: 0.85rem; display: block; margin-top: 8px;"></span>
-  </div>
-</div>
   <!-- MODAL MỞ THƯ NIÊM PHONG -->
   <div id="letter-modal-overlay" class="letter-modal-overlay hidden">
     <div class="letter-modal-card" role="dialog" aria-modal="true">
