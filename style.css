@@ -1919,3 +1919,71 @@ body.has-custom-bg .sidebar {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
 }
+/* 1. Thiết lập lại Body khi có ảnh nền (Bỏ hoàn toàn Gradient) */
+body.has-custom-bg {
+  background-size: cover !important;
+  background-position: center center !important;
+  background-attachment: fixed !important;
+  background-repeat: no-repeat !important;
+  transition: background-image 0.4s ease-in-out;
+}
+
+/* 2. Tạo hiệu ứng Kính mờ (Glassmorphism) cho thẻ Card và Sidebar */
+body.has-custom-bg .card,
+body.has-custom-bg .sidebar,
+body.has-custom-bg .topbar {
+  /* Tông tối mờ dịu, xuyên thấu */
+  background: rgba(17, 24, 39, 0.45) !important; 
+  
+  /* Lớp mờ ảo cực mạnh (Trọng tâm) */
+  backdrop-filter: blur(24px) saturate(140%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(140%) !important;
+  
+  /* Đường viền kính mỏng phản chiếu sáng */
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  
+  /* Đổ bóng nhẹ, mềm mại */
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25) !important;
+}
+
+/* 3. Làm mượt và nổi bật các Ô Input/Trường nhập liệu trên nền kính */
+body.has-custom-bg input,
+body.has-custom-bg select,
+body.has-custom-bg textarea {
+  background: rgba(15, 23, 42, 0.35) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: #ffffff !important;
+}
+
+body.has-custom-bg input:focus,
+body.has-custom-bg select:focus,
+body.has-custom-bg textarea:focus {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  background: rgba(15, 23, 42, 0.5) !important;
+}
+
+/* 4. Tút lại hiệu ứng cho các Nút */
+body.has-custom-bg .btn-secondary {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+body.has-custom-bg .btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+}
+
+/* 5. Gắn mờ cho vùng tóm tắt Hồ sơ và Menu con */
+body.has-custom-bg .sidebar-user-card {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+body.has-custom-bg .nav-item.active {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-left: 3px solid #6366f1 !important; /* Điểm nhấn Sidebar */
+}

@@ -92,9 +92,9 @@ function applyWallpaper(imageDataUrl) {
     return;
   }
   
-  // Phủ thêm 1 lớp màu đen mờ 65% (rgba(15, 23, 42, 0.65)) để chữ trắng luôn nổi bật
+  // Nạp trực tiếp ảnh (không kèm gradient overlay), mọi hiệu ứng mờ tối đã được xử lý bằng kính mờ CSS phía trên
   document.body.classList.add('has-custom-bg');
-  document.body.style.backgroundImage = `linear-gradient(rgba(15, 23, 42, 0.65), rgba(15, 23, 42, 0.65)), url("${imageDataUrl}")`;
+  document.body.style.backgroundImage = `url("${imageDataUrl}")`;
 }
 
 // 2. Hàm nén ảnh bằng HTML5 Canvas (Tối đa Full HD 1920px, chất lượng 72%)
