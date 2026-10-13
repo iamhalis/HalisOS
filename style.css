@@ -837,11 +837,12 @@ body.has-custom-bg .focus-container {
 }
 
 /* Nút điều khiển Focus Mode */
-.focus-controls .btn {
-  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), 
-              box-shadow 0.22s ease, 
-              filter 0.22s ease !important;
-  will-change: transform;
+.focus-controls {
+  display: flex !important;
+  justify-content: center !important;
+  gap: 42px !important;               /* Tăng khoảng cách giữa các nút (mặc định cũ 16px) */
+  margin-top: 8px !important;         /* Khoảng cách từ đáy khung đồng hồ xuống hàng nút */
+  flex-wrap: wrap !important;
 }
 
 /* 2. Rê chuột vào (Hover): Phóng to n% + Tăng sáng nhẹ */
