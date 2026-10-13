@@ -1,6 +1,3 @@
-// =========================================================================
-// 4. CALENDAR.JS — TÍNH NĂNG LỊCH TRÌNH 7 NGÀY TỚI (WEEKLY CALENDAR)
-// =========================================================================
 function renderWeeklyCalendar() {
   const grid = document.getElementById("weekly-calendar-grid");
   if (!grid) return;

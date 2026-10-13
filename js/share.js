@@ -1,6 +1,3 @@
-// =========================================================================
-// 8. SHARE.JS — TÍNH NĂNG CHIA SẺ & NHẬP MÃ NHIỆM VỤ
-// =========================================================================
 let selectedShareTaskIndices = new Set();
 let currentShareViewFilter = "week";
 let currentGeneratedShareCode = "";

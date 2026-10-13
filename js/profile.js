@@ -1,6 +1,3 @@
-// =========================================================================
-// 9. PROFILE.JS — ĐĂNG KÝ, ĐĂNG NHẬP, AVATAR & ĐỔI MẬT KHẨU 3 BƯỚC
-// =========================================================================
 function processAvatarFile(file) {
   return new Promise((resolve, reject) => {
     if (!file) {

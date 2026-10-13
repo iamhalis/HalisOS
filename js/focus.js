@@ -1,6 +1,3 @@
-// =========================================================================
-// 5. FOCUS.JS — TÍNH NĂNG FOCUS MODE (ĐỒNG HỒ ĐẾM GIỜ TẬP TRUNG)
-// =========================================================================
 let focusInterval = null;
 let focusStartTime = 0;
 let focusPausedTime = 0;

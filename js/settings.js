@@ -1,6 +1,3 @@
-// =========================================================================
-// 10. SETTINGS.JS — CẤU HÌNH HỆ THỐNG & SAO LƯU / ĐỒNG BỘ FILE JSON
-// =========================================================================
 function downloadJSON(filename, dataObj) {
   const blob = new Blob([JSON.stringify(dataObj, null, 4)], { type: "application/json" });
   const url = URL.createObjectURL(blob);

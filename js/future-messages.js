@@ -1,6 +1,3 @@
-// =========================================================================
-// 7. FUTURE-MESSAGES.JS — NIÊM PHONG CÁ NHÂN & GỬI THƯ CHO NGƯỜI DÙNG KHÁC
-// =========================================================================
 let activeSocialBox = "inbox";
 
 function openLetterModal(letterData) {

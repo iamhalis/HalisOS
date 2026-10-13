@@ -1,6 +1,3 @@
-// =========================================================================
-// 6. ANALYTICS.JS — TÍNH NĂNG BIỂU ĐỒ ĐƯỜNG NĂNG SUẤT HỌC TẬP (SVG CHARTS)
-// =========================================================================
 function createSVGLineChart(labels, values, gradientId) {
   const width = 760;
   const height = 250;

@@ -1,6 +1,3 @@
-// =========================================================================
-// 11. MAIN.JS — ĐIỀU HƯỚNG TAB, RENDER TỔNG THỂ & KHỞI CHẠY ỨNG DỤNG
-// =========================================================================
 function switchTab(tabId) {
   document.querySelectorAll(".nav-item").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.tab === tabId);

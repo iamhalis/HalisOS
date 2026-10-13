@@ -1,6 +1,3 @@
-// =========================================================================
-// 2. DASHBOARD.JS — TÍNH NĂNG TAB TỔNG QUAN (THỐNG KÊ NHANH & MỤC TIÊU AIM)
-// =========================================================================
 function getTaskStats() {
   const now = new Date();
   const todayStr = getTodayStr();
