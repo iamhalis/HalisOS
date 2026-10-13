@@ -2263,3 +2263,195 @@ body.has-custom-bg .focus-container {
   border-radius: 12px !important;
   padding: 10px 14px !important;
 }
+/* ==========================================================================
+   1. ĐỒNG BỘ LAYOUT TOÀN DIỆN: CHỐNG LỆCH MÀN HÌNH & TỰ CO GIÃN THEO SIDEBAR
+   ========================================================================== */
+.app-layout {
+  display: flex !important; /* Dùng Flexbox chuẩn để thanh bên và nội dung trượt mượt mà */
+  width: 100% !important;
+  min-height: 100vh !important;
+  overflow-x: hidden !important; /* Chống triệt để lỗi sinh thanh cuộn ngang gây lệch màn hình */
+}
+
+/* Nội dung chính luôn chiếm trọn phần màn hình còn lại một cách cân đối */
+.main-content {
+  flex: 1 1 0% !important;
+  min-width: 0 !important; /* Trọng tâm: Ngăn tràn khung (Flex/Grid blowout) */
+  width: 100% !important;
+  max-width: 1440px !important; /* Độ rộng tối đa chuẩn màn hình hiện đại */
+  margin: 0 auto !important;
+  padding: 24px 32px !important;
+  box-sizing: border-box !important;
+  transition: padding 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* ==========================================================================
+   2. THANH BÊN (SIDEBAR): HIỆU ỨNG TRƯỢT MƯỢT MÀ ĐỒNG NHỊP VỚI NỘI DUNG
+   ========================================================================== */
+.sidebar,
+body.has-custom-bg .sidebar {
+  background: #0e0f12 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
+  width: 250px !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
+  flex-shrink: 0 !important;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              min-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.3s ease !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.45) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  z-index: 100;
+}
+
+/* Khi thanh bên thu gọn (Collapsed) */
+.sidebar.collapsed,
+body.has-custom-bg .sidebar.collapsed {
+  width: 72px !important;
+  min-width: 72px !important;
+  max-width: 72px !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+  scrollbar-width: none !important;
+}
+
+.sidebar.collapsed::-webkit-scrollbar {
+  display: none !important;
+}
+
+.sidebar.collapsed .brand {
+  justify-content: center !important;
+  padding: 0 0 16px 0 !important;
+}
+
+.sidebar.collapsed .brand-info,
+.sidebar.collapsed .nav-item span,
+.sidebar.collapsed .nav-counter,
+.sidebar.collapsed .user-meta,
+.sidebar.collapsed .sidebar-footer {
+  display: none !important;
+}
+
+.sidebar.collapsed .sidebar-user-card {
+  justify-content: center !important;
+  padding: 6px 0 !important;
+  width: 44px !important;
+  height: 44px !important;
+  margin: 12px auto !important;
+  border-radius: 12px !important;
+}
+
+.sidebar.collapsed .nav-item {
+  justify-content: center !important;
+  padding: 12px 0 !important;
+  border-radius: 12px !important;
+}
+
+.sidebar.collapsed .nav-item svg {
+  margin: 0 !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+/* ==========================================================================
+   3. KHUNG TOPBAR: ĐỒNG BỘ MÀU KÍNH VÀ CHIỀU RỘNG
+   ========================================================================== */
+.topbar,
+body.has-custom-bg .topbar {
+  width: 100% !important;
+  box-sizing: border-box !important;
+  background: rgba(13, 17, 26, 0.38) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 20px !important;
+  padding: 12px 22px !important;
+  margin-bottom: 22px !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25), 
+              inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+}
+
+.datetime-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background: rgba(10, 14, 22, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 99px !important;
+  padding: 6px 16px !important;
+}
+
+.datetime-group h2 {
+  font-size: 0.98rem !important;
+  font-weight: 700 !important;
+  color: #f8fafc !important;
+  margin: 0 !important;
+}
+
+.datetime-group .live-clock {
+  font-family: monospace, ui-monospace, sans-serif !important;
+  font-size: 0.9rem !important;
+  color: #94a3b8 !important;
+  padding-left: 10px !important;
+  border-left: 1px solid rgba(255, 255, 255, 0.15) !important;
+}
+
+.topbar-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* ==========================================================================
+   4. KHUNG FOCUS MODE: CĂN THẲNG HÀNG 100% VỚI TOPBAR (KHÔNG BỊ LỆCH)
+   ========================================================================== */
+/* Ẩn chữ "SẴN SÀNG TẬP TRUNG" */
+.focus-status-badge,
+#focus-status-badge {
+  display: none !important;
+}
+
+.focus-container,
+body.has-custom-bg .focus-container {
+  width: 100% !important;                     /* Rộng thẳng hàng với Topbar */
+  max-width: 100% !important;                  /* Bỏ giới hạn px gây lệch mép */
+  box-sizing: border-box !important;
+  padding: 50px 36px !important;
+  border-radius: 26px !important;
+  margin: 0 0 30px 0 !important;               /* Căn thẳng hàng, không lệch tâm */
+
+  /* Độ trong suốt vừa phải để nhìn rõ nền anime phía sau */
+  background: rgba(12, 16, 26, 0.22) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35),
+              inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Căn giữa ô chọn nhiệm vụ và đồng hồ bên trong khung */
+.focus-task-selector {
+  max-width: 580px !important;
+  margin: 0 auto 28px auto !important;
+  text-align: left !important;
+}
+
+.focus-task-selector select {
+  width: 100% !important;
+  background: rgba(15, 20, 32, 0.5) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  padding: 12px 16px !important;
+  color: #fff !important;
+}
