@@ -146,3 +146,81 @@ function toggleSidebar() {
     brandLogoBtn.setAttribute("title", isCol ? "Mở thanh bên" : "Đóng thanh bên");
   }
 }
+// ==========================================================================
+// TÍNH NĂNG DROPDOWN TÙY BIẾN CHO FOCUS MODE & ĐỒNG BỘ TRẠNG THÁI
+// ==========================================================================
+function syncCustomFocusDropdown() {
+  const nativeSelect = document.getElementById("focus-task-select");
+  const headerText = document.getElementById("custom-dropdown-selected-text");
+  const menu = document.getElementById("custom-dropdown-menu");
+  if (!nativeSelect || !headerText || !menu) return;
+
+  menu.innerHTML = "";
+  const options = Array.from(nativeSelect.options);
+
+  if (options.length === 0) {
+    headerText.textContent = "Chưa có nhiệm vụ nào";
+    return;
+  }
+
+  const selectedOpt = nativeSelect.options[nativeSelect.selectedIndex] || options[0];
+  headerText.textContent = selectedOpt ? selectedOpt.text : "Chọn nhiệm vụ";
+
+  options.forEach((opt, idx) => {
+    const item = document.createElement("div");
+    item.className = "custom-dropdown-item";
+    if (idx === nativeSelect.selectedIndex) item.classList.add("selected");
+    item.textContent = opt.text;
+
+    item.addEventListener("click", (e) => {
+      e.stopPropagation();
+      nativeSelect.selectedIndex = idx;
+      nativeSelect.dispatchEvent(new Event("change"));
+      headerText.textContent = opt.text;
+      menu.classList.add("hidden");
+      document.querySelectorAll(".custom-dropdown-item").forEach(el => el.classList.remove("selected"));
+      item.classList.add("selected");
+    });
+
+    menu.appendChild(item);
+  });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const header = document.getElementById("custom-dropdown-header");
+  const menu = document.getElementById("custom-dropdown-menu");
+  const focusCard = document.getElementById("focus-card");
+  const startBtn = document.getElementById("focus-start-btn");
+  const nativeSelect = document.getElementById("focus-task-select");
+
+  // 1. Bật/tắt menu xổ xuống khi bấm vào Dropdown
+  if (header && menu) {
+    header.addEventListener("click", (e) => {
+      e.stopPropagation();
+      menu.classList.toggle("hidden");
+    });
+
+    document.addEventListener("click", () => {
+      menu.classList.add("hidden");
+    });
+  }
+
+  // 2. Tự động đồng bộ mỗi khi danh sách nhiệm vụ thay đổi
+  if (nativeSelect) {
+    const obs = new MutationObserver(() => syncCustomFocusDropdown());
+    obs.observe(nativeSelect, { childList: true, subtree: true });
+    syncCustomFocusDropdown();
+  }
+
+  // 3. Quản lý trạng thái chuyển đổi giữa [Chọn nhiệm vụ] và [Đang đếm giờ]
+  if (startBtn && focusCard) {
+    const updateRunningState = () => {
+      const isRunning = startBtn.classList.contains("hidden");
+      focusCard.classList.toggle("is-running", isRunning);
+    };
+
+    const btnObs = new MutationObserver(() => updateRunningState());
+    btnObs.observe(startBtn, { attributes: true, attributeFilter: ["class"] });
+    updateRunningState();
+  }
+});

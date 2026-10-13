@@ -255,34 +255,49 @@
         <div id="weekly-calendar-grid" class="calendar-grid"></div>
       </section>
 
-      <!-- TAB 4: FOCUS MODE -->
+<!-- TAB 4: FOCUS MODE -->
       <section class="tab-pane" id="tab-focus">
         <div class="focus-container" id="focus-card">
-          <div class="focus-status-badge" id="focus-status-badge">SẴN SÀNG TẬP TRUNG</div>
+          <div class="focus-status-badge hidden" id="focus-status-badge"></div>
 
-          <div class="focus-task-selector">
-            <label for="focus-task-select">Nhiệm vụ đang tập trung:</label>
-            <select id="focus-task-select"></select>
+          <!-- 1. KHỐI CHỌN NHIỆM VỤ (CHỈ HIỆN KHI CHƯA BẮT ĐẦU) -->
+          <div class="focus-task-picker-section" id="focus-task-picker-section">
+            <h2 class="focus-select-title">CHỌN NHIỆM VỤ</h2>
+            
+            <div class="custom-focus-dropdown-frame">
+              <div class="custom-focus-dropdown" id="custom-focus-dropdown">
+                <div class="custom-dropdown-header" id="custom-dropdown-header">
+                  <span id="custom-dropdown-selected-text">Chọn nhiệm vụ...</span>
+                  <span class="dropdown-chevron">∨</span>
+                </div>
+                <!-- Menu xổ xuống -->
+                <div class="custom-dropdown-menu hidden" id="custom-dropdown-menu"></div>
+              </div>
+            </div>
+
+            <!-- Giữ thẻ select ẩn gốc để đồng bộ 100% logic với focus.js -->
+            <select id="focus-task-select" class="sr-only"></select>
           </div>
 
-          <div class="timer-display-wrapper">
-            <div class="timer-ring" id="timer-ring">
-              <div class="timer-digits" id="focus-timer-display">00:00:00</div>
-              <div class="timer-active-task" id="focus-active-task-name">Chọn một nhiệm vụ để bắt đầu</div>
+          <!-- 2. KHỐI ĐỒNG HỒ ĐẾM GIỜ CHỮ NHẬT (CHỈ HIỆN KHI ĐANG BẤM GIỜ) -->
+          <div class="timer-display-wrapper" id="timer-display-wrapper">
+            <div class="timer-box-frame" id="timer-ring">
+              <div class="timer-digits" id="focus-timer-display">00:00</div>
+              <div class="timer-active-task hidden" id="focus-active-task-name"></div>
             </div>
           </div>
 
+          <!-- 3. CÁC NÚT ĐIỀU KHIỂN -->
           <div class="focus-controls">
-            <button class="btn btn-primary btn-lg" id="focus-start-btn">Bắt đầu</button>
-            <button class="btn btn-secondary btn-lg hidden" id="focus-pause-btn">Tạm dừng</button>
-            <button class="btn btn-success btn-lg hidden" id="focus-done-btn">Hoàn thành Task</button>
-            <button class="btn btn-danger btn-lg hidden" id="focus-quit-btn">Kết thúc</button>
+            <button class="btn focus-btn-start" id="focus-start-btn">Bắt đầu</button>
+            <button class="btn focus-btn-pause hidden" id="focus-pause-btn">Tạm dừng</button>
+            <button class="btn focus-btn-done hidden" id="focus-done-btn">Hoàn thành</button>
+            <button class="btn focus-btn-quit hidden" id="focus-quit-btn">Kết thúc</button>
           </div>
 
           <div id="focus-result-banner" class="focus-result hidden"></div>
         </div>
       </section>
-
       <!-- TAB 5: THỐNG KÊ BIỂU ĐỒ ĐƯỜNG -->
       <section class="tab-pane" id="tab-analytics">
         <div class="section-header">
