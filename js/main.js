@@ -190,12 +190,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const refreshQuoteBtn = document.getElementById("refresh-quote-btn");
   if (refreshQuoteBtn) refreshQuoteBtn.addEventListener("click", () => refreshQuote(true));
 
+// Khôi phục và điều khiển Giao diện Sáng / Tối (Lưu vào localStorage)
   const themeToggleBtn = document.getElementById("theme-toggle-btn");
+  const applyThemeUI = (theme) => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("studyos_theme", theme);
+    if (themeToggleBtn) {
+      const icon = theme === "dark" ? "🌙" : "☀️";
+      const label = theme === "dark" ? "Chế độ Tối" : "Chế độ Sáng";
+      themeToggleBtn.innerHTML = `<span class="theme-icon">${icon}</span><span class="theme-text">${label}</span>`;
+      themeToggleBtn.setAttribute("title", `Đang dùng ${label} (Nhấn để đổi)`);
+    }
+  };
+
+  const savedTheme = localStorage.getItem("studyos_theme") || "dark";
+  applyThemeUI(savedTheme);
+
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener("click", () => {
-      const html = document.documentElement;
-      const nextTheme = html.getAttribute("data-theme") === "dark" ? "light" : "dark";
-      html.setAttribute("data-theme", nextTheme);
+      const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+      const nextTheme = currentTheme === "dark" ? "light" : "dark";
+      applyThemeUI(nextTheme);
     });
   }
 

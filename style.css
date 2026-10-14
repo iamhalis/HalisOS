@@ -1220,3 +1220,163 @@ body.has-custom-bg .btn-secondary:hover {
   .letter-meta-grid { grid-template-columns: repeat(2, 1fr); }
   .share-preview-item { grid-template-columns: 1fr; gap: 4px; }
 }
+/* ==========================================================================
+   13. KHÔI PHỤC MÀU NÚT FOCUS MODE & ĐỒNG BỘ LIGHT / DARK MODE TOÀN DIỆN
+   ========================================================================== */
+
+/* 1. Khôi phục màu sắc chuẩn cho 4 nút điều khiển trong Focus Mode */
+.focus-btn-start {
+  background: rgba(180, 185, 195, 0.78) !important;
+  border: 2px solid #233548 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25) !important;
+}
+
+.focus-btn-pause {
+  background: rgba(148, 163, 184, 0.82) !important;
+  border: 2px solid #233548 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25) !important;
+}
+
+.focus-btn-done {
+  background: #15803d !important;
+  border: 2px solid #0f5128 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(21, 128, 61, 0.35) !important;
+}
+
+.focus-btn-quit {
+  background: #ef4444 !important;
+  border: 2px solid #991b1b !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35) !important;
+}
+
+/* 2. Tối ưu giao diện khi bật LIGHT MODE (Nền sáng) */
+:root[data-theme="light"] .sidebar,
+:root[data-theme="light"] body.has-custom-bg .sidebar {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+:root[data-theme="light"] .topbar,
+:root[data-theme="light"] body.has-custom-bg .topbar {
+  background: rgba(255, 255, 255, 0.68) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
+}
+
+:root[data-theme="light"] .datetime-group {
+  background: rgba(241, 245, 249, 0.88) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+:root[data-theme="light"] .datetime-group h2 {
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] .datetime-group .live-clock {
+  color: #475569 !important;
+  border-left: 1px solid rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Kính mờ Sáng (Frosted White Glass) khi dùng ảnh nền ở Light Mode */
+:root[data-theme="light"] body.has-custom-bg .card,
+:root[data-theme="light"] body.has-custom-bg .stat-card,
+:root[data-theme="light"] body.has-custom-bg .quote-banner {
+  background: rgba(255, 255, 255, 0.78) !important;
+  backdrop-filter: blur(28px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.65) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08) !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg .task-item,
+:root[data-theme="light"] body.has-custom-bg #dashboard-upcoming-list .task-item {
+  background: rgba(248, 250, 252, 0.85) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg input,
+:root[data-theme="light"] body.has-custom-bg select,
+:root[data-theme="light"] body.has-custom-bg textarea {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(0, 0, 0, 0.14) !important;
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg .btn-secondary {
+  background: rgba(255, 255, 255, 0.82) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg .btn-secondary:hover {
+  background: #ffffff !important;
+}
+
+/* 3. Tương thích Focus Mode khi bật Light Mode (không có ảnh nền) */
+:root[data-theme="light"] body:not(.has-custom-bg) .focus-container {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06) !important;
+}
+
+:root[data-theme="light"] body:not(.has-custom-bg) .focus-select-title {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+
+:root[data-theme="light"] body:not(.has-custom-bg) .timer-box-frame {
+  background: rgba(241, 245, 249, 0.85) !important;
+  border-color: #334155 !important;
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.05) !important;
+}
+
+:root[data-theme="light"] body:not(.has-custom-bg) .timer-box-frame .timer-digits {
+  color: #0f172a !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+}
+
+:root[data-theme="light"] body:not(.has-custom-bg) .focus-btn-start,
+:root[data-theme="light"] body:not(.has-custom-bg) .focus-btn-pause {
+  background: #475569 !important;
+  color: #ffffff !important;
+}
+
+/* 4. Nút chuyển đổi Sáng / Tối hiện đại (Vẫn bấm được khi thu gọn Sidebar) */
+.theme-toggle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  font-weight: 600 !important;
+  transition: all 0.2s ease !important;
+}
+
+.sidebar.collapsed .sidebar-footer {
+  display: flex !important;
+  border-top: none !important;
+  padding-top: 8px !important;
+}
+
+.sidebar.collapsed .countdown-box {
+  display: none !important;
+}
+
+.sidebar.collapsed .theme-toggle {
+  width: 44px !important;
+  height: 44px !important;
+  padding: 0 !important;
+  margin: 0 auto !important;
+  border-radius: 12px !important;
+}
+
+.sidebar.collapsed .theme-toggle .theme-text {
+  display: none !important;
+}
