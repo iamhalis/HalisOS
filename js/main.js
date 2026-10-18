@@ -1,6 +1,18 @@
-// ==========================================================================
-// STUDY OS — MAIN ENGINE & APPLICATION CONTROLLER
-// ==========================================================================
+// Hàm đồng bộ thu nhỏ Topbar & Focus Card khi đang bấm giờ ở tab Focus
+function syncFocusLayoutState() {
+  const startBtn = document.getElementById("focus-start-btn");
+  const focusCard = document.getElementById("focus-card");
+  const focusTabPane = document.getElementById("tab-focus");
+
+  const isRunning = startBtn ? startBtn.classList.contains("hidden") : false;
+  const isFocusTabActive = focusTabPane ? focusTabPane.classList.contains("active") : false;
+
+  if (focusCard) {
+    focusCard.classList.toggle("is-running", isRunning);
+  }
+  // Chỉ thu nhỏ Topbar khi đang đếm giờ VÀ đang đứng ở tab Focus Mode
+  document.body.classList.toggle("focus-mode-running", isRunning && isFocusTabActive);
+}
 
 function switchTab(tabId) {
   window.scrollTo({ top: 0, behavior: "instant" });
@@ -23,6 +35,7 @@ function switchTab(tabId) {
   }
   if (tabId === "share" && typeof renderShareTaskSelector === "function") renderShareTaskSelector();
   if (tabId === "focus") syncCustomFocusDropdown();
+  syncFocusLayoutState();
 }
 
 function renderAll() {
@@ -253,14 +266,9 @@ document.addEventListener("DOMContentLoaded", () => {
     syncCustomFocusDropdown();
   }
 
-  if (startBtn && focusCard) {
-    const updateRunningState = () => {
-      const isRunning = startBtn.classList.contains("hidden");
-      focusCard.classList.toggle("is-running", isRunning);
-    };
-
-    const btnObs = new MutationObserver(() => updateRunningState());
+if (startBtn && focusCard) {
+    const btnObs = new MutationObserver(() => syncFocusLayoutState());
     btnObs.observe(startBtn, { attributes: true, attributeFilter: ["class"] });
-    updateRunningState();
+    syncFocusLayoutState();
   }
 });
