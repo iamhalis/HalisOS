@@ -1146,7 +1146,7 @@ input:focus, select:focus, textarea:focus { border-color: var(--accent); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
 
 /* ==========================================================================
-   11. HÌNH NỀN TÙY CHỈNH & GLASSMORPHISM TOÀN TRANG
+   11. HỆ THỐNG GLASSMORPHISM ĐA TẦNG & ĐỒNG BỘ DARK / LIGHT MODE
    ========================================================================== */
 body.has-custom-bg {
   background-size: cover !important;
@@ -1156,75 +1156,143 @@ body.has-custom-bg {
   transition: background-image 0.4s ease-in-out;
 }
 
+/* --- A. DARK MODE GLASSMORPHISM (MẶC ĐỊNH KHI CÓ ẢNH NỀN) --- */
 body.has-custom-bg .card,
 body.has-custom-bg .stat-card,
+body.has-custom-bg .day-card,
 body.has-custom-bg .quote-banner {
-  background: rgba(18, 20, 29, 0.78) !important;
-  backdrop-filter: blur(28px) saturate(160%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(160%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.38) !important;
+  background: rgba(15, 20, 32, 0.76) !important;
+  backdrop-filter: blur(20px) saturate(165%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(165%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   border-radius: 16px !important;
 }
 
 body.has-custom-bg .task-item,
-body.has-custom-bg #dashboard-upcoming-list .task-item {
-  background: rgba(30, 35, 48, 0.65) !important;
-  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+body.has-custom-bg .cal-task,
+body.has-custom-bg .capsule-card,
+body.has-custom-bg .share-day-group,
+body.has-custom-bg .share-task-row {
+  background: rgba(26, 34, 50, 0.68) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
   border-radius: 12px !important;
 }
 
 body.has-custom-bg input,
 body.has-custom-bg select,
 body.has-custom-bg textarea {
-  background: rgba(15, 18, 25, 0.6) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
+  background: rgba(11, 15, 25, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  color: #f8fafc !important;
   border-radius: 10px !important;
 }
 
+body.has-custom-bg input:focus,
+body.has-custom-bg select:focus,
+body.has-custom-bg textarea:focus {
+  border-color: var(--accent) !important;
+  background: rgba(11, 15, 25, 0.82) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.22) !important;
+}
+
 body.has-custom-bg .btn-secondary {
-  background: rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(4px) !important;
-  -webkit-backdrop-filter: blur(4px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
   color: #ffffff !important;
 }
 
 body.has-custom-bg .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.18) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* --- B. LIGHT MODE GLASSMORPHISM (SÁNG TRONG, DỄ ĐỌC, RÕ NÉT) --- */
+:root[data-theme="light"] .sidebar,
+:root[data-theme="light"] body.has-custom-bg .sidebar {
+  background: rgba(255, 255, 255, 0.88) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border-right: 1px solid rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 4px 0 24px rgba(15, 23, 42, 0.05) !important;
+}
+
+:root[data-theme="light"] .topbar,
+:root[data-theme="light"] body.has-custom-bg .topbar {
+  background: rgba(255, 255, 255, 0.65) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07),
+              inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+:root[data-theme="light"] .datetime-group {
+  background: rgba(241, 245, 249, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+:root[data-theme="light"] .datetime-group h2 {
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] .datetime-group .live-clock {
+  color: #475569 !important;
+  border-left: 1px solid rgba(15, 23, 42, 0.15) !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg .card,
+:root[data-theme="light"] body.has-custom-bg .stat-card,
+:root[data-theme="light"] body.has-custom-bg .day-card,
+:root[data-theme="light"] body.has-custom-bg .quote-banner {
+  background: rgba(255, 255, 255, 0.84) !important;
+  backdrop-filter: blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg .task-item,
+:root[data-theme="light"] body.has-custom-bg .cal-task,
+:root[data-theme="light"] body.has-custom-bg .capsule-card,
+:root[data-theme="light"] body.has-custom-bg .share-day-group,
+:root[data-theme="light"] body.has-custom-bg .share-task-row {
+  background: rgba(248, 250, 252, 0.88) !important;
+  border: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg input,
+:root[data-theme="light"] body.has-custom-bg select,
+:root[data-theme="light"] body.has-custom-bg textarea {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 23, 42, 0.15) !important;
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg input:focus,
+:root[data-theme="light"] body.has-custom-bg select:focus,
+:root[data-theme="light"] body.has-custom-bg textarea:focus {
+  border-color: var(--accent) !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.16) !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg .btn-secondary {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(15, 23, 42, 0.12) !important;
+  color: #0f172a !important;
+}
+
+:root[data-theme="light"] body.has-custom-bg .btn-secondary:hover {
+  background: #ffffff !important;
 }
 
 /* ==========================================================================
-   12. RESPONSIVE MÀN HÌNH NHỎ
+   12. MÀU NÚT FOCUS MODE & ĐỒNG BỘ LIGHT MODE CHO FOCUS
    ========================================================================== */
-@media (max-width: 992px) {
-  .app-layout { flex-direction: column !important; }
-  .sidebar {
-    width: 100% !important;
-    min-width: 100% !important;
-    max-width: 100% !important;
-    position: static;
-    height: auto;
-    max-height: none;
-    overflow-y: visible !important;
-    border-right: none !important;
-    border-bottom: 1px solid var(--border-color);
-  }
-  .nav-menu { flex-direction: row; flex-wrap: wrap; }
-  .nav-item { width: auto; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .dashboard-columns { grid-template-columns: 1fr; }
-  .task-form-grid { grid-template-columns: 1fr; }
-  .quote-banner { padding: 14px 48px 14px 18px; }
-  .letter-meta-grid { grid-template-columns: repeat(2, 1fr); }
-  .share-preview-item { grid-template-columns: 1fr; gap: 4px; }
-}
-/* ==========================================================================
-   13. KHÔI PHỤC MÀU NÚT FOCUS MODE & ĐỒNG BỘ LIGHT / DARK MODE TOÀN DIỆN
-   ========================================================================== */
-
-/* 1. Khôi phục màu sắc chuẩn cho 4 nút điều khiển trong Focus Mode */
 .focus-btn-start {
   background: rgba(180, 185, 195, 0.78) !important;
   border: 2px solid #233548 !important;
@@ -1253,78 +1321,11 @@ body.has-custom-bg .btn-secondary:hover {
   box-shadow: 0 6px 18px rgba(239, 68, 68, 0.35) !important;
 }
 
-/* 2. Tối ưu giao diện khi bật LIGHT MODE (Nền sáng) */
-:root[data-theme="light"] .sidebar,
-:root[data-theme="light"] body.has-custom-bg .sidebar {
-  background: rgba(255, 255, 255, 0.92) !important;
-  border-right: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.06) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-}
-
-:root[data-theme="light"] .topbar,
-:root[data-theme="light"] body.has-custom-bg .topbar {
-  background: rgba(255, 255, 255, 0.68) !important;
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07),
-              inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
-}
-
-:root[data-theme="light"] .datetime-group {
-  background: rgba(241, 245, 249, 0.88) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-}
-
-:root[data-theme="light"] .datetime-group h2 {
-  color: #0f172a !important;
-}
-
-:root[data-theme="light"] .datetime-group .live-clock {
-  color: #475569 !important;
-  border-left: 1px solid rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Kính mờ Sáng (Frosted White Glass) khi dùng ảnh nền ở Light Mode */
-:root[data-theme="light"] body.has-custom-bg .card,
-:root[data-theme="light"] body.has-custom-bg .stat-card,
-:root[data-theme="light"] body.has-custom-bg .quote-banner {
-  background: rgba(255, 255, 255, 0.78) !important;
-  backdrop-filter: blur(28px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.65) !important;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08) !important;
-}
-
-:root[data-theme="light"] body.has-custom-bg .task-item,
-:root[data-theme="light"] body.has-custom-bg #dashboard-upcoming-list .task-item {
-  background: rgba(248, 250, 252, 0.85) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-}
-
-:root[data-theme="light"] body.has-custom-bg input,
-:root[data-theme="light"] body.has-custom-bg select,
-:root[data-theme="light"] body.has-custom-bg textarea {
-  background: rgba(255, 255, 255, 0.88) !important;
-  border: 1px solid rgba(0, 0, 0, 0.14) !important;
-  color: #0f172a !important;
-}
-
-:root[data-theme="light"] body.has-custom-bg .btn-secondary {
-  background: rgba(255, 255, 255, 0.82) !important;
-  border: 1px solid rgba(0, 0, 0, 0.12) !important;
-  color: #0f172a !important;
-}
-
-:root[data-theme="light"] body.has-custom-bg .btn-secondary:hover {
-  background: #ffffff !important;
-}
-
-/* 3. Tương thích Focus Mode khi bật Light Mode (không có ảnh nền) */
+/* Tương thích Focus Mode khi bật Light Mode (không có ảnh nền) */
 :root[data-theme="light"] body:not(.has-custom-bg) .focus-container {
-  background: rgba(255, 255, 255, 0.85) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.06) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  border: 1px solid rgba(15, 23, 42, 0.1) !important;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06) !important;
 }
 
 :root[data-theme="light"] body:not(.has-custom-bg) .focus-select-title {
@@ -1332,15 +1333,9 @@ body.has-custom-bg .btn-secondary:hover {
   text-shadow: none !important;
 }
 
-:root[data-theme="light"] body:not(.has-custom-bg) .timer-box-frame {
-  background: rgba(241, 245, 249, 0.85) !important;
-  border-color: #334155 !important;
-  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.05) !important;
-}
-
 :root[data-theme="light"] body:not(.has-custom-bg) .timer-box-frame .timer-digits {
   color: #0f172a !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1) !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.08) !important;
 }
 
 :root[data-theme="light"] body:not(.has-custom-bg) .focus-btn-start,
@@ -1349,7 +1344,7 @@ body.has-custom-bg .btn-secondary:hover {
   color: #ffffff !important;
 }
 
-/* 4. Nút chuyển đổi Sáng / Tối hiện đại (Vẫn bấm được khi thu gọn Sidebar) */
+/* Nút chuyển đổi Sáng / Tối trên Sidebar */
 .theme-toggle {
   display: flex !important;
   align-items: center !important;
@@ -1365,9 +1360,7 @@ body.has-custom-bg .btn-secondary:hover {
   padding-top: 8px !important;
 }
 
-.sidebar.collapsed .countdown-box {
-  display: none !important;
-}
+.sidebar.collapsed .countdown-box { display: none !important; }
 
 .sidebar.collapsed .theme-toggle {
   width: 44px !important;
@@ -1377,24 +1370,24 @@ body.has-custom-bg .btn-secondary:hover {
   border-radius: 12px !important;
 }
 
-.sidebar.collapsed .theme-toggle .theme-text {
-  display: none !important;
-}
+.sidebar.collapsed .theme-toggle .theme-text { display: none !important; }
+
 /* ==========================================================================
-   14. ANIMATION ĐỒNG BỘ: THU NHỎ CẢ TOPBAR & KHUNG FOCUS KHI BẤM "BẮT ĐẦU"
+   13. ANIMATION THU NHỎ TOPBAR & FOCUS CARD MƯỢT MÀ (FIX LỖI PHÌNH KHUNG DATE)
    ========================================================================== */
 
-/* --- A. HIỆU ỨNG THU NHỎ KHUNG BLUR PHÍA TRÊN (.topbar) --- */
+/* --- A. KHUNG TOPBAR: RÚT GỌN TỪ PHẢI SANG TRÁI ÔM SÁT KHUNG DATE --- */
 .topbar,
 body.has-custom-bg .topbar {
   width: 100% !important;
-  max-width: 1400px !important;               /* Dùng số px cụ thể để animate mượt */
-  margin: 0 auto 22px 0 !important;           /* Neo bên trái để khi thu nhỏ sẽ rút gọn về góc trái */
+  max-width: 100% !important;                 /* Bắt đầu từ chính xác 100% chiều rộng thực tế */
+  margin: 0 auto 22px 0 !important;           /* Neo cố định ở góc trái */
+  padding: 10px 18px !important;
+  border-radius: 20px !important;
   overflow: hidden !important;
   white-space: nowrap !important;
 
-  /* Đồng bộ nhịp chuyển động với khung Focus và Sidebar */
-  transition: max-width 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+  transition: max-width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
               padding 0.55s cubic-bezier(0.22, 1, 0.36, 1),
               border-radius 0.55s cubic-bezier(0.22, 1, 0.36, 1),
               background 0.45s ease,
@@ -1402,87 +1395,84 @@ body.has-custom-bg .topbar {
               box-shadow 0.45s ease !important;
 }
 
+/* QUAN TRỌNG: Giữ khung Date đứng im kích thước thật, KHÔNG bao giờ bị phình ra */
+.datetime-group {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: max-content !important;              /* Khóa chặt độ rộng theo nội dung chữ */
+  flex: 0 0 auto !important;                  /* Chống bị kéo giãn hay co ép */
+  padding: 6px 16px !important;
+  border-radius: 99px !important;
+  transition: background 0.4s ease, border-color 0.4s ease !important;
+}
+
+/* Cụm nút bên phải (@username & + Thêm nhiệm vụ) */
 .topbar-actions {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  max-width: 500px !important;
+  max-width: 420px !important;
   opacity: 1 !important;
-  transform: scale(1) !important;
+  transform: translateX(0) scale(1) !important;
   transform-origin: right center !important;
-  transition: max-width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-              opacity 0.35s ease,
-              transform 0.45s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  transition: max-width 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.25s ease,
+              transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) !important;
 }
 
-/* KHI BẤM "BẮT ĐẦU" Ở FOCUS MODE: Khung Topbar thu nhỏ gọn lại ở góc trái */
+/* KHI BẤM "BẮT ĐẦU" FOCUS MODE: Khung blur Topbar thu gọn êm ái về khung Date */
 body.focus-mode-running .topbar,
 body.has-custom-bg.focus-mode-running .topbar {
-  max-width: 315px !important;                /* Thu nhỏ vừa khít viên nang Thứ - Ngày - Giờ */
-  padding: 7px 9px !important;                /* Viền kính ôm sát tinh tế như hình mẫu */
-  border-radius: 18px !important;
-  background: rgba(10, 22, 42, 0.32) !important;
-  border: 1.5px solid rgba(56, 189, 248, 0.22) !important;
+  max-width: 295px !important;                /* Rút mép phải về ôm vừa khít khung Date */
+  padding: 6px !important;                    /* Viền kính bao quanh đều 4 phía */
+  border-radius: 99px !important;             /* Bo tròn đồng bộ với viên nang Date bên trong */
+  background: rgba(13, 17, 26, 0.35) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
 }
 
-/* Ẩn mượt 2 nút (@username & + Thêm nhiệm vụ) khi Topbar thu nhỏ */
+:root[data-theme="light"] body.focus-mode-running .topbar,
+:root[data-theme="light"] body.has-custom-bg.focus-mode-running .topbar {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border-color: rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Ẩn cụm nút bên phải mượt mà để nhường chỗ cho Topbar rút gọn */
 body.focus-mode-running .topbar-actions {
   max-width: 0 !important;
   opacity: 0 !important;
-  transform: scale(0.8) !important;
+  transform: translateX(-12px) scale(0.9) !important;
   pointer-events: none !important;
   margin: 0 !important;
 }
 
-/* Đảm bảo viên nang ngày giờ luôn sắc nét, không bị co ép */
-.datetime-group {
-  flex-shrink: 0 !important;
-  transition: all 0.45s cubic-bezier(0.22, 1, 0.36, 1) !important;
-}
-
-body.focus-mode-running .datetime-group {
-  width: 100% !important;
-  justify-content: center !important;
-  background: rgba(8, 16, 30, 0.65) !important;
-  border-radius: 12px !important;
-  padding: 6px 14px !important;
-}
-
-/* Hỗ trợ Light Mode khi Topbar thu nhỏ */
-:root[data-theme="light"] body.focus-mode-running .topbar {
-  background: rgba(255, 255, 255, 0.75) !important;
-  border-color: rgba(0, 0, 0, 0.12) !important;
-}
-:root[data-theme="light"] body.focus-mode-running .datetime-group {
-  background: rgba(241, 245, 249, 0.92) !important;
-}
-
-/* --- B. HIỆU ỨNG THU NHỎ KHUNG FOCUS MODE CHÍNH (#focus-card) --- */
+/* --- B. KHUNG FOCUS MODE CHÍNH: THU NHỎ TỪ LỚN -> HỘP ĐỒNG HỒ --- */
 .focus-container,
 body.has-custom-bg .focus-container {
   position: relative !important;
   width: 100% !important;
-  max-width: 1400px !important;
+  max-width: 100% !important;
   min-height: calc(100vh - 170px) !important;
   padding: 60px 40px !important;
   border-radius: 26px !important;
   margin: 0 auto 30px auto !important;
 
-  background: rgba(10, 14, 24, 0.18) !important;
-  backdrop-filter: blur(6px) saturate(130%) !important;
-  -webkit-backdrop-filter: blur(6px) saturate(130%) !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(10, 14, 24, 0.2) !important;
+  backdrop-filter: blur(6px) saturate(135%) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(135%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35),
               inset 0 1px 1px rgba(255, 255, 255, 0.2) !important;
 
-  transition: max-width 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-              min-height 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-              padding 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-              margin 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-              border-radius 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-              background 0.5s ease,
-              border 0.5s ease,
-              box-shadow 0.5s ease !important;
+  transition: max-width 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              min-height 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              padding 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              margin 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              border-radius 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              background 0.45s ease,
+              backdrop-filter 0.45s ease,
+              border 0.45s ease,
+              box-shadow 0.45s ease !important;
 }
 
 .focus-container.is-running,
@@ -1493,12 +1483,20 @@ body.has-custom-bg .focus-container.is-running {
   margin: 55px auto 130px auto !important;
   border-radius: 42px !important;
 
-  background: rgba(8, 20, 34, 0.28) !important;
-  backdrop-filter: blur(8px) saturate(140%) !important;
-  -webkit-backdrop-filter: blur(8px) saturate(140%) !important;
+  /* Tăng nhẹ độ blur lên 12px khi đếm giờ để số đồng hồ nổi bật sắc nét */
+  background: rgba(8, 20, 34, 0.32) !important;
+  backdrop-filter: blur(12px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%) !important;
   border: 3.5px solid #002b49 !important;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45),
               inset 0 0 35px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Chế độ Light Mode khi đang đếm giờ Focus (có ảnh nền hoặc không) */
+:root[data-theme="light"] body:not(.has-custom-bg) .focus-container.is-running {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 3.5px solid #334155 !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.1) !important;
 }
 
 .focus-container.is-running .timer-box-frame {
@@ -1508,20 +1506,20 @@ body.has-custom-bg .focus-container.is-running {
   min-height: auto !important;
   margin: 0 !important;
   padding: 0 !important;
-  animation: timerZoomIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: timerZoomIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes timerZoomIn {
-  from { opacity: 0; transform: scale(0.85); }
+  from { opacity: 0; transform: scale(0.88); }
   to { opacity: 1; transform: scale(1); }
 }
 
 .focus-task-picker-section {
-  animation: pickerFadeIn 0.45s ease forwards;
+  animation: pickerFadeIn 0.4s ease forwards;
 }
 
 @keyframes pickerFadeIn {
-  from { opacity: 0; transform: scale(0.95); }
+  from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
 
@@ -1534,10 +1532,36 @@ body.has-custom-bg .focus-container.is-running {
   max-width: 95vw !important;
   margin: 0 !important;
   z-index: 20;
-  animation: buttonsSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: buttonsSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes buttonsSlideUp {
   from { opacity: 0; transform: translate(-50%, 15px); }
   to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+/* ==========================================================================
+   14. RESPONSIVE MÀN HÌNH NHỎ
+   ========================================================================== */
+@media (max-width: 992px) {
+  .app-layout { flex-direction: column !important; }
+  .sidebar {
+    width: 100% !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    position: static !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: visible !important;
+    border-right: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+  }
+  .nav-menu { flex-direction: row; flex-wrap: wrap; }
+  .nav-item { width: auto; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-columns { grid-template-columns: 1fr; }
+  .task-form-grid { grid-template-columns: 1fr; }
+  .quote-banner { padding: 14px 48px 14px 18px; }
+  .letter-meta-grid { grid-template-columns: repeat(2, 1fr); }
+  .share-preview-item { grid-template-columns: 1fr; gap: 4px; }
 }
