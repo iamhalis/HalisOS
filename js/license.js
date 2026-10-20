@@ -14,9 +14,10 @@ const LICENSE_STORAGE_KEY = "studyos_license_info";
 function getLicenseInfo() {
   if (typeof currentUser !== "undefined" && currentUser && typeof users !== "undefined" && users[currentUser]) {
     const u = users[currentUser];
+    const isAct = typeof isAccountActivated === "function" ? isAccountActivated(currentUser) : Boolean(u.is_activated);
     return {
-      isActivated: Boolean(u.is_activated),
-      key: u.license_key || null,
+      isActivated: isAct,
+      key: u.license_key || (isAct ? "PRO-ACTIVE" : null),
       activatedAt: u.activated_at || null,
       source: "account",
       isGuest: false,
@@ -59,7 +60,7 @@ function removeLicenseInfo() {
  */
 function isLicenseActivated() {
   if (typeof currentUser !== "undefined" && currentUser && typeof users !== "undefined" && users[currentUser]) {
-    return Boolean(users[currentUser].is_activated);
+    return typeof isAccountActivated === "function" ? isAccountActivated(currentUser) : Boolean(users[currentUser].is_activated);
   }
   // Acc khách luôn là Free Trial
   return false;

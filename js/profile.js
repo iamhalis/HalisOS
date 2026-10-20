@@ -164,69 +164,111 @@ function initProfileFeature() {
       return;
     }
 
-    let isActivated = false;
-    let activatedKey = null;
+    const submitBtn = document.getElementById("register-form").querySelector("button[type='submit']");
+    const originalBtnText = submitBtn ? submitBtn.textContent : "Tạo tài khoản";
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Đang kiểm tra...";
+    }
 
-    // Nếu người dùng nhập Key lúc đăng ký ➔ Xác thực với server để kích hoạt ngay
-    if (rawKey) {
-      showToast("Đang kiểm tra và kích hoạt mã Key...");
-      const keyPattern = /^HASHX-[A-F0-9]{4}-[A-F0-9]{4}$/i;
-      if (!keyPattern.test(rawKey)) {
-        showToast("Định dạng key không đúng (Chuẩn: HASHX-XXXX-XXXX)!", true);
-        return;
-      }
-      try {
-        const res = await fetch("https://halis-bio.vercel.app/api/external/redeem-key", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ key: rawKey, app_name: `Halios - @${username}` })
-        });
-        const data = await res.json();
-        if (!res.ok || !data.success) {
-          showToast(data.error || "Key không hợp lệ hoặc đã qua sử dụng!", true);
+    try {
+      // Kiểm tra username trên Cloud xem đã có ai đăng ký chưa
+      if (CLOUD_DB_URL) {
+        const cloudAcc = await fetchAccountFromCloud(username);
+        if (cloudAcc && cloudAcc.profile) {
+          showToast("Username này đã được đăng ký trên hệ thống! Vui lòng chọn tên khác hoặc Đăng nhập.", true);
           return;
         }
-        isActivated = true;
-        activatedKey = rawKey;
-      } catch {
-        showToast("Không thể kết nối đến máy chủ xác thực key! Vui lòng kiểm tra mạng.", true);
-        return;
+      }
+
+      let isActivated = false;
+      let activatedKey = null;
+
+      // Nếu người dùng nhập Key lúc đăng ký ➔ Xác thực với server để kích hoạt ngay
+      if (rawKey) {
+        showToast("Đang kiểm tra và kích hoạt mã Key...");
+        const keyPattern = /^HASHX-[A-F0-9]{4}-[A-F0-9]{4}$/i;
+        if (!keyPattern.test(rawKey)) {
+          showToast("Định dạng key không đúng (Chuẩn: HASHX-XXXX-XXXX)!", true);
+          return;
+        }
+        try {
+          const res = await fetch("https://halis-bio.vercel.app/api/external/redeem-key", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ key: rawKey, app_name: `Halios - @${username}` })
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) {
+            showToast(data.error || "Key không hợp lệ hoặc đã qua sử dụng!", true);
+            return;
+          }
+          isActivated = true;
+          activatedKey = rawKey;
+        } catch {
+          showToast("Không thể kết nối đến máy chủ xác thực key! Vui lòng kiểm tra mạng.", true);
+          return;
+        }
+      }
+
+      const isFirstAccountEver = Object.keys(users).length === 0;
+
+      users[username] = {
+        username,
+        email,
+        password,
+        avatar: null,
+        createdAt: getTodayStr(),
+        is_activated: isActivated,
+        license_key: activatedKey,
+        activated_at: isActivated ? new Date().toISOString() : null
+      };
+      saveUsersDB();
+
+      currentUser = username;
+      localStorage.setItem("studyos_current_user", currentUser);
+
+      if (isFirstAccountEver && tasks.length > 0) {
+        localStorage.setItem(`studyos_tasks_${username}`, JSON.stringify(tasks));
+        localStorage.setItem(`studyos_config_${username}`, JSON.stringify(config));
+      }
+
+      loadActiveUserData();
+
+      // Lưu tài khoản lên Cloud (kể cả Free Trial) để bảo toàn tài khoản khi xoá cookie trình duyệt
+      if (CLOUD_DB_URL) {
+        try {
+          const initialPayload = {
+            profile: users[username],
+            config,
+            tasks: isActivated ? tasks : [],
+            futureMails: isActivated ? futureMails : [],
+            updatedAt: Date.now()
+          };
+          await fetch(getCloudEndpoint(username), {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(initialPayload)
+          });
+        } catch (err) {
+          console.warn("Lỗi lưu tài khoản lên Cloud:", err);
+        }
+      }
+
+      if (isActivated) {
+        showToast(`⭐ Đăng ký & kích hoạt thành công! Đã bật Cloud Sync cho @${username}`);
+      } else {
+        showToast(`Tạo tài khoản thành công! @${username} (Chế độ Dùng thử - Lưu nội bộ)`);
+      }
+
+      renderAll();
+      document.getElementById("register-form").reset();
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
       }
     }
-
-    const isFirstAccountEver = Object.keys(users).length === 0;
-
-    users[username] = {
-      username,
-      email,
-      password,
-      avatar: null,
-      createdAt: getTodayStr(),
-      is_activated: isActivated,
-      license_key: activatedKey,
-      activated_at: isActivated ? new Date().toISOString() : null
-    };
-    saveUsersDB();
-
-    if (isFirstAccountEver && tasks.length > 0) {
-      localStorage.setItem(`studyos_tasks_${username}`, JSON.stringify(tasks));
-      localStorage.setItem(`studyos_config_${username}`, JSON.stringify(config));
-    }
-
-    currentUser = username;
-    localStorage.setItem("studyos_current_user", currentUser);
-    loadActiveUserData();
-
-    // Chỉ tài khoản ĐÃ KÍCH HOẠT KEY mới đồng bộ Cloud để chống quá tải server!
-    if (isActivated) {
-      await syncToCloud();
-      showToast(`⭐ Đăng ký & kích hoạt thành công! Đã bật Cloud Sync cho @${username}`);
-    } else {
-      showToast(`Tạo tài khoản thành công! @${username} (Chế độ Dùng thử - Lưu nội bộ)`);
-    }
-
-    renderAll();
-    document.getElementById("register-form").reset();
   });
 
   // ĐĂNG NHẬP
@@ -234,46 +276,69 @@ function initProfileFeature() {
     e.preventDefault();
     const username = document.getElementById("login-username").value.trim().toLowerCase();
     const password = document.getElementById("login-password").value;
+    const submitBtn = document.getElementById("login-form").querySelector("button[type='submit']");
+    const originalBtnText = submitBtn ? submitBtn.textContent : "Đăng nhập";
 
-    let account = users[username];
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Đang kiểm tra...";
+    }
 
-    // Nếu chưa có trên máy này, thử kiểm tra đơn lẻ trên Cloud
-    if (!account && CLOUD_DB_URL) {
-      const cloudData = await fetchAccountFromCloud(username);
-      if (cloudData && cloudData.profile) {
-        if (cloudData.profile.password !== password) {
-          showToast("Sai Username hoặc Mật khẩu!", true);
-          return;
+    try {
+      let account = users[username];
+
+      // Nếu chưa có trên máy này (ví dụ sau khi xoá cookie/dữ liệu trình duyệt), lấy từ Cloud
+      if (!account && CLOUD_DB_URL) {
+        const cloudData = await fetchAccountFromCloud(username);
+        if (cloudData && cloudData.profile) {
+          if (cloudData.profile.password !== password) {
+            showToast("Sai Username hoặc Mật khẩu!", true);
+            return;
+          }
+          // Thiết lập currentUser TRƯỚC khi saveLocalOnly để lưu đúng key của tài khoản đó
+          currentUser = username;
+          localStorage.setItem("studyos_current_user", currentUser);
+          users[username] = cloudData.profile;
+          if (typeof isAccountActivated === "function" && isAccountActivated(username)) {
+            users[username].is_activated = true;
+          }
+          saveUsersDB();
+          account = users[username];
+          config = { ...DEFAULT_CONFIG, ...(cloudData.config || {}) };
+          tasks = Array.isArray(cloudData.tasks) ? cloudData.tasks : [];
+          futureMails = Array.isArray(cloudData.futureMails) ? cloudData.futureMails : [];
+          saveLocalOnly();
         }
-        users[username] = cloudData.profile;
-        saveUsersDB();
-        account = users[username];
-        config = { ...DEFAULT_CONFIG, ...(cloudData.config || {}) };
-        tasks = Array.isArray(cloudData.tasks) ? cloudData.tasks : [];
-        futureMails = Array.isArray(cloudData.futureMails) ? cloudData.futureMails : [];
-        saveLocalOnly();
+      }
+
+      if (!account || account.password !== password) {
+        showToast("Sai Username hoặc Mật khẩu!", true);
+        return;
+      }
+
+      currentUser = username;
+      localStorage.setItem("studyos_current_user", currentUser);
+      loadActiveUserData();
+
+      // Chỉ kéo dữ liệu Cloud nếu tài khoản này ĐÃ KÍCH HOẠT KEY
+      if (isCloudEnabled()) {
+        await pullCurrentUserFromCloud();
+        showToast(`Chào mừng @${username}! Đã kết nối và đồng bộ Cloud.`);
+      } else {
+        renderAll();
+        showToast(`Chào mừng @${username}! (Chế độ Dùng thử - Lưu nội bộ)`);
+      }
+
+      document.getElementById("login-form").reset();
+    } catch (err) {
+      console.error("Lỗi đăng nhập:", err);
+      showToast("Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại!", true);
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalBtnText;
       }
     }
-
-    if (!account || account.password !== password) {
-      showToast("Sai Username hoặc Mật khẩu!", true);
-      return;
-    }
-
-    currentUser = username;
-    localStorage.setItem("studyos_current_user", currentUser);
-    loadActiveUserData();
-
-    // Chỉ kéo dữ liệu Cloud nếu tài khoản này ĐÃ KÍCH HOẠT KEY
-    if (isCloudEnabled()) {
-      await pullCurrentUserFromCloud();
-      showToast(`Chào mừng @${username}! Đã kết nối và đồng bộ Cloud.`);
-    } else {
-      renderAll();
-      showToast(`Chào mừng @${username}! (Chế độ Dùng thử - Lưu nội bộ)`);
-    }
-
-    document.getElementById("login-form").reset();
   });
 
   // KÍCH HOẠT TÀI KHOẢN TỪ THẺ TRONG TAB PROFILE
@@ -384,7 +449,19 @@ function initProfileFeature() {
     users[currentUser].email = newEmail;
 
     saveUsersDB();
-    await syncToCloud();
+    if (isCloudEnabled()) {
+      await syncToCloud();
+    } else if (CLOUD_DB_URL) {
+      try {
+        await fetch(getCloudEndpoint(currentUser), {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile: users[currentUser], updatedAt: Date.now() })
+        });
+      } catch (err) {
+        console.warn("Lỗi đồng bộ hồ sơ lên Cloud:", err);
+      }
+    }
     renderAll();
     showToast("Đã lưu địa chỉ Email vào hồ sơ!");
   });
@@ -423,7 +500,19 @@ function initProfileFeature() {
 
     users[currentUser].password = newPasswordInput;
     saveUsersDB();
-    await syncToCloud();
+    if (isCloudEnabled()) {
+      await syncToCloud();
+    } else if (CLOUD_DB_URL) {
+      try {
+        await fetch(getCloudEndpoint(currentUser), {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profile: users[currentUser], updatedAt: Date.now() })
+        });
+      } catch (err) {
+        console.warn("Lỗi đồng bộ hồ sơ lên Cloud:", err);
+      }
+    }
     document.getElementById("password-change-form").reset();
     showToast("Đổi mật khẩu thành công!");
   });

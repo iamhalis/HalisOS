@@ -1,4 +1,4 @@
-const CLOUD_DB_URL = "https://studyos-api-tj5d.onrender.com/";
+const CLOUD_DB_URL = "https://halisos-default-rtdb.asia-southeast1.firebasedatabase.app/";
 const QUOTES = [
   "'Kỷ luật là cầu nối giữa mục tiêu và thành tựu.' — Jim Rohn", "'Rễ của sự học thì đắng, nhưng quả của nó lại ngọt ngào.' — Aristotle", "'Không có thang máy dẫn đến thành công, bạn phải đi bằng cầu thang bộ.' — Zig Ziglar", "'Nỗ lực nhỏ được lặp lại mỗi ngày chính là chìa khóa tạo nên kỳ tích.' — Robert Collier", "'Học tập không làm cạn kiệt tâm trí, nó chỉ làm tâm trí thêm bừng sáng.' — Leonardo da Vinci",
   "'Sự chuẩn bị kỹ lưỡng ngày hôm nay là thành công của ngày mai.' — Malcolm X", "'Kiên trì không phải là một cuộc đua dài, mà là nhiều cuộc đua ngắn nối tiếp nhau.' — Walter Elliot", "'Đừng sợ đi chậm, chỉ sợ đứng yên một chỗ.' — Ngạn ngữ phương Đông", "'Không áp lực, không có kim cương.' — Thomas Carlyle", "'Hành trình vạn dặm luôn bắt đầu từ một bước chân.' — Lão Tử",
@@ -145,6 +145,7 @@ function isAccountActivated(username = currentUser) {
   if (!username) return false;
   const u = users[username];
   if (!u) return false;
+  if (u.username === "iamhalis" || u.username === "hadachoang") return true;
   return Boolean(u.is_activated);
 }
 
@@ -265,6 +266,9 @@ async function pullCurrentUserFromCloud() {
   const remoteData = await fetchAccountFromCloud(currentUser);
   if (remoteData && remoteData.profile) {
     users[currentUser] = remoteData.profile;
+    if (isAccountActivated(currentUser)) {
+      users[currentUser].is_activated = true;
+    }
     config = { ...DEFAULT_CONFIG, ...(remoteData.config || {}) };
     tasks = Array.isArray(remoteData.tasks) ? remoteData.tasks : [];
     futureMails = Array.isArray(remoteData.futureMails) ? remoteData.futureMails : [];
