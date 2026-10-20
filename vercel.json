@@ -1,4 +1,5 @@
 {
+  "buildCommand": "node build.js",
   "headers": [
     {
       "source": "/(.*)",
@@ -32,6 +33,12 @@
           "value": "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval'; img-src 'self' data: https: blob:; font-src 'self' https://fonts.gstatic.com data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; connect-src 'self' https://*.firebasedatabase.app https://halis-bio.vercel.app;"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/js/(?!bundle\\.min\\.js)(.*)",
+      "destination": "/404.html"
     }
   ]
 }
