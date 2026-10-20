@@ -2,6 +2,9 @@
 node_modules/
 package-lock.json
 
+# Build bundles
+js/bundle.min.js
+
 # Environment variables & secrets (Secret không để ở frontend/git)
 .env
 .env.local
