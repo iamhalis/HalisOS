@@ -1,3 +1,4 @@
+
 let selectedShareTaskIndices = new Set();
 let currentShareViewFilter = "week";
 let currentGeneratedShareCode = "";

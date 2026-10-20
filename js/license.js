@@ -186,7 +186,9 @@ async function redeemKeyOnline(key) {
       };
     }
   } catch (networkError) {
-    console.warn("Không thể kết nối API xác thực trực tuyến:", networkError);
+    if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+      HaliosSecurity.Logger.warn("Không thể kết nối API xác thực trực tuyến:", networkError);
+    }
     return {
       success: false,
       error: `Không thể kết nối đến máy chủ xác thực (${LICENSE_API_BASE}). Vui lòng kiểm tra kết nối mạng!`

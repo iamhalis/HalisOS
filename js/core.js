@@ -21,7 +21,9 @@ const SHARE_ALPHABET = "0123456789ABCDEFGHJKLMNPQRSTVWXYZ";
 
 // ---------- Biến trạng thái toàn cục ----------
 let users = loadJSON("studyos_users", {});
-let currentUser = localStorage.getItem("studyos_current_user") || null;
+let currentUser = (typeof HaliosSecurity !== "undefined" && HaliosSecurity.SessionManager)
+  ? HaliosSecurity.SessionManager.getValidSessionUser()
+  : (localStorage.getItem("studyos_current_user") || null);
 
 let config = { ...DEFAULT_CONFIG };
 let tasks = [];

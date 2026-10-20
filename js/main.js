@@ -78,18 +78,19 @@ function renderAll() {
   document.getElementById("setting-aim-month").value = aimMonth;
 
   // Render bảo vệ đa lớp (Không để lỗi thẻ làm ảnh hưởng đến hiển thị tài khoản)
-  try { if (typeof renderProfileUI === "function") renderProfileUI(); } catch (e) { console.error(e); }
-  try { if (typeof renderLicenseUI === "function") renderLicenseUI(); } catch (e) { console.error(e); }
-  try { if (typeof renderQuickWeekdayPicker === "function") renderQuickWeekdayPicker(); } catch (e) { console.error(e); }
-  try { if (typeof renderSealedLettersList === "function") renderSealedLettersList(); } catch (e) { console.error(e); }
-  try { if (typeof renderSocialLettersList === "function") renderSocialLettersList(); } catch (e) { console.error(e); }
-  try { if (typeof renderDashboardUpcoming === "function") renderDashboardUpcoming(); } catch (e) { console.error(e); }
-  try { if (typeof renderTasksTab === "function") renderTasksTab(); } catch (e) { console.error(e); }
-  try { if (typeof renderWeeklyCalendar === "function") renderWeeklyCalendar(); } catch (e) { console.error(e); }
-  try { if (typeof renderFocusSelector === "function") renderFocusSelector(); } catch (e) { console.error(e); }
-  try { syncCustomFocusDropdown(); } catch (e) { console.error(e); }
-  try { if (typeof renderAnalyticsCharts === "function") renderAnalyticsCharts(); } catch (e) { console.error(e); }
-  try { if (typeof renderShareTaskSelector === "function") renderShareTaskSelector(); } catch (e) { console.error(e); }
+  const safeLog = (e) => { if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) HaliosSecurity.Logger.error(e); };
+  try { if (typeof renderProfileUI === "function") renderProfileUI(); } catch (e) { safeLog(e); }
+  try { if (typeof renderLicenseUI === "function") renderLicenseUI(); } catch (e) { safeLog(e); }
+  try { if (typeof renderQuickWeekdayPicker === "function") renderQuickWeekdayPicker(); } catch (e) { safeLog(e); }
+  try { if (typeof renderSealedLettersList === "function") renderSealedLettersList(); } catch (e) { safeLog(e); }
+  try { if (typeof renderSocialLettersList === "function") renderSocialLettersList(); } catch (e) { safeLog(e); }
+  try { if (typeof renderDashboardUpcoming === "function") renderDashboardUpcoming(); } catch (e) { safeLog(e); }
+  try { if (typeof renderTasksTab === "function") renderTasksTab(); } catch (e) { safeLog(e); }
+  try { if (typeof renderWeeklyCalendar === "function") renderWeeklyCalendar(); } catch (e) { safeLog(e); }
+  try { if (typeof renderFocusSelector === "function") renderFocusSelector(); } catch (e) { safeLog(e); }
+  try { syncCustomFocusDropdown(); } catch (e) { safeLog(e); }
+  try { if (typeof renderAnalyticsCharts === "function") renderAnalyticsCharts(); } catch (e) { safeLog(e); }
+  try { if (typeof renderShareTaskSelector === "function") renderShareTaskSelector(); } catch (e) { safeLog(e); }
 }
 
 function syncCustomFocusDropdown() {
@@ -157,7 +158,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // Khởi tạo các module tính năng với cơ chế bắt lỗi an toàn
   const safeInit = (fnName, fn) => {
     try { if (typeof fn === "function") fn(); } 
-    catch (err) { console.warn(`Module ${fnName} bỏ qua lỗi DOM:`, err); }
+    catch (err) {
+      if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+        HaliosSecurity.Logger.warn(`Module ${fnName} bỏ qua lỗi DOM:`, err);
+      }
+    }
   };
 
   safeInit("Dashboard", initDashboardFeature);

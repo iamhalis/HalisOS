@@ -1,13 +1,14 @@
-function processAvatarFile(file) {
-  return new Promise((resolve, reject) => {
-    if (!file) {
-      reject("Vui lòng chọn một file ảnh!");
-      return;
-    }
+async function processAvatarFile(file) {
+  if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.validateUploadFile) {
+    await HaliosSecurity.validateUploadFile(file);
+  } else {
+    if (!file) throw new Error("Vui lòng chọn một file ảnh!");
     if (!ALLOWED_AVATAR_TYPES.includes(file.type.toLowerCase())) {
-      reject("Chỉ chấp nhận định dạng ảnh PNG, JPG, JPEG hoặc WebP!");
-      return;
+      throw new Error("Chỉ chấp nhận định dạng ảnh PNG, JPG, JPEG hoặc WebP!");
     }
+  }
+
+  return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject("Không thể đọc file ảnh đã chọn.");
     reader.onload = ev => {
@@ -86,10 +87,10 @@ function renderProfileUI() {
     if (profileLicenseTag) {
       if (isAct) {
         profileLicenseTag.className = "profile-license-badge pro";
-        profileLicenseTag.textContent = "⭐ PRO Member (Đã bật Cloud Sync ☁️)";
+        profileLicenseTag.textContent = "⭐ PRO Member";
       } else {
         profileLicenseTag.className = "profile-license-badge free";
-        profileLicenseTag.textContent = "⚠️ Free Trial (Chưa kích hoạt Cloud)";
+        profileLicenseTag.textContent = "⚠️ Free Trial";
       }
     }
 
@@ -213,10 +214,16 @@ function initProfileFeature() {
 
       const isFirstAccountEver = Object.keys(users).length === 0;
 
+      // Hash mật khẩu với PBKDF2-SHA256 (không lưu plaintext)
+      let securePasswordHash = password;
+      if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.hashPassword) {
+        securePasswordHash = await HaliosSecurity.hashPassword(password);
+      }
+
       users[username] = {
         username,
         email,
-        password,
+        password: securePasswordHash,
         avatar: null,
         createdAt: getTodayStr(),
         is_activated: isActivated,
@@ -226,7 +233,11 @@ function initProfileFeature() {
       saveUsersDB();
 
       currentUser = username;
-      localStorage.setItem("studyos_current_user", currentUser);
+      if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.SessionManager) {
+        HaliosSecurity.SessionManager.createSession(currentUser);
+      } else {
+        localStorage.setItem("studyos_current_user", currentUser);
+      }
 
       if (isFirstAccountEver && tasks.length > 0) {
         localStorage.setItem(`studyos_tasks_${username}`, JSON.stringify(tasks));
@@ -251,7 +262,9 @@ function initProfileFeature() {
             body: JSON.stringify(initialPayload)
           });
         } catch (err) {
-          console.warn("Lỗi lưu tài khoản lên Cloud:", err);
+          if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+            HaliosSecurity.Logger.warn("Lỗi lưu tài khoản lên Cloud:", err);
+          }
         }
       }
 
@@ -274,6 +287,16 @@ function initProfileFeature() {
   // ĐĂNG NHẬP
   document.getElementById("login-form").addEventListener("submit", async e => {
     e.preventDefault();
+
+    // 1. Kiểm tra Rate Limit chống Brute-Force
+    if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.RateLimiter) {
+      const remaining = HaliosSecurity.RateLimiter.getLockoutRemainingSeconds();
+      if (remaining > 0) {
+        showToast(`⚠️ Quá nhiều lần thử sai! Đã tạm khóa đăng nhập trong ${remaining}s để bảo vệ tài khoản.`, true);
+        return;
+      }
+    }
+
     const username = document.getElementById("login-username").value.trim().toLowerCase();
     const password = document.getElementById("login-password").value;
     const submitBtn = document.getElementById("login-form").querySelector("button[type='submit']");
@@ -284,6 +307,27 @@ function initProfileFeature() {
       submitBtn.textContent = "Đang kiểm tra...";
     }
 
+    const checkPasswordMatch = async (inputPass, targetHash) => {
+      if (!targetHash) return false;
+      if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.verifyPassword) {
+        return await HaliosSecurity.verifyPassword(inputPass, targetHash);
+      }
+      return inputPass === targetHash;
+    };
+
+    const handleLoginFailure = () => {
+      let failMessage = "Sai Username hoặc Mật khẩu!";
+      if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.RateLimiter) {
+        const rateState = HaliosSecurity.RateLimiter.recordFailedAttempt();
+        if (rateState.isLocked) {
+          failMessage = `⚠️ Bạn đã nhập sai ${rateState.attempts} lần! Khóa đăng nhập 60 giây để phòng chống tấn công.`;
+        } else {
+          failMessage = `Sai Username hoặc Mật khẩu! (Còn ${Math.max(0, 5 - rateState.attempts)} lần thử)`;
+        }
+      }
+      showToast(failMessage, true);
+    };
+
     try {
       let account = users[username];
 
@@ -291,13 +335,18 @@ function initProfileFeature() {
       if (!account && CLOUD_DB_URL) {
         const cloudData = await fetchAccountFromCloud(username);
         if (cloudData && cloudData.profile) {
-          if (cloudData.profile.password !== password) {
-            showToast("Sai Username hoặc Mật khẩu!", true);
+          const isCloudMatch = await checkPasswordMatch(password, cloudData.profile.password);
+          if (!isCloudMatch) {
+            handleLoginFailure();
             return;
           }
           // Thiết lập currentUser TRƯỚC khi saveLocalOnly để lưu đúng key của tài khoản đó
           currentUser = username;
-          localStorage.setItem("studyos_current_user", currentUser);
+          if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.SessionManager) {
+            HaliosSecurity.SessionManager.createSession(currentUser);
+          } else {
+            localStorage.setItem("studyos_current_user", currentUser);
+          }
           users[username] = cloudData.profile;
           if (typeof isAccountActivated === "function" && isAccountActivated(username)) {
             users[username].is_activated = true;
@@ -311,13 +360,35 @@ function initProfileFeature() {
         }
       }
 
-      if (!account || account.password !== password) {
-        showToast("Sai Username hoặc Mật khẩu!", true);
+      if (!account) {
+        handleLoginFailure();
         return;
       }
 
+      const isLocalMatch = await checkPasswordMatch(password, account.password);
+      if (!isLocalMatch) {
+        handleLoginFailure();
+        return;
+      }
+
+      // Đăng nhập thành công -> Reset Rate Limit & Tạo session có thời hạn
+      if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.RateLimiter) {
+        HaliosSecurity.RateLimiter.reset();
+      }
+
       currentUser = username;
-      localStorage.setItem("studyos_current_user", currentUser);
+      if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.SessionManager) {
+        HaliosSecurity.SessionManager.createSession(currentUser);
+      } else {
+        localStorage.setItem("studyos_current_user", currentUser);
+      }
+
+      // Tự động nâng cấp mật khẩu plaintext cũ sang PBKDF2 hash nếu cần
+      if (account.password && !account.password.startsWith("pbkdf2:") && typeof HaliosSecurity !== "undefined") {
+        account.password = await HaliosSecurity.hashPassword(password);
+        saveUsersDB();
+      }
+
       loadActiveUserData();
 
       // Chỉ kéo dữ liệu Cloud nếu tài khoản này ĐÃ KÍCH HOẠT KEY
@@ -331,7 +402,9 @@ function initProfileFeature() {
 
       document.getElementById("login-form").reset();
     } catch (err) {
-      console.error("Lỗi đăng nhập:", err);
+      if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+        HaliosSecurity.Logger.error("Lỗi đăng nhập:", err);
+      }
       showToast("Có lỗi xảy ra trong quá trình đăng nhập. Vui lòng thử lại!", true);
     } finally {
       if (submitBtn) {
@@ -459,7 +532,9 @@ function initProfileFeature() {
           body: JSON.stringify({ profile: users[currentUser], updatedAt: Date.now() })
         });
       } catch (err) {
-        console.warn("Lỗi đồng bộ hồ sơ lên Cloud:", err);
+        if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+          HaliosSecurity.Logger.warn("Lỗi đồng bộ hồ sơ lên Cloud:", err);
+        }
       }
     }
     renderAll();
@@ -483,7 +558,14 @@ function initProfileFeature() {
       return;
     }
 
-    if (users[currentUser].password !== currentPasswordInput) {
+    let isCurrentMatch = false;
+    if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.verifyPassword) {
+      isCurrentMatch = await HaliosSecurity.verifyPassword(currentPasswordInput, users[currentUser].password);
+    } else {
+      isCurrentMatch = (users[currentUser].password === currentPasswordInput);
+    }
+
+    if (!isCurrentMatch) {
       showToast("Mật khẩu hiện tại (mật khẩu cũ) không chính xác!", true);
       return;
     }
@@ -498,7 +580,13 @@ function initProfileFeature() {
       return;
     }
 
-    users[currentUser].password = newPasswordInput;
+    // Băm mật khẩu mới bằng PBKDF2
+    let hashedNewPassword = newPasswordInput;
+    if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.hashPassword) {
+      hashedNewPassword = await HaliosSecurity.hashPassword(newPasswordInput);
+    }
+
+    users[currentUser].password = hashedNewPassword;
     saveUsersDB();
     if (isCloudEnabled()) {
       await syncToCloud();
@@ -510,7 +598,9 @@ function initProfileFeature() {
           body: JSON.stringify({ profile: users[currentUser], updatedAt: Date.now() })
         });
       } catch (err) {
-        console.warn("Lỗi đồng bộ hồ sơ lên Cloud:", err);
+        if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+          HaliosSecurity.Logger.warn("Lỗi đồng bộ hồ sơ lên Cloud:", err);
+        }
       }
     }
     document.getElementById("password-change-form").reset();
@@ -520,7 +610,11 @@ function initProfileFeature() {
   // Đăng xuất
   document.getElementById("logout-btn").addEventListener("click", () => {
     currentUser = null;
-    localStorage.removeItem("studyos_current_user");
+    if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.SessionManager) {
+      HaliosSecurity.SessionManager.destroySession();
+    } else {
+      localStorage.removeItem("studyos_current_user");
+    }
     loadActiveUserData();
     renderAll();
     showToast("Đã đăng xuất về chế độ Khách.");

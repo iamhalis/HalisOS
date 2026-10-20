@@ -165,7 +165,9 @@ if (bgInput) {
           setTimeout(() => { bgStatusText.innerText = ''; }, 3000);
         }
       } catch (err) {
-        console.error('Lỗi khi lưu ảnh:', err);
+        if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+          HaliosSecurity.Logger.error('Lỗi khi lưu ảnh:', err);
+        }
         alert('Không thể lưu ảnh do dung lượng bộ nhớ trình duyệt đã đầy. Vui lòng chọn ảnh khác.');
       }
     });
