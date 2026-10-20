@@ -87,7 +87,7 @@ function renderProfileUI() {
     if (profileLicenseTag) {
       if (isAct) {
         profileLicenseTag.className = "profile-license-badge pro";
-        profileLicenseTag.textContent = "⭐ Member";
+        profileLicenseTag.textContent = "⭐ PRO Member";
       } else {
         profileLicenseTag.className = "profile-license-badge free";
         profileLicenseTag.textContent = "⚠️ Free Trial";
@@ -270,7 +270,7 @@ function initProfileFeature() {
         }
       }
 
-      showToast(`⭐ Đăng ký & kích hoạt thành công tài khoản Member @${username}! Đã bật Cloud Sync.`);
+      showToast(`⭐ Đăng ký & kích hoạt thành công tài khoản PRO @${username}! Đã bật Cloud Sync.`);
       renderAll();
       document.getElementById("register-form").reset();
     } finally {

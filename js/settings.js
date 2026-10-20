@@ -188,7 +188,7 @@ if (removeBgBtn) {
 }
 
 // -------------------------------------------------------------
-// 5. TÙY CHỈNH ĐỘ TRONG SUỐT VÀ ĐỘ MỜ KÍNH (MEMBER EXCLUSIVE)
+// 5. TÙY CHỈNH ĐỘ TRONG SUỐT VÀ ĐỘ MỜ KÍNH (PRO EXCLUSIVE)
 // -------------------------------------------------------------
 function applyGlassSettings(opacityPct, blurPx) {
   const opacityVal = Math.min(0.85, Math.max(0.25, opacityPct / 100));
