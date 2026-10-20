@@ -65,13 +65,12 @@ function renderProfileUI() {
     const u = users[currentUser];
     const isAct = isAccountActivated(currentUser);
     const initial = u.username.charAt(0).toUpperCase();
-    const syncTag = isAct ? "☁️ Đã đồng bộ Cloud" : "⚠️ Free Trial (Lưu nội bộ)";
 
     renderAvatarElement(sidebarAvatar, u.avatar, initial);
     renderAvatarElement(profileBigAvatar, u.avatar, initial);
 
     sidebarUsername.textContent = u.username;
-    sidebarEmail.textContent = u.email ? `${u.email} • ${syncTag}` : syncTag;
+    sidebarEmail.textContent = u.email || (isAct ? "Member" : "Dùng thử");
     topProfileBtn.textContent = `@${u.username}`;
     activeAccountLabel.textContent = u.username;
 
@@ -80,17 +79,17 @@ function renderProfileUI() {
 
     document.getElementById("profile-display-username").textContent = `@${u.username}`;
     document.getElementById("profile-display-email").textContent = u.email
-      ? `Email: ${u.email} (${syncTag})`
-      : `Chưa có email (${syncTag})`;
+      ? `Email: ${u.email}`
+      : "Chưa có email";
     document.getElementById("profile-edit-email").value = u.email || "";
 
     if (profileLicenseTag) {
       if (isAct) {
         profileLicenseTag.className = "profile-license-badge pro";
-        profileLicenseTag.textContent = "⭐ Member";
+        profileLicenseTag.textContent = "Member";
       } else {
         profileLicenseTag.className = "profile-license-badge free";
-        profileLicenseTag.textContent = "⚠️ Free Trial";
+        profileLicenseTag.textContent = "Dùng thử";
       }
     }
 
@@ -102,13 +101,13 @@ function renderProfileUI() {
     renderAvatarElement(sidebarAvatar, null, "G");
     renderAvatarElement(profileBigAvatar, null, "G");
     sidebarUsername.textContent = "Khách (Guest)";
-    sidebarEmail.textContent = "Free Trial • Nhấn để đăng nhập";
+    sidebarEmail.textContent = "Chế độ Khách";
     topProfileBtn.textContent = "Đăng nhập";
-    activeAccountLabel.textContent = "Khách (Guest) — Free Trial";
+    activeAccountLabel.textContent = "Khách (Guest)";
 
     if (profileLicenseTag) {
       profileLicenseTag.className = "profile-license-badge free";
-      profileLicenseTag.textContent = "Bản dùng thử (Free Trial)";
+      profileLicenseTag.textContent = "Bản dùng thử";
     }
 
     guestView.classList.remove("hidden");
@@ -270,7 +269,7 @@ function initProfileFeature() {
         }
       }
 
-      showToast(`⭐ Đăng ký & kích hoạt thành công tài khoản Member @${username}! Đã bật Cloud Sync.`);
+      showToast(`Đăng ký & kích hoạt thành công tài khoản Member @${username}!`);
       renderAll();
       document.getElementById("register-form").reset();
     } finally {
@@ -467,7 +466,7 @@ function initProfileFeature() {
           // Bật Cloud Sync và sync ngay lên Cloud
           await syncToCloud();
           renderAll();
-          showToast(`⭐ Kích hoạt tài khoản @${currentUser} thành công! Đã bật Cloud Sync.`);
+          showToast(`Kích hoạt tài khoản @${currentUser} thành công!`);
         } else {
           if (alertEl) {
             alertEl.className = "license-alert error";

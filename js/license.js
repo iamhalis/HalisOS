@@ -139,7 +139,7 @@ async function redeemKeyOnline(key) {
         success: false,
         requireAccount: true,
         verifiedKey: cleanKey,
-        error: "Mã key hợp lệ! Tuy nhiên tài khoản Khách luôn là Free Trial (chỉ lưu trên máy). Vui lòng Đăng nhập hoặc Tạo tài khoản để kích hoạt và mở khóa Cloud Sync."
+        error: "Mã key hợp lệ! Vui lòng Đăng ký tài khoản để kích hoạt mã Key này."
       };
     } catch {
       return {
@@ -246,10 +246,10 @@ function renderLicenseUI() {
   if (glassBadge) {
     if (isAct) {
       glassBadge.className = "pro-tag-badge active";
-      glassBadge.textContent = "⭐ Member Đã mở khóa";
+      glassBadge.textContent = "Member Đã mở khóa";
     } else {
       glassBadge.className = "pro-tag-badge locked";
-      glassBadge.textContent = "🔒 Khóa (Cần Member)";
+      glassBadge.textContent = "Cần Member";
     }
   }
 
@@ -272,12 +272,12 @@ function renderLicenseUI() {
   if (topbarBtn) {
     if (isAct) {
       topbarBtn.className = "btn btn-license-pro";
-      topbarBtn.innerHTML = `⭐ Member`;
-      topbarBtn.setAttribute("title", `Tài khoản @${info.username} (Member Cloud)`);
+      topbarBtn.innerHTML = `Member`;
+      topbarBtn.setAttribute("title", `Tài khoản @${info.username} (Member)`);
     } else {
       topbarBtn.className = "btn btn-license-activate";
-      topbarBtn.innerHTML = `🔑 Kích hoạt`;
-      topbarBtn.setAttribute("title", isGuest ? "Khách (Free Trial) — Nhấn để kích hoạt" : "Nhấn để kích hoạt tài khoản");
+      topbarBtn.innerHTML = `Kích hoạt`;
+      topbarBtn.setAttribute("title", isGuest ? "Khách (Dùng thử) — Nhấn để kích hoạt" : "Nhấn để kích hoạt tài khoản");
     }
   }
 
@@ -286,10 +286,10 @@ function renderLicenseUI() {
   if (profileBadge) {
     if (isAct) {
       profileBadge.className = "profile-license-badge pro";
-      profileBadge.textContent = "⭐ Member (Đã bật Cloud Sync ☁️)";
+      profileBadge.textContent = "Member";
     } else {
       profileBadge.className = "profile-license-badge free";
-      profileBadge.textContent = isGuest ? "Bản dùng thử (Free Trial)" : "⚠️ Free Trial (Chưa kích hoạt Cloud)";
+      profileBadge.textContent = isGuest ? "Bản dùng thử" : "Dùng thử";
     }
   }
 
@@ -302,7 +302,7 @@ function renderLicenseUI() {
 
   if (statusText && activateFormWrapper && activeDetailsWrapper) {
     if (isAct) {
-      statusText.innerHTML = `<span class="badge-text pro">⭐ TÀI KHOẢN MEMBER (@${info.username}) — ĐÃ BẬT CLOUD SYNC</span>`;
+      statusText.innerHTML = `<span class="badge-text pro">TÀI KHOẢN MEMBER (@${info.username})</span>`;
       if (keyDisplay) keyDisplay.textContent = maskLicenseKey(info.key);
       if (dateDisplay) {
         const d = info.activatedAt ? new Date(info.activatedAt) : new Date();
@@ -312,9 +312,9 @@ function renderLicenseUI() {
       activeDetailsWrapper.classList.remove("hidden");
     } else {
       if (isGuest) {
-        statusText.innerHTML = `<span class="badge-text free">👤 CHẾ ĐỘ KHÁCH — FREE TRIAL (CHỈ LƯU NỘI BỘ TRÊN MÁY)</span>`;
+        statusText.innerHTML = `<span class="badge-text free">CHẾ ĐỘ KHÁCH (LƯU NỘI BỘ TRÊN MÁY)</span>`;
       } else {
-        statusText.innerHTML = `<span class="badge-text free">⚠️ TÀI KHOẢN @${info.username} — FREE TRIAL (CHƯA KÍCH HOẠT CLOUD)</span>`;
+        statusText.innerHTML = `<span class="badge-text free">TÀI KHOẢN @${info.username} (CHƯA KÍCH HOẠT)</span>`;
       }
       activateFormWrapper.classList.remove("hidden");
       activeDetailsWrapper.classList.add("hidden");

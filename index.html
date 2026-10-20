@@ -94,7 +94,7 @@
           <span class="live-clock" id="live-clock">00:00:00</span>
         </div>
         <div class="topbar-actions">
-          <button type="button" class="btn btn-license-pill" id="topbar-license-btn" title="Kích hoạt bản quyền">🔑 Kích hoạt</button>
+          <button type="button" class="btn btn-license-pill" id="topbar-license-btn" title="Kích hoạt bản quyền">Kích hoạt</button>
           <button class="btn btn-secondary" id="top-profile-btn">Tài khoản</button>
           <button class="btn btn-primary" id="quick-add-btn">+ Thêm nhiệm vụ</button>
         </div>
@@ -644,7 +644,7 @@
             </form>
 
             <form id="register-form" class="form-stack hidden">
-              <p class="text-muted">Tạo tài khoản Member để lưu trữ dữ liệu vĩnh viễn, đổi ảnh đại diện và đồng bộ dữ liệu đám mây (Cloud Sync).</p>
+              <p class="text-muted">Tạo tài khoản Member để lưu trữ dữ liệu học tập và đổi ảnh đại diện.</p>
               <div class="form-group">
                 <label for="reg-username">Username (dùng để đăng nhập) <span class="req">*</span></label>
                 <input type="text" id="reg-username" placeholder="username" required autocomplete="username" />
@@ -658,7 +658,7 @@
                 <input type="password" id="reg-password" placeholder="Tối thiểu 4 ký tự..." required autocomplete="new-password" />
               </div>
               <div class="form-group">
-                <label for="reg-key">Mã Key kích hoạt <span class="req">*</span> (Bắt buộc để tạo tài khoản Member & Cloud Sync)</label>
+                <label for="reg-key">Mã Key kích hoạt <span class="req">*</span> (Bắt buộc để tạo tài khoản Member)</label>
                 <input type="text" id="reg-key" class="license-code-input" placeholder="VD: HASHX-A1B2-C3D4" maxlength="17" required autocomplete="off" spellcheck="false" />
                 <span class="text-muted" style="font-size: 0.8rem; display: block; margin-top: 4px;">
                   Chưa có mã Key? <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" style="color: #818cf8;">Liên hệ nhận Key tại đây</a> hoặc tiếp tục sử dụng <strong>Chế độ Khách</strong>.
@@ -732,14 +732,16 @@
           <!-- THẺ KÍCH HOẠT TÀI KHOẢN (Chỉ hiển thị khi tài khoản chưa kích hoạt Key) -->
           <div class="card hidden" id="profile-activation-card" style="grid-column: 1 / -1;">
             <div class="card-header">
-              <h3>⭐ Kích hoạt tài khoản Member & Bật Cloud Sync</h3>
+              <h3>Kích hoạt tài khoản Member</h3>
             </div>
             <p class="text-muted mb-12">
-              Tài khoản của bạn hiện đang ở chế độ <strong>Dùng thử (Free Trial — Lưu nội bộ)</strong>.
-              Để tránh quá tải máy chủ Cloud, dữ liệu chỉ đồng bộ lên đám mây khi tài khoản đã được kích hoạt Key.
+              Tài khoản của bạn hiện đang ở chế độ <strong>Dùng thử (Lưu nội bộ)</strong>.
+              Dữ liệu sẽ được bảo toàn và mở khóa tính năng khi tài khoản đã được kích hoạt Key.
             </p>
             <div class="license-note-box mb-16">
-              <div class="license-note-icon">🔑</div>
+              <div class="license-note-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3"/></svg>
+              </div>
               <div class="license-note-content">
                 <div class="license-note-title">Cần key kích hoạt liên hệ:</div>
                 <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" class="license-contact-link">
@@ -770,7 +772,7 @@
                 Khi xóa tài khoản, toàn bộ thông tin cá nhân, mật khẩu, nhiệm vụ học tập, đồng hồ Pomodoro và <strong>toàn bộ dữ liệu đồng bộ trên đám mây (Firebase Cloud)</strong> của bạn sẽ bị xóa vĩnh viễn và không thể phục hồi.
               </p>
               <button type="button" class="btn btn-danger" id="open-delete-account-modal-btn">
-                🗑️ Xóa vĩnh viễn tài khoản này
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px;"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>Xóa vĩnh viễn tài khoản này
               </button>
             </div>
           </div>
@@ -851,7 +853,7 @@
           <div class="wallpaper-settings-stack">
             <div class="form-actions" style="display: flex; gap: 12px; align-items: center;">
               <label class="btn btn-secondary" for="bg-upload-input" style="cursor: pointer;">
-                🖼️ Tải ảnh từ máy tính
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px;"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>Tải ảnh từ máy tính
                 <input type="file" id="bg-upload-input" accept="image/png, image/jpeg, image/webp" class="sr-only" />
               </label>
               <button type="button" class="btn btn-ghost" id="remove-bg-btn">Xóa ảnh nền</button>
@@ -862,13 +864,15 @@
             <div class="glass-tuner-container mt-20" id="glass-tuner-box">
               <div class="glass-tuner-header">
                 <div class="tuner-title-wrap">
-                  <span class="tuner-icon">🔮</span>
+                  <span class="tuner-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="21" y2="21"/><line x1="4" x2="20" y1="3" y2="3"/><line x1="4" x2="20" y1="12" y2="12"/><line x1="8" x2="8" y1="8" y2="16"/><line x1="16" x2="16" y1="8" y2="16"/></svg>
+                  </span>
                   <div>
                     <h4 class="tuner-title">Hiệu ứng Kính Mờ Pha Lê (Ultra-Glass)</h4>
                     <span class="tuner-subtitle">Dễ dàng nhìn xuyên hình nền với độ sắc nét chữ cao nhất</span>
                   </div>
                 </div>
-                <span class="pro-tag-badge locked" id="glass-tuner-badge">⭐ Member Feature</span>
+                <span class="pro-tag-badge locked" id="glass-tuner-badge">Member Feature</span>
               </div>
 
               <div class="glass-tuner-controls" id="glass-tuner-controls">
@@ -902,16 +906,18 @@
 
                 <!-- Các preset nhanh -->
                 <div class="preset-buttons-row mt-14">
-                  <button type="button" class="preset-btn" data-opacity="32" data-blur="8">💎 Kính Siêu Trong</button>
-                  <button type="button" class="preset-btn active" data-opacity="45" data-blur="12">🔮 Cân Bằng (Khuyên dùng)</button>
-                  <button type="button" class="preset-btn" data-opacity="68" data-blur="18">🌫️ Mờ Dày</button>
+                  <button type="button" class="preset-btn" data-opacity="32" data-blur="8">Kính Siêu Trong</button>
+                  <button type="button" class="preset-btn active" data-opacity="45" data-blur="12">Cân Bằng (Khuyên dùng)</button>
+                  <button type="button" class="preset-btn" data-opacity="68" data-blur="18">Mờ Dày</button>
                 </div>
               </div>
 
               <!-- Thông báo khóa khi ở bản Trial -->
               <div class="glass-tuner-locked-overlay hidden" id="glass-tuner-locked">
                 <div class="locked-content">
-                  <span class="lock-icon">🔒</span>
+                  <span class="lock-icon">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                  </span>
                   <span>Chế độ Kính Pha Lê Siêu Trong & Chỉnh độ mờ độc quyền cho <strong>Tài khoản Member</strong>.</span>
                   <button type="button" class="btn btn-sm btn-primary" onclick="openLicenseModal()">Kích hoạt Member ngay</button>
                 </div>
@@ -929,19 +935,21 @@
             <div class="license-current-status-box">
               <span class="license-status-label">Trạng thái giấy phép:</span>
               <div id="settings-license-status-text">
-                <span class="badge-text free">⚠️ CHƯA KÍCH HOẠT BẢN QUYỀN (FREE TRIAL)</span>
+                <span class="badge-text free">CHƯA KÍCH HOẠT BẢN QUYỀN</span>
               </div>
             </div>
 
             <!-- Khung thông báo hỗ trợ & liên hệ -->
             <div class="license-note-box">
-              <div class="license-note-icon">🔑</div>
+              <div class="license-note-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3"/></svg>
+              </div>
               <div class="license-note-content">
                 <div class="license-note-title">Cần key kích hoạt liên hệ:</div>
                 <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" class="license-contact-link">
                   https://halis-bio.vercel.app/iamhalis
                 </a>
-                <p class="license-note-desc">Nhận mã key dạng <code>HASHX-XXXX-XXXX</code> để kích hoạt trọn đời, mở khóa đồng bộ và tính năng nâng cao.</p>
+                <p class="license-note-desc">Nhận mã key dạng <code>HASHX-XXXX-XXXX</code> để kích hoạt trọn đời và mở khóa tính năng nâng cao.</p>
               </div>
             </div>
 
@@ -1051,13 +1059,15 @@
 
       <div class="letter-modal-header">
         <h2>Kích hoạt Study OS Member</h2>
-        <p class="text-muted" style="margin-top: 4px;">Nhập mã Key kích hoạt để trở thành Member, mở khóa Cloud Sync và toàn bộ tính năng.</p>
+        <p class="text-muted" style="margin-top: 4px;">Nhập mã Key kích hoạt để trở thành Member và mở khóa toàn bộ tính năng.</p>
       </div>
 
       <div class="letter-modal-body">
         <!-- Khung thông báo liên hệ lấy key -->
         <div class="license-note-box mb-20">
-          <div class="license-note-icon">🔑</div>
+          <div class="license-note-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3"/></svg>
+          </div>
           <div class="license-note-content">
             <div class="license-note-title">Cần key kích hoạt liên hệ:</div>
             <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" class="license-contact-link">
