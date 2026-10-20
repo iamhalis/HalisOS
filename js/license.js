@@ -194,33 +194,6 @@ async function redeemKeyOnline(key) {
 }
 
 /**
- * Sinh key mới từ Web API (Dành cho Quản trị viên có ADMIN_API_KEY)
- */
-async function generateKeyOnline(adminApiKey) {
-  if (!adminApiKey) {
-    throw new Error("Vui lòng nhập Admin API Key để sinh key!");
-  }
-
-  const response = await fetch(`${LICENSE_API_BASE}/api/admin/generate-key`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": adminApiKey.trim()
-    }
-  });
-
-  if (!response.ok) {
-    if (response.status === 401) {
-      throw new Error("Admin API Key không chính xác (Unauthorized)!");
-    }
-    throw new Error(`Máy chủ từ chối yêu cầu (Mã lỗi HTTP ${response.status}).`);
-  }
-
-  const data = await response.json();
-  return data.key;
-}
-
-/**
  * Mở Modal kích hoạt
  */
 function openLicenseModal() {
@@ -495,69 +468,6 @@ function initLicenseFeature() {
         removeLicenseInfo();
         renderLicenseUI();
         if (typeof showToast === "function") showToast("Đã hủy kích hoạt bản quyền trên máy này.");
-      }
-    });
-  }
-
-  // Bật/tắt khung Công cụ Quản trị viên (Sinh Key)
-  const toggleAdminGenBtn = document.getElementById("toggle-admin-gen-btn");
-  const adminGenBox = document.getElementById("admin-keygen-box");
-  if (toggleAdminGenBtn && adminGenBox) {
-    toggleAdminGenBtn.addEventListener("click", () => {
-      adminGenBox.classList.toggle("hidden");
-      toggleAdminGenBtn.textContent = adminGenBox.classList.contains("hidden")
-        ? "+ Mở công cụ tạo Key (Dành cho Quản trị viên)"
-        : "- Đóng công cụ tạo Key";
-    });
-  }
-
-  // Form sinh Key Quản trị viên
-  const adminGenForm = document.getElementById("admin-keygen-form");
-  if (adminGenForm) {
-    adminGenForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const apiKeyInput = document.getElementById("admin-api-key-input");
-      const submitBtn = document.getElementById("admin-gen-submit-btn");
-      const resultBox = document.getElementById("admin-keygen-result");
-      const keyTextEl = document.getElementById("admin-generated-key-text");
-
-      const apiKey = (apiKeyInput ? apiKeyInput.value : "").trim();
-      if (!apiKey) {
-        if (typeof showToast === "function") showToast("Vui lòng nhập Admin API Key!", true);
-        return;
-      }
-
-      submitBtn.disabled = true;
-      submitBtn.textContent = "Đang tạo...";
-      if (resultBox) resultBox.classList.add("hidden");
-
-      try {
-        const newKey = await generateKeyOnline(apiKey);
-        if (resultBox && keyTextEl) {
-          keyTextEl.textContent = newKey;
-          resultBox.classList.remove("hidden");
-        }
-        if (typeof showToast === "function") showToast(`Đã tạo key mới: ${newKey}`);
-      } catch (err) {
-        if (typeof showToast === "function") showToast(err.message, true);
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Tạo Key mới ngay";
-      }
-    });
-  }
-
-  // Nút sao chép Key Quản trị viên vừa tạo
-  const copyKeyBtn = document.getElementById("copy-generated-key-btn");
-  if (copyKeyBtn) {
-    copyKeyBtn.addEventListener("click", () => {
-      const keyTextEl = document.getElementById("admin-generated-key-text");
-      if (keyTextEl && keyTextEl.textContent) {
-        navigator.clipboard.writeText(keyTextEl.textContent.trim()).then(() => {
-          if (typeof showToast === "function") showToast("Đã sao chép mã Key vào bộ nhớ tạm!");
-        }).catch(() => {
-          if (typeof showToast === "function") showToast("Không thể sao chép tự động.", true);
-        });
       }
     });
   }

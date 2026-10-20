@@ -904,37 +904,6 @@
                 <button type="button" class="btn btn-secondary" id="settings-license-deactivate-btn">Hủy kích hoạt trên thiết bị này</button>
               </div>
             </div>
-
-            <!-- Công cụ Quản trị viên (Sinh Key) -->
-            <div class="admin-keygen-section mt-24">
-              <button type="button" class="btn-link" id="toggle-admin-gen-btn">+ Mở công cụ tạo Key (Dành cho Quản trị viên)</button>
-              <div id="admin-keygen-box" class="admin-keygen-box hidden mt-16">
-                <p class="text-muted mb-12" style="font-size: 0.85rem;">
-                  Công cụ kết nối tới API <code>POST /api/admin/generate-key</code> để sinh key ngẫu nhiên và lưu trực tiếp vào cơ sở dữ liệu Turso.
-                </p>
-                <form id="admin-keygen-form" class="form-stack">
-                  <div class="form-group">
-                    <label for="admin-api-key-input">Admin API Key bí mật</label>
-                    <input
-                      type="password"
-                      id="admin-api-key-input"
-                      placeholder="Nhập ADMIN_API_KEY..."
-                      value="hashx_internal_secret_key_99999"
-                      autocomplete="off"
-                    />
-                  </div>
-                  <button type="submit" class="btn btn-secondary" id="admin-gen-submit-btn">Tạo Key mới ngay</button>
-                </form>
-
-                <div id="admin-keygen-result" class="admin-key-result hidden mt-16">
-                  <span class="result-label">Key vừa được tạo thành công:</span>
-                  <div class="key-result-row">
-                    <code id="admin-generated-key-text" class="generated-key-code">HASHX-XXXX-XXXX</code>
-                    <button type="button" class="btn btn-sm btn-primary" id="copy-generated-key-btn">Sao chép</button>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

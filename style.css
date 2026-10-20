@@ -1803,44 +1803,6 @@ body.has-custom-bg .focus-container.is-running {
 }
 .text-success { color: var(--success) !important; }
 
-/* Khu vực Admin sinh key */
-.admin-keygen-section {
-  border-top: 1px dashed var(--border-color);
-  padding-top: 16px;
-}
-.admin-keygen-box {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  padding: 16px;
-}
-.admin-key-result {
-  background: var(--bg-surface);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
-  padding: 12px 14px;
-}
-.result-label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  display: block;
-  margin-bottom: 6px;
-}
-.key-result-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-.generated-key-code {
-  font-family: monospace;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--accent);
-  letter-spacing: 0.08em;
-}
-
 .license-modal-card {
   max-width: 520px !important;
 }
