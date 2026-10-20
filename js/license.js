@@ -9,22 +9,29 @@ const CONTACT_BIO_URL = "https://halis-bio.vercel.app/iamhalis";
 const LICENSE_STORAGE_KEY = "studyos_license_info";
 
 /**
- * Lấy thông tin bản quyền hiện tại từ LocalStorage
+ * Lấy thông tin bản quyền hiện tại từ tài khoản đang đăng nhập hoặc LocalStorage
  */
 function getLicenseInfo() {
-  try {
-    const raw = localStorage.getItem(LICENSE_STORAGE_KEY);
-    if (!raw) return { isActivated: false, key: null, activatedAt: null, source: null };
-    const data = JSON.parse(raw);
+  if (typeof currentUser !== "undefined" && currentUser && typeof users !== "undefined" && users[currentUser]) {
+    const u = users[currentUser];
     return {
-      isActivated: Boolean(data && data.isActivated),
-      key: data.key || null,
-      activatedAt: data.activatedAt || null,
-      source: data.source || "online"
+      isActivated: Boolean(u.is_activated),
+      key: u.license_key || null,
+      activatedAt: u.activated_at || null,
+      source: "account",
+      isGuest: false,
+      username: currentUser
     };
-  } catch (e) {
-    return { isActivated: false, key: null, activatedAt: null, source: null };
   }
+  // Acc khách luôn là Free Trial (chưa kích hoạt)
+  return {
+    isActivated: false,
+    key: null,
+    activatedAt: null,
+    source: "guest",
+    isGuest: true,
+    username: null
+  };
 }
 
 /**
@@ -35,17 +42,27 @@ function saveLicenseInfo(info) {
 }
 
 /**
- * Xóa bản quyền (Hủy kích hoạt trên máy)
+ * Xóa bản quyền (Hủy kích hoạt trên tài khoản)
  */
 function removeLicenseInfo() {
+  if (typeof currentUser !== "undefined" && currentUser && typeof users !== "undefined" && users[currentUser]) {
+    users[currentUser].is_activated = false;
+    users[currentUser].license_key = null;
+    users[currentUser].activated_at = null;
+    if (typeof saveUsersDB === "function") saveUsersDB();
+  }
   localStorage.removeItem(LICENSE_STORAGE_KEY);
 }
 
 /**
- * Kiểm tra xem ứng dụng đã được kích hoạt hay chưa
+ * Kiểm tra xem ứng dụng/tài khoản đã được kích hoạt hay chưa
  */
 function isLicenseActivated() {
-  return getLicenseInfo().isActivated;
+  if (typeof currentUser !== "undefined" && currentUser && typeof users !== "undefined" && users[currentUser]) {
+    return Boolean(users[currentUser].is_activated);
+  }
+  // Acc khách luôn là Free Trial
+  return false;
 }
 
 /**
@@ -102,6 +119,36 @@ async function redeemKeyOnline(key) {
     };
   }
 
+  // 1. Nếu đang là KHÁCH (chưa có tài khoản) -> Kiểm tra key và nhắc đăng ký
+  if (!currentUser || !users[currentUser]) {
+    try {
+      const verifyRes = await fetch(`${LICENSE_API_BASE}/api/external/verify-key`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: cleanKey })
+      });
+      const verifyData = await verifyRes.json();
+      if (!verifyRes.ok || !verifyData.valid) {
+        return {
+          success: false,
+          error: verifyData.error || "Mã key không hợp lệ hoặc đã qua sử dụng!"
+        };
+      }
+      return {
+        success: false,
+        requireAccount: true,
+        verifiedKey: cleanKey,
+        error: "Mã key hợp lệ! Tuy nhiên tài khoản Khách luôn là Free Trial (chỉ lưu trên máy). Vui lòng Đăng nhập hoặc Tạo tài khoản để kích hoạt và mở khóa Cloud Sync."
+      };
+    } catch {
+      return {
+        success: false,
+        error: `Không thể kết nối đến máy chủ xác thực (${LICENSE_API_BASE}). Vui lòng kiểm tra mạng!`
+      };
+    }
+  }
+
+  // 2. Nếu ĐÃ ĐĂNG NHẬP -> Gọi API redeem cho tài khoản hiện tại
   try {
     const response = await fetch(`${LICENSE_API_BASE}/api/external/redeem-key`, {
       method: "POST",
@@ -110,21 +157,27 @@ async function redeemKeyOnline(key) {
       },
       body: JSON.stringify({
         key: cleanKey,
-        app_name: "Halios (Study OS)"
+        app_name: `Halios - @${currentUser}`
       })
     });
 
     const data = await response.json();
 
     if (response.ok && data.success) {
-      const licenseData = {
-        isActivated: true,
-        key: cleanKey,
-        activatedAt: new Date().toISOString(),
-        source: "online"
+      users[currentUser].is_activated = true;
+      users[currentUser].license_key = cleanKey;
+      users[currentUser].activated_at = new Date().toISOString();
+      if (typeof saveUsersDB === "function") saveUsersDB();
+
+      // Bật Cloud Sync và sync ngay lập tức lên Cloud
+      if (typeof syncToCloud === "function") {
+        await syncToCloud();
+      }
+
+      return {
+        success: true,
+        message: `Kích hoạt tài khoản @${currentUser} thành công! Đã bật Đồng bộ Đám mây.`
       };
-      saveLicenseInfo(licenseData);
-      return { success: true, message: data.message || "Kích hoạt thành công!" };
     } else {
       return {
         success: false,
@@ -200,6 +253,7 @@ function closeLicenseModal() {
 function renderLicenseUI() {
   const info = getLicenseInfo();
   const isAct = info.isActivated;
+  const isGuest = info.isGuest;
 
   // 1. Cập nhật Badge trên Sidebar
   const sidebarBadge = document.getElementById("sidebar-license-badge");
@@ -207,11 +261,11 @@ function renderLicenseUI() {
     if (isAct) {
       sidebarBadge.className = "license-status-pill activated";
       sidebarBadge.innerHTML = `<span class="pill-dot"></span> PRO Active`;
-      sidebarBadge.setAttribute("title", `Đã kích hoạt PRO (${maskLicenseKey(info.key)})`);
+      sidebarBadge.setAttribute("title", `Đã kích hoạt PRO (@${info.username} • ${maskLicenseKey(info.key)})`);
     } else {
       sidebarBadge.className = "license-status-pill unactivated";
       sidebarBadge.innerHTML = `<span class="pill-dot"></span> Free Trial`;
-      sidebarBadge.setAttribute("title", "Chưa kích hoạt bản quyền — Nhấn để kích hoạt");
+      sidebarBadge.setAttribute("title", isGuest ? "Chế độ Khách (Free Trial — Lưu nội bộ)" : "Tài khoản Dùng thử (Chưa kích hoạt Cloud)");
     }
   }
 
@@ -221,11 +275,11 @@ function renderLicenseUI() {
     if (isAct) {
       topbarBtn.className = "btn btn-license-pro";
       topbarBtn.innerHTML = `⭐ PRO Active`;
-      topbarBtn.setAttribute("title", `Bản quyền đã kích hoạt (${maskLicenseKey(info.key)})`);
+      topbarBtn.setAttribute("title", `Tài khoản @${info.username} đã kích hoạt Cloud`);
     } else {
       topbarBtn.className = "btn btn-license-activate";
       topbarBtn.innerHTML = `🔑 Kích hoạt`;
-      topbarBtn.setAttribute("title", "Nhấn để nhập key kích hoạt");
+      topbarBtn.setAttribute("title", isGuest ? "Khách (Free Trial) — Nhấn để kích hoạt" : "Nhấn để kích hoạt tài khoản");
     }
   }
 
@@ -234,10 +288,10 @@ function renderLicenseUI() {
   if (profileBadge) {
     if (isAct) {
       profileBadge.className = "profile-license-badge pro";
-      profileBadge.textContent = "⭐ PRO Member (Đã kích hoạt)";
+      profileBadge.textContent = "⭐ PRO Member (Đã bật Cloud Sync ☁️)";
     } else {
       profileBadge.className = "profile-license-badge free";
-      profileBadge.textContent = "Bản dùng thử (Free Member)";
+      profileBadge.textContent = isGuest ? "Bản dùng thử (Free Trial)" : "⚠️ Free Trial (Chưa kích hoạt Cloud)";
     }
   }
 
@@ -250,7 +304,7 @@ function renderLicenseUI() {
 
   if (statusText && activateFormWrapper && activeDetailsWrapper) {
     if (isAct) {
-      statusText.innerHTML = `<span class="badge-text pro">⭐ ĐÃ KÍCH HOẠT BẢN QUYỀN PRO</span>`;
+      statusText.innerHTML = `<span class="badge-text pro">⭐ TÀI KHOẢN PRO (@${info.username}) — ĐÃ BẬT CLOUD SYNC</span>`;
       if (keyDisplay) keyDisplay.textContent = maskLicenseKey(info.key);
       if (dateDisplay) {
         const d = info.activatedAt ? new Date(info.activatedAt) : new Date();
@@ -259,7 +313,11 @@ function renderLicenseUI() {
       activateFormWrapper.classList.add("hidden");
       activeDetailsWrapper.classList.remove("hidden");
     } else {
-      statusText.innerHTML = `<span class="badge-text free">⚠️ CHƯA KÍCH HOẠT BẢN QUYỀN (FREE TRIAL)</span>`;
+      if (isGuest) {
+        statusText.innerHTML = `<span class="badge-text free">👤 CHẾ ĐỘ KHÁCH — FREE TRIAL (CHỈ LƯU NỘI BỘ TRÊN MÁY)</span>`;
+      } else {
+        statusText.innerHTML = `<span class="badge-text free">⚠️ TÀI KHOẢN @${info.username} — FREE TRIAL (CHƯA KÍCH HOẠT CLOUD)</span>`;
+      }
       activateFormWrapper.classList.remove("hidden");
       activeDetailsWrapper.classList.add("hidden");
     }
@@ -352,6 +410,16 @@ function initLicenseFeature() {
       } else {
         alertEl.className = "license-alert error";
         alertEl.textContent = res.error;
+        if (res.requireAccount) {
+          setTimeout(() => {
+            closeLicenseModal();
+            if (typeof switchTab === "function") switchTab("profile");
+            const regKeyInput = document.getElementById("reg-key");
+            if (regKeyInput) regKeyInput.value = rawKey;
+            const regTabBtn = document.querySelector('.auth-tab-btn[data-auth="register"]');
+            if (regTabBtn) regTabBtn.click();
+          }, 2000);
+        }
         if (typeof showToast === "function") showToast(res.error, true);
       }
     });
@@ -404,6 +472,15 @@ function initLicenseFeature() {
         if (alertEl) {
           alertEl.className = "license-alert error";
           alertEl.textContent = res.error;
+        }
+        if (res.requireAccount) {
+          setTimeout(() => {
+            if (typeof switchTab === "function") switchTab("profile");
+            const regKeyInput = document.getElementById("reg-key");
+            if (regKeyInput) regKeyInput.value = rawKey;
+            const regTabBtn = document.querySelector('.auth-tab-btn[data-auth="register"]');
+            if (regTabBtn) regTabBtn.click();
+          }, 2000);
         }
         if (typeof showToast === "function") showToast(res.error, true);
       }

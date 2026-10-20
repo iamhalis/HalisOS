@@ -1845,3 +1845,44 @@ body.has-custom-bg .focus-container.is-running {
   max-width: 520px !important;
 }
 .mb-20 { margin-bottom: 20px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-12 { margin-bottom: 12px; }
+.mt-4 { margin-top: 4px; }
+
+/* Banner thông tin chế độ Khách */
+.guest-info-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  background: var(--bg-surface);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  color: var(--text-main);
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+.guest-info-banner .banner-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+.guest-info-banner .banner-text {
+  flex: 1;
+}
+.guest-info-banner .banner-link-wrap {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.guest-info-banner a {
+  color: #818cf8;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.guest-info-banner a:hover {
+  color: #a5b4fc;
+}
+

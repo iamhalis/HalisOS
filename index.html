@@ -612,6 +612,15 @@
       <!-- TAB 8: HỒ SƠ CÁ NHÂN -->
       <section class="tab-pane" id="tab-profile">
         <div id="auth-guest-view" class="auth-wrapper">
+          <div class="guest-info-banner mb-16">
+            <span class="banner-icon">👤</span>
+            <div class="banner-text">
+              <strong>Chế độ Khách (Free Trial):</strong> Dữ liệu chỉ lưu tạm thời trên trình duyệt này và không đồng bộ lên Cloud để tránh quá tải máy chủ. Đăng ký tài khoản và nhập Key kích hoạt để mở khóa lưu trữ Đám mây.
+              <div class="banner-link-wrap mt-4">
+                Cần key kích hoạt liên hệ: <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer">https://halis-bio.vercel.app/iamhalis</a>
+              </div>
+            </div>
+          </div>
           <div class="card auth-card">
             <div class="auth-tabs">
               <button class="auth-tab-btn active" data-auth="login">Đăng nhập</button>
@@ -644,6 +653,13 @@
               <div class="form-group">
                 <label for="reg-password">Mật khẩu (dùng để đăng nhập) <span class="req">*</span></label>
                 <input type="password" id="reg-password" placeholder="Tối thiểu 4 ký tự..." required autocomplete="new-password" />
+              </div>
+              <div class="form-group">
+                <label for="reg-key">Mã Key kích hoạt (Dành cho tài khoản PRO & Cloud Sync)</label>
+                <input type="text" id="reg-key" class="license-code-input" placeholder="VD: HASHX-A1B2-C3D4 (Không bắt buộc)" maxlength="17" autocomplete="off" spellcheck="false" />
+                <span class="text-muted" style="font-size: 0.8rem; display: block; margin-top: 4px;">
+                  Cần key kích hoạt liên hệ: <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" style="color: #818cf8;">https://halis-bio.vercel.app/iamhalis</a>
+                </span>
               </div>
               <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
             </form>
@@ -704,6 +720,34 @@
               <div class="form-actions">
                 <button type="submit" class="btn btn-primary">Xác nhận đổi mật khẩu</button>
               </div>
+            </form>
+          </div>
+
+          <!-- THẺ KÍCH HOẠT TÀI KHOẢN (Chỉ hiển thị khi tài khoản chưa kích hoạt Key) -->
+          <div class="card hidden" id="profile-activation-card" style="grid-column: 1 / -1;">
+            <div class="card-header">
+              <h3>⭐ Kích hoạt tài khoản PRO & Bật Cloud Sync</h3>
+            </div>
+            <p class="text-muted mb-12">
+              Tài khoản của bạn hiện đang ở chế độ <strong>Dùng thử (Free Trial — Lưu nội bộ)</strong>.
+              Để tránh quá tải máy chủ Cloud, dữ liệu chỉ đồng bộ lên đám mây khi tài khoản đã được kích hoạt Key.
+            </p>
+            <div class="license-note-box mb-16">
+              <div class="license-note-icon">🔑</div>
+              <div class="license-note-content">
+                <div class="license-note-title">Cần key kích hoạt liên hệ:</div>
+                <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" class="license-contact-link">
+                  https://halis-bio.vercel.app/iamhalis
+                </a>
+              </div>
+            </div>
+            <form id="profile-activate-form" class="form-stack">
+              <div class="form-group">
+                <label for="profile-act-key-input">Nhập mã Key kích hoạt (Key Code) <span class="req">*</span></label>
+                <input type="text" id="profile-act-key-input" class="license-code-input" placeholder="VD: HASHX-A1B2-C3D4" maxlength="17" required autocomplete="off" spellcheck="false" />
+              </div>
+              <div id="profile-act-alert" class="license-alert hidden"></div>
+              <button type="submit" class="btn btn-primary" id="profile-act-submit-btn">Kích hoạt tài khoản ngay</button>
             </form>
           </div>
         </div>

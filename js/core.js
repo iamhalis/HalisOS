@@ -141,9 +141,18 @@ function getSortedTasks() {
 }
 
 // ---------- Đồng bộ Firebase Cloud & LocalStorage ----------
+function isAccountActivated(username = currentUser) {
+  if (!username) return false;
+  const u = users[username];
+  if (!u) return false;
+  return Boolean(u.is_activated);
+}
+
 function isCloudEnabled() {
+  if (!currentUser || !users[currentUser]) return false;
+  if (!isAccountActivated(currentUser)) return false;
   return (
-    CLOUD_DB_URL &&
+    Boolean(CLOUD_DB_URL) &&
     (CLOUD_DB_URL.startsWith("https://") || CLOUD_DB_URL.startsWith("http://localhost")) &&
     !CLOUD_DB_URL.includes("DAN-LINK-FIREBASE")
   );
@@ -166,7 +175,7 @@ function getCloudSharedLettersEndpoint() {
 }
 
 async function fetchAccountFromCloud(username) {
-  if (!isCloudEnabled()) return null;
+  if (!CLOUD_DB_URL || !username) return null;
   try {
     const res = await fetch(getCloudEndpoint(username));
     if (!res.ok) return null;
@@ -250,9 +259,9 @@ async function syncToCloud() {
 }
 
 async function pullCurrentUserFromCloud() {
+  if (!currentUser || !isCloudEnabled()) return;
   await syncAllDirectoryUsersFromCloud();
   await pullSharedLettersFromCloud();
-  if (!currentUser || !isCloudEnabled()) return;
   const remoteData = await fetchAccountFromCloud(currentUser);
   if (remoteData && remoteData.profile) {
     users[currentUser] = remoteData.profile;

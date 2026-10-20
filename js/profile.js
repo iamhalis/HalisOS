@@ -56,11 +56,15 @@ function renderProfileUI() {
   const userView = document.getElementById("auth-user-view");
   const activeAccountLabel = document.getElementById("settings-active-account");
   const profileBigAvatar = document.getElementById("profile-big-avatar");
+  const profileLicenseTag = document.getElementById("profile-license-tag");
+  const profileActCard = document.getElementById("profile-activation-card");
+  const profileActUsername = document.getElementById("profile-act-username");
 
   if (currentUser && users[currentUser]) {
     const u = users[currentUser];
+    const isAct = isAccountActivated(currentUser);
     const initial = u.username.charAt(0).toUpperCase();
-    const syncTag = isCloudEnabled() ? "☁️️ Đã đồng bộ" : "Lưu nội bộ";
+    const syncTag = isAct ? "☁️ Đã đồng bộ Cloud" : "⚠️ Free Trial (Lưu nội bộ)";
 
     renderAvatarElement(sidebarAvatar, u.avatar, initial);
     renderAvatarElement(profileBigAvatar, u.avatar, initial);
@@ -78,13 +82,33 @@ function renderProfileUI() {
       ? `Email: ${u.email} (${syncTag})`
       : `Chưa có email (${syncTag})`;
     document.getElementById("profile-edit-email").value = u.email || "";
+
+    if (profileLicenseTag) {
+      if (isAct) {
+        profileLicenseTag.className = "profile-license-badge pro";
+        profileLicenseTag.textContent = "⭐ PRO Member (Đã bật Cloud Sync ☁️)";
+      } else {
+        profileLicenseTag.className = "profile-license-badge free";
+        profileLicenseTag.textContent = "⚠️ Free Trial (Chưa kích hoạt Cloud)";
+      }
+    }
+
+    if (profileActCard) {
+      profileActCard.classList.toggle("hidden", isAct);
+      if (profileActUsername) profileActUsername.textContent = u.username;
+    }
   } else {
     renderAvatarElement(sidebarAvatar, null, "G");
     renderAvatarElement(profileBigAvatar, null, "G");
     sidebarUsername.textContent = "Khách (Guest)";
-    sidebarEmail.textContent = "Nhấn để đăng nhập";
+    sidebarEmail.textContent = "Free Trial • Nhấn để đăng nhập";
     topProfileBtn.textContent = "Đăng nhập";
-    activeAccountLabel.textContent = "Khách (Guest)";
+    activeAccountLabel.textContent = "Khách (Guest) — Free Trial";
+
+    if (profileLicenseTag) {
+      profileLicenseTag.className = "profile-license-badge free";
+      profileLicenseTag.textContent = "Bản dùng thử (Free Trial)";
+    }
 
     guestView.classList.remove("hidden");
     userView.classList.add("hidden");
@@ -102,12 +126,29 @@ function initProfileFeature() {
     });
   });
 
+  // Tự động định dạng mã Key khi gõ trong form đăng ký
+  const regKeyInput = document.getElementById("reg-key");
+  if (regKeyInput && typeof formatKeyInput === "function") {
+    regKeyInput.addEventListener("input", (e) => {
+      if (e.target.value) e.target.value = formatKeyInput(e.target.value);
+    });
+  }
+
+  // Tự động định dạng mã Key khi gõ trong form kích hoạt của tab Profile
+  const profileActInput = document.getElementById("profile-act-key-input");
+  if (profileActInput && typeof formatKeyInput === "function") {
+    profileActInput.addEventListener("input", (e) => {
+      if (e.target.value) e.target.value = formatKeyInput(e.target.value);
+    });
+  }
+
   // ĐĂNG KÝ
   document.getElementById("register-form").addEventListener("submit", async e => {
     e.preventDefault();
     const username = document.getElementById("reg-username").value.trim().toLowerCase();
     const email = document.getElementById("reg-email").value.trim();
     const password = document.getElementById("reg-password").value;
+    const rawKey = (document.getElementById("reg-key") ? document.getElementById("reg-key").value : "").trim().toUpperCase();
 
     if (!/^[a-zA-Z0-9_.-]{3,24}$/.test(username)) {
       showToast("Username từ 3-24 ký tự, viết liền không dấu!", true);
@@ -118,15 +159,39 @@ function initProfileFeature() {
       return;
     }
 
-    if (isCloudEnabled()) {
-      const existingCloud = await fetchAccountFromCloud(username);
-      if (existingCloud && existingCloud.profile) {
-        showToast("Username này đã tồn tại trên hệ thống Cloud!", true);
+    if (users[username]) {
+      showToast("Username này đã tồn tại trên thiết bị!", true);
+      return;
+    }
+
+    let isActivated = false;
+    let activatedKey = null;
+
+    // Nếu người dùng nhập Key lúc đăng ký ➔ Xác thực với server để kích hoạt ngay
+    if (rawKey) {
+      showToast("Đang kiểm tra và kích hoạt mã Key...");
+      const keyPattern = /^HASHX-[A-F0-9]{4}-[A-F0-9]{4}$/i;
+      if (!keyPattern.test(rawKey)) {
+        showToast("Định dạng key không đúng (Chuẩn: HASHX-XXXX-XXXX)!", true);
         return;
       }
-    } else if (users[username]) {
-      showToast("Username này đã tồn tại!", true);
-      return;
+      try {
+        const res = await fetch("https://halis-bio.vercel.app/api/external/redeem-key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: rawKey, app_name: `Halios - @${username}` })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showToast(data.error || "Key không hợp lệ hoặc đã qua sử dụng!", true);
+          return;
+        }
+        isActivated = true;
+        activatedKey = rawKey;
+      } catch {
+        showToast("Không thể kết nối đến máy chủ xác thực key! Vui lòng kiểm tra mạng.", true);
+        return;
+      }
     }
 
     const isFirstAccountEver = Object.keys(users).length === 0;
@@ -136,7 +201,10 @@ function initProfileFeature() {
       email,
       password,
       avatar: null,
-      createdAt: getTodayStr()
+      createdAt: getTodayStr(),
+      is_activated: isActivated,
+      license_key: activatedKey,
+      activated_at: isActivated ? new Date().toISOString() : null
     };
     saveUsersDB();
 
@@ -148,10 +216,17 @@ function initProfileFeature() {
     currentUser = username;
     localStorage.setItem("studyos_current_user", currentUser);
     loadActiveUserData();
-    await syncToCloud();
+
+    // Chỉ tài khoản ĐÃ KÍCH HOẠT KEY mới đồng bộ Cloud để chống quá tải server!
+    if (isActivated) {
+      await syncToCloud();
+      showToast(`⭐ Đăng ký & kích hoạt thành công! Đã bật Cloud Sync cho @${username}`);
+    } else {
+      showToast(`Tạo tài khoản thành công! @${username} (Chế độ Dùng thử - Lưu nội bộ)`);
+    }
+
     renderAll();
     document.getElementById("register-form").reset();
-    showToast(`Đăng ký & đồng bộ thành công! Chào mừng @${username}`);
   });
 
   // ĐĂNG NHẬP
@@ -160,7 +235,10 @@ function initProfileFeature() {
     const username = document.getElementById("login-username").value.trim().toLowerCase();
     const password = document.getElementById("login-password").value;
 
-    if (isCloudEnabled()) {
+    let account = users[username];
+
+    // Nếu chưa có trên máy này, thử kiểm tra đơn lẻ trên Cloud
+    if (!account && CLOUD_DB_URL) {
       const cloudData = await fetchAccountFromCloud(username);
       if (cloudData && cloudData.profile) {
         if (cloudData.profile.password !== password) {
@@ -169,22 +247,14 @@ function initProfileFeature() {
         }
         users[username] = cloudData.profile;
         saveUsersDB();
-        currentUser = username;
-        localStorage.setItem("studyos_current_user", currentUser);
-
+        account = users[username];
         config = { ...DEFAULT_CONFIG, ...(cloudData.config || {}) };
         tasks = Array.isArray(cloudData.tasks) ? cloudData.tasks : [];
         futureMails = Array.isArray(cloudData.futureMails) ? cloudData.futureMails : [];
         saveLocalOnly();
-        await pullSharedLettersFromCloud();
-        renderAll();
-        document.getElementById("login-form").reset();
-        showToast(`Đã đồng bộ dữ liệu của @${username} từ Cloud!`);
-        return;
       }
     }
 
-    const account = users[username];
     if (!account || account.password !== password) {
       showToast("Sai Username hoặc Mật khẩu!", true);
       return;
@@ -193,11 +263,94 @@ function initProfileFeature() {
     currentUser = username;
     localStorage.setItem("studyos_current_user", currentUser);
     loadActiveUserData();
-    await syncToCloud();
-    renderAll();
+
+    // Chỉ kéo dữ liệu Cloud nếu tài khoản này ĐÃ KÍCH HOẠT KEY
+    if (isCloudEnabled()) {
+      await pullCurrentUserFromCloud();
+      showToast(`Chào mừng @${username}! Đã kết nối và đồng bộ Cloud.`);
+    } else {
+      renderAll();
+      showToast(`Chào mừng @${username}! (Chế độ Dùng thử - Lưu nội bộ)`);
+    }
+
     document.getElementById("login-form").reset();
-    showToast(`Chào mừng trở lại, @${username}!`);
   });
+
+  // KÍCH HOẠT TÀI KHOẢN TỪ THẺ TRONG TAB PROFILE
+  const profileActForm = document.getElementById("profile-activate-form");
+  if (profileActForm) {
+    profileActForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      if (!currentUser || !users[currentUser]) return;
+
+      const input = document.getElementById("profile-act-key-input");
+      const submitBtn = document.getElementById("profile-act-submit-btn");
+      const alertEl = document.getElementById("profile-act-alert");
+
+      const rawKey = (input ? input.value : "").trim().toUpperCase();
+      if (!rawKey) return;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Đang kiểm tra...";
+      if (alertEl) {
+        alertEl.className = "license-alert hidden";
+        alertEl.textContent = "";
+      }
+
+      const keyPattern = /^HASHX-[A-F0-9]{4}-[A-F0-9]{4}$/i;
+      if (!keyPattern.test(rawKey)) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Kích hoạt tài khoản ngay";
+        if (alertEl) {
+          alertEl.className = "license-alert error";
+          alertEl.textContent = "Định dạng key không đúng (Chuẩn: HASHX-XXXX-XXXX)!";
+        }
+        return;
+      }
+
+      try {
+        const res = await fetch("https://halis-bio.vercel.app/api/external/redeem-key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: rawKey, app_name: `Halios - @${currentUser}` })
+        });
+        const data = await res.json();
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Kích hoạt tài khoản ngay";
+
+        if (res.ok && data.success) {
+          users[currentUser].is_activated = true;
+          users[currentUser].license_key = rawKey;
+          users[currentUser].activated_at = new Date().toISOString();
+          saveUsersDB();
+
+          if (alertEl) {
+            alertEl.className = "license-alert success";
+            alertEl.textContent = "Kích hoạt thành công! Đang đồng bộ lên Cloud...";
+          }
+
+          // Bật Cloud Sync và sync ngay lên Cloud
+          await syncToCloud();
+          renderAll();
+          showToast(`⭐ Kích hoạt tài khoản @${currentUser} thành công! Đã bật Cloud Sync.`);
+        } else {
+          if (alertEl) {
+            alertEl.className = "license-alert error";
+            alertEl.textContent = data.error || "Key không hợp lệ hoặc đã qua sử dụng!";
+          }
+          showToast(data.error || "Key không hợp lệ hoặc đã qua sử dụng!", true);
+        }
+      } catch {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Kích hoạt tài khoản ngay";
+        if (alertEl) {
+          alertEl.className = "license-alert error";
+          alertEl.textContent = "Không thể kết nối đến máy chủ xác thực!";
+        }
+        showToast("Lỗi kết nối máy chủ xác thực!", true);
+      }
+    });
+  }
 
   // ĐỔI ẢNH ĐẠI DIỆN (AVATAR)
   document.getElementById("avatar-file-input").addEventListener("change", async e => {
