@@ -228,6 +228,27 @@ function renderLicenseUI() {
   const isAct = info.isActivated;
   const isGuest = info.isGuest;
 
+  // 0. Cập nhật class is-pro-mode và is-trial-mode lên thẻ body để thay đổi giao diện kính mờ & độ nét chữ
+  document.body.classList.toggle("is-pro-mode", isAct);
+  document.body.classList.toggle("is-trial-mode", !isAct);
+
+  // Điều khiển tính năng chỉnh kính Ultra-Glass trong Cài đặt
+  const glassLocked = document.getElementById("glass-tuner-locked");
+  const glassControls = document.getElementById("glass-tuner-controls");
+  const glassBadge = document.getElementById("glass-tuner-badge");
+
+  if (glassLocked) glassLocked.classList.toggle("hidden", isAct);
+  if (glassControls) glassControls.classList.toggle("disabled", !isAct);
+  if (glassBadge) {
+    if (isAct) {
+      glassBadge.className = "pro-tag-badge active";
+      glassBadge.textContent = "⭐ PRO Đã mở khóa";
+    } else {
+      glassBadge.className = "pro-tag-badge locked";
+      glassBadge.textContent = "🔒 Khóa (Cần PRO)";
+    }
+  }
+
   // 1. Cập nhật Badge trên Sidebar
   const sidebarBadge = document.getElementById("sidebar-license-badge");
   if (sidebarBadge) {

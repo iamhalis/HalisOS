@@ -185,10 +185,69 @@ if (removeBgBtn) {
   });
 }
 
-// 5. Tự động áp dụng ảnh nền khi vừa mở trang web
+// -------------------------------------------------------------
+// 5. TÙY CHỈNH ĐỘ TRONG SUỐT VÀ ĐỘ MỜ KÍNH (PRO EXCLUSIVE)
+// -------------------------------------------------------------
+function applyGlassSettings(opacityPct, blurPx) {
+  const opacityVal = Math.min(0.85, Math.max(0.25, opacityPct / 100));
+  const blurVal = Math.min(24, Math.max(4, parseInt(blurPx, 10) || 12));
+
+  document.documentElement.style.setProperty('--pro-glass-opacity', opacityVal);
+  document.documentElement.style.setProperty('--pro-glass-blur', `${blurVal}px`);
+
+  localStorage.setItem('studyos_glass_opacity', opacityPct);
+  localStorage.setItem('studyos_glass_blur', blurVal);
+
+  const opacityLabel = document.getElementById('opacity-val-label');
+  const blurLabel = document.getElementById('blur-val-label');
+  if (opacityLabel) opacityLabel.textContent = `${opacityPct}%`;
+  if (blurLabel) blurLabel.textContent = `${blurVal}px`;
+}
+
+function initGlassTunerFeature() {
+  const opacitySlider = document.getElementById('glass-opacity-slider');
+  const blurSlider = document.getElementById('glass-blur-slider');
+
+  const savedOpacity = parseInt(localStorage.getItem('studyos_glass_opacity'), 10) || 45;
+  const savedBlur = parseInt(localStorage.getItem('studyos_glass_blur'), 10) || 12;
+
+  if (opacitySlider) opacitySlider.value = savedOpacity;
+  if (blurSlider) blurSlider.value = savedBlur;
+  applyGlassSettings(savedOpacity, savedBlur);
+
+  if (opacitySlider) {
+    opacitySlider.addEventListener('input', (e) => {
+      const curBlur = blurSlider ? blurSlider.value : 12;
+      applyGlassSettings(parseInt(e.target.value, 10), curBlur);
+    });
+  }
+
+  if (blurSlider) {
+    blurSlider.addEventListener('input', (e) => {
+      const curOpacity = opacitySlider ? opacitySlider.value : 45;
+      applyGlassSettings(curOpacity, parseInt(e.target.value, 10));
+    });
+  }
+
+  // Nút preset cấu hình sẵn
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const op = parseInt(btn.dataset.opacity, 10);
+      const bl = parseInt(btn.dataset.blur, 10);
+      if (opacitySlider) opacitySlider.value = op;
+      if (blurSlider) blurSlider.value = bl;
+      applyGlassSettings(op, bl);
+    });
+  });
+}
+
+// 6. Tự động áp dụng ảnh nền & cài đặt kính khi vừa mở trang web
 document.addEventListener('DOMContentLoaded', function() {
   const savedBg = localStorage.getItem('studyos_custom_bg');
   if (savedBg) {
     applyWallpaper(savedBg);
   }
+  initGlassTunerFeature();
 });

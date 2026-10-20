@@ -1848,3 +1848,301 @@ body.has-custom-bg .focus-container.is-running {
   color: #a5b4fc;
 }
 
+/* ==========================================================================
+   16. PRO VÀ TRIAL MODE: GIAO DIỆN KÍNH MỜ & ĐỘ TRONG SUỐT BẢO VỆ CHỮ
+   ========================================================================== */
+:root {
+  --pro-glass-opacity: 0.44;
+  --pro-glass-blur: 12px;
+  --pro-glass-saturate: 185%;
+  --pro-glass-border: rgba(255, 255, 255, 0.18);
+}
+
+/* --- A. CHẾ ĐỘ DÙNG THỬ (TRIAL MODE) --- */
+body.is-trial-mode.has-custom-bg .card,
+body.is-trial-mode.has-custom-bg .stat-card,
+body.is-trial-mode.has-custom-bg .day-card,
+body.is-trial-mode.has-custom-bg .quote-banner,
+body.is-trial-mode.has-custom-bg .focus-container {
+  background: rgba(15, 20, 32, 0.88) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
+}
+
+:root[data-theme="light"] body.is-trial-mode.has-custom-bg .card,
+:root[data-theme="light"] body.is-trial-mode.has-custom-bg .stat-card,
+:root[data-theme="light"] body.is-trial-mode.has-custom-bg .day-card,
+:root[data-theme="light"] body.is-trial-mode.has-custom-bg .quote-banner,
+:root[data-theme="light"] body.is-trial-mode.has-custom-bg .focus-container {
+  background: rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+/* --- B. CHẾ ĐỘ PRO (ULTRA-GLASS GLASSMORPHISM) --- */
+/* Khi chưa có ảnh nền tải lên: Mesh Gradient Ambient siêu sang */
+body.is-pro-mode:not(.has-custom-bg) {
+  background: radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 40%),
+              radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 45%),
+              radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.06) 0%, transparent 55%),
+              #0b0f19 !important;
+}
+
+body.is-pro-mode:not(.has-custom-bg) .card,
+body.is-pro-mode:not(.has-custom-bg) .stat-card,
+body.is-pro-mode:not(.has-custom-bg) .day-card,
+body.is-pro-mode:not(.has-custom-bg) .quote-banner {
+  background: rgba(17, 24, 39, 0.72) !important;
+  backdrop-filter: blur(14px) !important;
+  -webkit-backdrop-filter: blur(14px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35),
+              inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Khi CÓ ảnh nền: Kính pha lê trong suốt nhìn xuyên hình nền */
+body.is-pro-mode.has-custom-bg .card,
+body.is-pro-mode.has-custom-bg .stat-card,
+body.is-pro-mode.has-custom-bg .day-card,
+body.is-pro-mode.has-custom-bg .quote-banner,
+body.is-pro-mode.has-custom-bg .focus-container {
+  background: rgba(10, 15, 26, var(--pro-glass-opacity, 0.44)) !important;
+  backdrop-filter: blur(var(--pro-glass-blur, 12px)) saturate(var(--pro-glass-saturate, 185%)) !important;
+  -webkit-backdrop-filter: blur(var(--pro-glass-blur, 12px)) saturate(var(--pro-glass-saturate, 185%)) !important;
+  border: 1px solid var(--pro-glass-border, rgba(255, 255, 255, 0.18)) !important;
+  box-shadow: 0 16px 40px -6px rgba(0, 0, 0, 0.45),
+              inset 0 1px 1px 0 rgba(255, 255, 255, 0.28) !important;
+  transition: background 0.2s ease, backdrop-filter 0.2s ease, border-color 0.2s ease !important;
+}
+
+/* Thanh bên Sidebar & Topbar trong chế độ PRO */
+body.is-pro-mode.has-custom-bg .sidebar {
+  background: rgba(10, 14, 23, 0.72) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+body.is-pro-mode.has-custom-bg .topbar {
+  background: rgba(10, 14, 23, 0.52) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Light mode cho PRO */
+:root[data-theme="light"] body.is-pro-mode.has-custom-bg .card,
+:root[data-theme="light"] body.is-pro-mode.has-custom-bg .stat-card,
+:root[data-theme="light"] body.is-pro-mode.has-custom-bg .day-card,
+:root[data-theme="light"] body.is-pro-mode.has-custom-bg .quote-banner,
+:root[data-theme="light"] body.is-pro-mode.has-custom-bg .focus-container {
+  background: rgba(255, 255, 255, calc(var(--pro-glass-opacity, 0.44) + 0.14)) !important;
+  backdrop-filter: blur(var(--pro-glass-blur, 12px)) saturate(175%) !important;
+  -webkit-backdrop-filter: blur(var(--pro-glass-blur, 12px)) saturate(175%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08),
+              inset 0 1px 2px rgba(255, 255, 255, 0.95) !important;
+}
+
+/* --- C. ĐIỀU CHỈNH ĐẶC BIỆT: BẢO VỆ CHỮ KHÔNG BỊ MỜ TRÊN KÍNH (CRYSTAL CLEAR TEXT) --- */
+body.is-pro-mode.has-custom-bg {
+  color: #ffffff !important;
+}
+
+body.is-pro-mode.has-custom-bg h1,
+body.is-pro-mode.has-custom-bg h2,
+body.is-pro-mode.has-custom-bg h3,
+body.is-pro-mode.has-custom-bg .stat-value,
+body.is-pro-mode.has-custom-bg .countdown-number,
+body.is-pro-mode.has-custom-bg #live-clock,
+body.is-pro-mode.has-custom-bg .task-title,
+body.is-pro-mode.has-custom-bg .day-name,
+body.is-pro-mode.has-custom-bg .timer-digits,
+body.is-pro-mode.has-custom-bg .brand-info h1 {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8), 0 0 1px rgba(0, 0, 0, 0.9) !important;
+  font-weight: 700 !important;
+}
+
+/* Đoạn text phụ (muted) trong PRO: màu sáng rõ nét, tương phản cao */
+body.is-pro-mode.has-custom-bg .text-muted,
+body.is-pro-mode.has-custom-bg .stat-sub,
+body.is-pro-mode.has-custom-bg .stat-header span:first-child,
+body.is-pro-mode.has-custom-bg .countdown-label,
+body.is-pro-mode.has-custom-bg .countdown-target,
+body.is-pro-mode.has-custom-bg .meta-label,
+body.is-pro-mode.has-custom-bg .slider-hints span {
+  color: #cbd5e1 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65) !important;
+}
+
+/* Task item, cal task và input: lớp kính bảo vệ tương phản nội bộ */
+body.is-pro-mode.has-custom-bg .task-item,
+body.is-pro-mode.has-custom-bg .cal-task,
+body.is-pro-mode.has-custom-bg .capsule-card,
+body.is-pro-mode.has-custom-bg .share-day-group,
+body.is-pro-mode.has-custom-bg .share-task-row {
+  background: rgba(15, 23, 42, 0.48) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #f8fafc !important;
+}
+
+body.is-pro-mode.has-custom-bg input,
+body.is-pro-mode.has-custom-bg select,
+body.is-pro-mode.has-custom-bg textarea {
+  background: rgba(10, 14, 23, 0.62) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+}
+
+/* Logo thương hiệu phát sáng ở bản PRO */
+body.is-pro-mode .brand-logo {
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.55), 0 0 4px rgba(236, 72, 153, 0.4) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+}
+
+/* --- D. BỘ ĐIỀU CHỈNH ĐỘ TRONG SUỐT & ĐỘ MỜ KÍNH (GLASS TUNER) --- */
+.glass-tuner-container {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+.glass-tuner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+.tuner-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.tuner-icon {
+  font-size: 1.5rem;
+}
+.tuner-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-bottom: 2px;
+}
+.tuner-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+.pro-tag-badge {
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 99px;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+.pro-tag-badge.active {
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.pro-tag-badge.locked {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.glass-tuner-controls.disabled {
+  filter: blur(2px) grayscale(0.6);
+  pointer-events: none;
+  opacity: 0.45;
+  user-select: none;
+}
+.glass-tuner-locked-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(11, 15, 25, 0.84);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 10;
+}
+.locked-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  font-size: 0.88rem;
+}
+.lock-icon {
+  font-size: 1.8rem;
+}
+
+.tuner-slider-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+.slider-label-row strong {
+  color: var(--accent);
+  font-family: monospace;
+  font-size: 0.95rem;
+}
+.glass-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  cursor: pointer;
+  height: 6px;
+}
+.slider-hints {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+
+.preset-buttons-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.preset-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.preset-btn:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.preset-btn.active {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+.mt-14 { margin-top: 14px; }
+.mt-20 { margin-top: 20px; }
+
+

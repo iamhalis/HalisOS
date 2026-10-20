@@ -833,6 +833,66 @@
               <button type="button" class="btn btn-ghost" id="remove-bg-btn">Xóa ảnh nền</button>
             </div>
             <span class="text-muted" id="bg-status-text" style="font-size: 0.85rem; display: block; margin-top: 10px;"></span>
+
+            <!-- BỘ ĐIỀU CHỈNH ĐỘ TRONG SUỐT & ĐỘ MỜ KÍNH (PRO EXCLUSIVE) -->
+            <div class="glass-tuner-container mt-20" id="glass-tuner-box">
+              <div class="glass-tuner-header">
+                <div class="tuner-title-wrap">
+                  <span class="tuner-icon">🔮</span>
+                  <div>
+                    <h4 class="tuner-title">Hiệu ứng Kính Mờ Pha Lê (Ultra-Glass)</h4>
+                    <span class="tuner-subtitle">Dễ dàng nhìn xuyên hình nền với độ sắc nét chữ cao nhất</span>
+                  </div>
+                </div>
+                <span class="pro-tag-badge locked" id="glass-tuner-badge">⭐ PRO Feature</span>
+              </div>
+
+              <div class="glass-tuner-controls" id="glass-tuner-controls">
+                <!-- Thanh trượt độ trong suốt -->
+                <div class="tuner-slider-group">
+                  <div class="slider-label-row">
+                    <span>Độ trong suốt thẻ (Nhìn xuyên background)</span>
+                    <strong id="opacity-val-label">45%</strong>
+                  </div>
+                  <input type="range" id="glass-opacity-slider" min="25" max="85" value="45" class="glass-slider" />
+                  <div class="slider-hints">
+                    <span>Nhìn rõ nền (25%)</span>
+                    <span>Cân bằng (45%)</span>
+                    <span>Đục hơn (85%)</span>
+                  </div>
+                </div>
+
+                <!-- Thanh trượt độ mờ hậu cảnh -->
+                <div class="tuner-slider-group mt-14">
+                  <div class="slider-label-row">
+                    <span>Độ mờ chi tiết nền (Backdrop Blur)</span>
+                    <strong id="blur-val-label">12px</strong>
+                  </div>
+                  <input type="range" id="glass-blur-slider" min="4" max="24" value="12" class="glass-slider" />
+                  <div class="slider-hints">
+                    <span>Nét rõ nền (4px)</span>
+                    <span>Mịn mắt (12px)</span>
+                    <span>Mờ sâu (24px)</span>
+                  </div>
+                </div>
+
+                <!-- Các preset nhanh -->
+                <div class="preset-buttons-row mt-14">
+                  <button type="button" class="preset-btn" data-opacity="32" data-blur="8">💎 Kính Siêu Trong</button>
+                  <button type="button" class="preset-btn active" data-opacity="45" data-blur="12">🔮 Cân Bằng (Khuyên dùng)</button>
+                  <button type="button" class="preset-btn" data-opacity="68" data-blur="18">🌫️ Mờ Dày</button>
+                </div>
+              </div>
+
+              <!-- Thông báo khóa khi ở bản Trial -->
+              <div class="glass-tuner-locked-overlay hidden" id="glass-tuner-locked">
+                <div class="locked-content">
+                  <span class="lock-icon">🔒</span>
+                  <span>Chế độ Kính Pha Lê Siêu Trong & Chỉnh độ mờ độc quyền cho <strong>Tài khoản PRO</strong>.</span>
+                  <button type="button" class="btn btn-sm btn-primary" onclick="openLicenseModal()">Kích hoạt PRO ngay</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
