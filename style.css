@@ -1639,7 +1639,8 @@ body.has-custom-bg .focus-container.is-running {
   background: rgba(245, 158, 11, 0.25);
   transform: translateY(-1px);
 }
-.btn-license-pro {
+.btn-license-pro,
+.btn-license-member {
   background: var(--success-soft);
   color: var(--success);
   border-color: rgba(16, 185, 129, 0.35);
@@ -1660,7 +1661,8 @@ body.has-custom-bg .focus-container.is-running {
   color: var(--warning);
   border: 1px solid rgba(245, 158, 11, 0.25);
 }
-.profile-license-badge.pro {
+.profile-license-badge.pro,
+.profile-license-badge.member {
   background: var(--success-soft);
   color: var(--success);
   border: 1px solid rgba(16, 185, 129, 0.25);

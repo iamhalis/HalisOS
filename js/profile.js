@@ -87,7 +87,7 @@ function renderProfileUI() {
     if (profileLicenseTag) {
       if (isAct) {
         profileLicenseTag.className = "profile-license-badge pro";
-        profileLicenseTag.textContent = "⭐ PRO Member";
+        profileLicenseTag.textContent = "⭐ Member";
       } else {
         profileLicenseTag.className = "profile-license-badge free";
         profileLicenseTag.textContent = "⚠️ Free Trial";
@@ -173,6 +173,12 @@ function initProfileFeature() {
     }
 
     try {
+      // BẮT BUỘC PHẢI CÓ KEY ĐỂ TẠO TÀI KHOẢN (Nếu không có key thì dùng Chế độ Khách, không lưu tk trial lên Firebase)
+      if (!rawKey) {
+        showToast("Bắt buộc phải có mã Key kích hoạt để tạo tài khoản! Nếu chưa có Key, vui lòng sử dụng Chế độ Khách.", true);
+        return;
+      }
+
       // Kiểm tra username trên Cloud xem đã có ai đăng ký chưa
       if (CLOUD_DB_URL) {
         const cloudAcc = await fetchAccountFromCloud(username);
@@ -182,35 +188,31 @@ function initProfileFeature() {
         }
       }
 
-      let isActivated = false;
-      let activatedKey = null;
-
-      // Nếu người dùng nhập Key lúc đăng ký ➔ Xác thực với server để kích hoạt ngay
-      if (rawKey) {
-        showToast("Đang kiểm tra và kích hoạt mã Key...");
-        const keyPattern = /^HASHX-[A-F0-9]{4}-[A-F0-9]{4}$/i;
-        if (!keyPattern.test(rawKey)) {
-          showToast("Định dạng key không đúng (Chuẩn: HASHX-XXXX-XXXX)!", true);
-          return;
-        }
-        try {
-          const res = await fetch("https://halis-bio.vercel.app/api/external/redeem-key", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ key: rawKey, app_name: `Halios - @${username}` })
-          });
-          const data = await res.json();
-          if (!res.ok || !data.success) {
-            showToast(data.error || "Key không hợp lệ hoặc đã qua sử dụng!", true);
-            return;
-          }
-          isActivated = true;
-          activatedKey = rawKey;
-        } catch {
-          showToast("Không thể kết nối đến máy chủ xác thực key! Vui lòng kiểm tra mạng.", true);
-          return;
-        }
+      // Xác thực và kích hoạt mã Key với API máy chủ bản quyền
+      showToast("Đang kiểm tra và kích hoạt mã Key...");
+      const keyPattern = /^HASHX-[A-F0-9]{4}-[A-F0-9]{4}$/i;
+      if (!keyPattern.test(rawKey)) {
+        showToast("Định dạng key không đúng (Chuẩn: HASHX-XXXX-XXXX, VD: HASHX-A1B2-C3D4)!", true);
+        return;
       }
+      try {
+        const res = await fetch("https://halis-bio.vercel.app/api/external/redeem-key", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ key: rawKey, app_name: `Halios - @${username}` })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          showToast(data.error || "Mã Key không hợp lệ hoặc đã qua sử dụng!", true);
+          return;
+        }
+      } catch {
+        showToast("Không thể kết nối đến máy chủ xác thực key! Vui lòng kiểm tra mạng.", true);
+        return;
+      }
+
+      const isActivated = true;
+      const activatedKey = rawKey;
 
       const isFirstAccountEver = Object.keys(users).length === 0;
 
@@ -226,9 +228,9 @@ function initProfileFeature() {
         password: securePasswordHash,
         avatar: null,
         createdAt: getTodayStr(),
-        is_activated: isActivated,
+        is_activated: true,
         license_key: activatedKey,
-        activated_at: isActivated ? new Date().toISOString() : null
+        activated_at: new Date().toISOString()
       };
       saveUsersDB();
 
@@ -246,14 +248,14 @@ function initProfileFeature() {
 
       loadActiveUserData();
 
-      // Lưu tài khoản lên Cloud (kể cả Free Trial) để bảo toàn tài khoản khi xoá cookie trình duyệt
+      // Lưu tài khoản Member chính thức lên Cloud (Firebase)
       if (CLOUD_DB_URL) {
         try {
           const initialPayload = {
             profile: users[username],
             config,
-            tasks: isActivated ? tasks : [],
-            futureMails: isActivated ? futureMails : [],
+            tasks,
+            futureMails,
             updatedAt: Date.now()
           };
           await fetch(getCloudEndpoint(username), {
@@ -268,12 +270,7 @@ function initProfileFeature() {
         }
       }
 
-      if (isActivated) {
-        showToast(`⭐ Đăng ký & kích hoạt thành công! Đã bật Cloud Sync cho @${username}`);
-      } else {
-        showToast(`Tạo tài khoản thành công! @${username} (Chế độ Dùng thử - Lưu nội bộ)`);
-      }
-
+      showToast(`⭐ Đăng ký & kích hoạt thành công tài khoản Member @${username}! Đã bật Cloud Sync.`);
       renderAll();
       document.getElementById("register-form").reset();
     } finally {
@@ -619,4 +616,155 @@ function initProfileFeature() {
     renderAll();
     showToast("Đã đăng xuất về chế độ Khách.");
   });
+
+  // Chuyển nhanh sang Chế độ Khách từ form Đăng ký / Đăng nhập
+  const handleGuestMode = () => {
+    if (typeof switchTab === "function") switchTab("dashboard");
+    showToast("Bạn đang sử dụng Chế độ Khách (Dữ liệu lưu nội bộ trên máy này).");
+  };
+  const guestBtn = document.getElementById("guest-mode-btn");
+  if (guestBtn) guestBtn.addEventListener("click", handleGuestMode);
+  const loginGuestBtn = document.getElementById("login-guest-btn");
+  if (loginGuestBtn) loginGuestBtn.addEventListener("click", handleGuestMode);
+
+  // ========================================================
+  // TÍNH NĂNG XÓA TÀI KHOẢN VĨNH VIỄN (DELETE ACCOUNT)
+  // ========================================================
+  const openDeleteModalBtn = document.getElementById("open-delete-account-modal-btn");
+  const deleteModal = document.getElementById("delete-account-modal-overlay");
+  const deleteUsernameLabel = document.getElementById("delete-modal-username");
+  const deletePasswordInput = document.getElementById("delete-account-password");
+  const deleteAlert = document.getElementById("delete-account-alert");
+
+  const closeDeleteModal = () => {
+    if (deleteModal) deleteModal.classList.add("hidden");
+    if (deletePasswordInput) deletePasswordInput.value = "";
+    if (deleteAlert) {
+      deleteAlert.className = "license-alert hidden";
+      deleteAlert.textContent = "";
+    }
+  };
+
+  if (openDeleteModalBtn && deleteModal) {
+    openDeleteModalBtn.addEventListener("click", () => {
+      if (!currentUser || !users[currentUser]) return;
+      if (deleteUsernameLabel) deleteUsernameLabel.textContent = `@${currentUser}`;
+      if (deletePasswordInput) deletePasswordInput.value = "";
+      if (deleteAlert) {
+        deleteAlert.className = "license-alert hidden";
+        deleteAlert.textContent = "";
+      }
+      deleteModal.classList.remove("hidden");
+      setTimeout(() => {
+        if (deletePasswordInput) deletePasswordInput.focus();
+      }, 100);
+    });
+  }
+
+  const closeDeleteModalBtn = document.getElementById("close-delete-modal-btn");
+  if (closeDeleteModalBtn) closeDeleteModalBtn.addEventListener("click", closeDeleteModal);
+  const cancelDeleteModalBtn = document.getElementById("cancel-delete-modal-btn");
+  if (cancelDeleteModalBtn) cancelDeleteModalBtn.addEventListener("click", closeDeleteModal);
+
+  if (deleteModal) {
+    deleteModal.addEventListener("click", e => {
+      if (e.target === deleteModal) closeDeleteModal();
+    });
+  }
+
+  const deleteForm = document.getElementById("delete-account-form");
+  if (deleteForm) {
+    deleteForm.addEventListener("submit", async e => {
+      e.preventDefault();
+      if (!currentUser || !users[currentUser]) return;
+
+      const confirmBtn = document.getElementById("confirm-delete-account-btn");
+      const passInput = document.getElementById("delete-account-password");
+      const passVal = passInput ? passInput.value : "";
+
+      if (!passVal) {
+        if (deleteAlert) {
+          deleteAlert.className = "license-alert error";
+          deleteAlert.textContent = "Vui lòng nhập mật khẩu tài khoản để xác nhận!";
+        }
+        return;
+      }
+
+      // Xác thực mật khẩu
+      let isPasswordCorrect = false;
+      if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.verifyPassword) {
+        isPasswordCorrect = await HaliosSecurity.verifyPassword(passVal, users[currentUser].password);
+      } else {
+        isPasswordCorrect = (users[currentUser].password === passVal);
+      }
+
+      if (!isPasswordCorrect) {
+        if (deleteAlert) {
+          deleteAlert.className = "license-alert error";
+          deleteAlert.textContent = "Mật khẩu xác nhận không chính xác! Không thể xóa tài khoản.";
+        }
+        return;
+      }
+
+      const userToDelete = currentUser;
+      const originalConfirmText = confirmBtn ? confirmBtn.textContent : "Xác nhận xóa vĩnh viễn";
+      if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = "Đang xóa tài khoản trên Cloud...";
+      }
+
+      try {
+        // 1. Gửi request DELETE lên Cloud (Firebase RTDB)
+        if (CLOUD_DB_URL) {
+          try {
+            await fetch(getCloudEndpoint(userToDelete), {
+              method: "DELETE"
+            });
+          } catch (cloudErr) {
+            if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+              HaliosSecurity.Logger.warn("Lỗi khi xóa trên Firebase Cloud:", cloudErr);
+            }
+          }
+        }
+
+        // 2. Dọn dẹp dữ liệu cục bộ của tài khoản
+        localStorage.removeItem(`studyos_tasks_${userToDelete}`);
+        localStorage.removeItem(`studyos_config_${userToDelete}`);
+        localStorage.removeItem(`studyos_mails_${userToDelete}`);
+
+        // 3. Xóa khỏi danh sách users
+        delete users[userToDelete];
+        saveUsersDB();
+
+        // 4. Hủy session phiên làm việc
+        if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.SessionManager) {
+          HaliosSecurity.SessionManager.destroySession();
+        } else {
+          localStorage.removeItem("studyos_current_user");
+        }
+        currentUser = null;
+
+        // 5. Thu hồi cookie server nếu có
+        try {
+          await fetch("/api/auth/logout", { method: "POST" });
+        } catch (_) {}
+
+        closeDeleteModal();
+
+        // 6. Nạp lại dữ liệu về Chế độ Khách và cập nhật toàn bộ giao diện
+        loadActiveUserData();
+        renderAll();
+        showToast(`Đã xóa vĩnh viễn tài khoản @${userToDelete} và toàn bộ dữ liệu trên Cloud!`);
+      } catch (err) {
+        if (deleteAlert) {
+          deleteAlert.className = "license-alert error";
+          deleteAlert.textContent = "Có lỗi xảy ra khi xóa tài khoản. Vui lòng thử lại!";
+        }
+        if (confirmBtn) {
+          confirmBtn.disabled = false;
+          confirmBtn.textContent = originalConfirmText;
+        }
+      }
+    });
+  }
 }

@@ -202,6 +202,16 @@ app.post("/api/auth/logout", (req, res) => {
   return res.json({ success: true, message: "Đã đăng xuất an toàn." });
 });
 
+// Xóa tài khoản (Yêu cầu phiên hợp lệ & xóa session)
+app.delete("/api/auth/account", requireAuth, (req, res) => {
+  const token = req.cookies.halios_session;
+  if (token) {
+    activeSessions.delete(token);
+  }
+  res.clearCookie("halios_session", { path: "/" });
+  return res.json({ success: true, message: "Tài khoản và phiên đăng nhập đã được xóa thành công." });
+});
+
 // Kiểm tra thông tin phiên hiện tại
 app.get("/api/auth/me", (req, res) => {
   const token = req.cookies.halios_session;

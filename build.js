@@ -117,7 +117,7 @@ console.log(`✅ Đã tạo file bảo vệ: js/bundle.min.js (${(Buffer.byteLen
 let html = fs.readFileSync(INDEX_HTML_PATH, "utf-8");
 
 // Tìm khối script cũ và thay thế bằng script duy nhất bundle.min.js
-const scriptPattern = /<!-- Scripts -->[\s\S]*?<\/body>/i;
+const scriptPattern = /<!-- Scripts[\s\S]*?<\/body>/i;
 const newScriptBlock = `<!-- Scripts (Protected Production Bundle) -->
   <script src="js/bundle.min.js"></script>
 </body>`;
