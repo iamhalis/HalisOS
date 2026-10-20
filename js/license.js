@@ -17,7 +17,7 @@ function getLicenseInfo() {
     const isAct = typeof isAccountActivated === "function" ? isAccountActivated(currentUser) : Boolean(u.is_activated);
     return {
       isActivated: isAct,
-      key: u.license_key || (isAct ? "PRO-ACTIVE" : null),
+      key: u.license_key || (isAct ? "MEMBER-ACTIVE" : null),
       activatedAt: u.activated_at || null,
       source: "account",
       isGuest: false,
@@ -246,10 +246,10 @@ function renderLicenseUI() {
   if (glassBadge) {
     if (isAct) {
       glassBadge.className = "pro-tag-badge active";
-      glassBadge.textContent = "⭐ PRO Đã mở khóa";
+      glassBadge.textContent = "⭐ Member Đã mở khóa";
     } else {
       glassBadge.className = "pro-tag-badge locked";
-      glassBadge.textContent = "🔒 Khóa (Cần PRO)";
+      glassBadge.textContent = "🔒 Khóa (Cần Member)";
     }
   }
 
@@ -258,8 +258,8 @@ function renderLicenseUI() {
   if (sidebarBadge) {
     if (isAct) {
       sidebarBadge.className = "license-status-pill activated";
-      sidebarBadge.innerHTML = `<span class="pill-dot"></span> PRO Active`;
-      sidebarBadge.setAttribute("title", `Đã kích hoạt PRO (@${info.username} • ${maskLicenseKey(info.key)})`);
+      sidebarBadge.innerHTML = `<span class="pill-dot"></span> Member`;
+      sidebarBadge.setAttribute("title", `Tài khoản Member (@${info.username} • ${maskLicenseKey(info.key)})`);
     } else {
       sidebarBadge.className = "license-status-pill unactivated";
       sidebarBadge.innerHTML = `<span class="pill-dot"></span> Free Trial`;
@@ -272,8 +272,8 @@ function renderLicenseUI() {
   if (topbarBtn) {
     if (isAct) {
       topbarBtn.className = "btn btn-license-pro";
-      topbarBtn.innerHTML = `⭐ PRO Active`;
-      topbarBtn.setAttribute("title", `Tài khoản @${info.username} đã kích hoạt Cloud`);
+      topbarBtn.innerHTML = `⭐ Member`;
+      topbarBtn.setAttribute("title", `Tài khoản @${info.username} (Member Cloud)`);
     } else {
       topbarBtn.className = "btn btn-license-activate";
       topbarBtn.innerHTML = `🔑 Kích hoạt`;
@@ -286,7 +286,7 @@ function renderLicenseUI() {
   if (profileBadge) {
     if (isAct) {
       profileBadge.className = "profile-license-badge pro";
-      profileBadge.textContent = "⭐ PRO Member (Đã bật Cloud Sync ☁️)";
+      profileBadge.textContent = "⭐ Member (Đã bật Cloud Sync ☁️)";
     } else {
       profileBadge.className = "profile-license-badge free";
       profileBadge.textContent = isGuest ? "Bản dùng thử (Free Trial)" : "⚠️ Free Trial (Chưa kích hoạt Cloud)";
@@ -302,7 +302,7 @@ function renderLicenseUI() {
 
   if (statusText && activateFormWrapper && activeDetailsWrapper) {
     if (isAct) {
-      statusText.innerHTML = `<span class="badge-text pro">⭐ TÀI KHOẢN PRO (@${info.username}) — ĐÃ BẬT CLOUD SYNC</span>`;
+      statusText.innerHTML = `<span class="badge-text pro">⭐ TÀI KHOẢN MEMBER (@${info.username}) — ĐÃ BẬT CLOUD SYNC</span>`;
       if (keyDisplay) keyDisplay.textContent = maskLicenseKey(info.key);
       if (dateDisplay) {
         const d = info.activatedAt ? new Date(info.activatedAt) : new Date();
