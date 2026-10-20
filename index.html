@@ -17,7 +17,10 @@
         <div class="brand-logo" id="brand-logo-btn" onclick="toggleSidebar()" title="Nhấn để Đóng / Mở thanh bên">S</div>
         <div class="brand-info">
           <h1 id="app-title">Study OS</h1>
-          <span class="version-badge">v7.02 Web</span>    
+          <div class="brand-badges">
+            <span class="version-badge">v7.02 Web</span>
+            <span class="license-status-pill unactivated" id="sidebar-license-badge" title="Nhấn để kích hoạt bản quyền">Free Trial</span>
+          </div>
         </div>
       </div>
 
@@ -91,6 +94,7 @@
           <span class="live-clock" id="live-clock">00:00:00</span>
         </div>
         <div class="topbar-actions">
+          <button type="button" class="btn btn-license-pill" id="topbar-license-btn" title="Kích hoạt bản quyền">🔑 Kích hoạt</button>
           <button class="btn btn-secondary" id="top-profile-btn">Tài khoản</button>
           <button class="btn btn-primary" id="quick-add-btn">+ Thêm nhiệm vụ</button>
         </div>
@@ -662,6 +666,9 @@
               <div class="profile-user-details">
                 <h3 id="profile-display-username">username</h3>
                 <p class="text-muted" id="profile-display-email">Chưa cập nhật email</p>
+                <div class="profile-license-box">
+                  <span class="profile-license-badge free" id="profile-license-tag">Bản dùng thử (Free Member)</span>
+                </div>
               </div>
             </div>
 
@@ -784,6 +791,108 @@
             <span class="text-muted" id="bg-status-text" style="font-size: 0.85rem; display: block; margin-top: 10px;"></span>
           </div>
         </div>
+
+        <!-- THẺ BẢN QUYỀN & KÍCH HOẠT HỆ THỐNG -->
+        <div class="card mt-24" id="license-settings-card">
+          <div class="card-header">
+            <h3>Bản quyền & Kích hoạt hệ thống (License Key)</h3>
+          </div>
+          <div class="license-card-body">
+            <div class="license-current-status-box">
+              <span class="license-status-label">Trạng thái giấy phép:</span>
+              <div id="settings-license-status-text">
+                <span class="badge-text free">⚠️ CHƯA KÍCH HOẠT BẢN QUYỀN (FREE TRIAL)</span>
+              </div>
+            </div>
+
+            <!-- Khung thông báo hỗ trợ & liên hệ -->
+            <div class="license-note-box">
+              <div class="license-note-icon">🔑</div>
+              <div class="license-note-content">
+                <div class="license-note-title">Cần key kích hoạt liên hệ:</div>
+                <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" class="license-contact-link">
+                  https://halis-bio.vercel.app/iamhalis
+                </a>
+                <p class="license-note-desc">Nhận mã key dạng <code>HASHX-XXXX-XXXX</code> để kích hoạt trọn đời, mở khóa đồng bộ và tính năng nâng cao.</p>
+              </div>
+            </div>
+
+            <!-- Giao diện khi chưa kích hoạt -->
+            <div id="settings-license-form-wrapper" class="license-form-wrapper">
+              <form id="settings-license-form" class="form-stack">
+                <div class="form-group">
+                  <label for="settings-license-input">Nhập mã kích hoạt (Key Code) <span class="req">*</span></label>
+                  <input
+                    type="text"
+                    id="settings-license-input"
+                    class="license-code-input"
+                    placeholder="VD: HASHX-A1B2-C3D4"
+                    maxlength="17"
+                    required
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                </div>
+                <div id="settings-license-alert" class="license-alert hidden"></div>
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary" id="settings-license-submit-btn">Kích hoạt bản quyền</button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Giao diện khi ĐÃ kích hoạt -->
+            <div id="settings-license-active-wrapper" class="license-active-details hidden">
+              <div class="license-meta-grid">
+                <div class="license-meta-card">
+                  <span class="meta-label">MÃ KEY ĐANG DÙNG</span>
+                  <span class="meta-value font-mono" id="settings-license-key-display">HASHX-****-****</span>
+                </div>
+                <div class="license-meta-card">
+                  <span class="meta-label">NGÀY KÍCH HOẠT</span>
+                  <span class="meta-value" id="settings-license-date-display">--</span>
+                </div>
+                <div class="license-meta-card">
+                  <span class="meta-label">LOẠI GIẤY PHÉP</span>
+                  <span class="meta-value text-success">PRO Lifetime License</span>
+                </div>
+              </div>
+              <div class="form-actions mt-16">
+                <button type="button" class="btn btn-secondary" id="settings-license-deactivate-btn">Hủy kích hoạt trên thiết bị này</button>
+              </div>
+            </div>
+
+            <!-- Công cụ Quản trị viên (Sinh Key) -->
+            <div class="admin-keygen-section mt-24">
+              <button type="button" class="btn-link" id="toggle-admin-gen-btn">+ Mở công cụ tạo Key (Dành cho Quản trị viên)</button>
+              <div id="admin-keygen-box" class="admin-keygen-box hidden mt-16">
+                <p class="text-muted mb-12" style="font-size: 0.85rem;">
+                  Công cụ kết nối tới API <code>POST /api/admin/generate-key</code> để sinh key ngẫu nhiên và lưu trực tiếp vào cơ sở dữ liệu Turso.
+                </p>
+                <form id="admin-keygen-form" class="form-stack">
+                  <div class="form-group">
+                    <label for="admin-api-key-input">Admin API Key bí mật</label>
+                    <input
+                      type="password"
+                      id="admin-api-key-input"
+                      placeholder="Nhập ADMIN_API_KEY..."
+                      value="hashx_internal_secret_key_99999"
+                      autocomplete="off"
+                    />
+                  </div>
+                  <button type="submit" class="btn btn-secondary" id="admin-gen-submit-btn">Tạo Key mới ngay</button>
+                </form>
+
+                <div id="admin-keygen-result" class="admin-key-result hidden mt-16">
+                  <span class="result-label">Key vừa được tạo thành công:</span>
+                  <div class="key-result-row">
+                    <code id="admin-generated-key-text" class="generated-key-code">HASHX-XXXX-XXXX</code>
+                    <button type="button" class="btn btn-sm btn-primary" id="copy-generated-key-btn">Sao chép</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
   </div>
@@ -832,10 +941,64 @@
     </div>
   </div>
 
+  <!-- MODAL KÍCH HOẠT BẢN QUYỀN -->
+  <div id="license-modal-overlay" class="letter-modal-overlay hidden">
+    <div class="letter-modal-card license-modal-card" role="dialog" aria-modal="true">
+      <div class="letter-modal-topbar">
+        <div class="letter-seal-badge">
+          <span class="seal-dot"></span>
+          <span>KÍCH HOẠT BẢN QUYỀN HỆ THỐNG</span>
+        </div>
+        <button type="button" class="letter-close-icon" id="close-license-modal-btn" title="Đóng">✕</button>
+      </div>
+
+      <div class="letter-modal-header">
+        <h2>Mở khóa Study OS PRO</h2>
+        <p class="text-muted" style="margin-top: 4px;">Nhập mã bản quyền (Redeem Key) để mở khóa toàn bộ tính năng và lưu trữ đám mây.</p>
+      </div>
+
+      <div class="letter-modal-body">
+        <!-- Khung thông báo liên hệ lấy key -->
+        <div class="license-note-box mb-20">
+          <div class="license-note-icon">🔑</div>
+          <div class="license-note-content">
+            <div class="license-note-title">Cần key kích hoạt liên hệ:</div>
+            <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" class="license-contact-link">
+              https://halis-bio.vercel.app/iamhalis
+            </a>
+            <p class="license-note-desc">Nhận mã kích hoạt hoặc yêu cầu cấp quyền truy cập hệ thống.</p>
+          </div>
+        </div>
+
+        <form id="license-modal-form" class="form-stack">
+          <div class="form-group">
+            <label for="modal-license-input">Mã kích hoạt (Key Code) <span class="req">*</span></label>
+            <input
+              type="text"
+              id="modal-license-input"
+              class="license-code-input modal-input"
+              placeholder="VD: HASHX-A1B2-C3D4"
+              maxlength="17"
+              required
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </div>
+          <div id="modal-license-alert" class="license-alert hidden"></div>
+          <div class="form-actions mt-16" style="justify-content: flex-end;">
+            <button type="button" class="btn btn-ghost" id="cancel-license-modal-btn">Để sau</button>
+            <button type="submit" class="btn btn-primary" id="modal-license-submit-btn">Kích hoạt ngay</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <div id="toast-container" class="toast-container"></div>
 
   <!-- Scripts -->
   <script src="js/core.js"></script>
+  <script src="js/license.js"></script>
   <script src="js/dashboard.js"></script>
   <script src="js/tasks.js"></script>
   <script src="js/calendar.js"></script>

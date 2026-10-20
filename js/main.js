@@ -79,6 +79,7 @@ function renderAll() {
 
   // Render bảo vệ đa lớp (Không để lỗi thẻ làm ảnh hưởng đến hiển thị tài khoản)
   try { if (typeof renderProfileUI === "function") renderProfileUI(); } catch (e) { console.error(e); }
+  try { if (typeof renderLicenseUI === "function") renderLicenseUI(); } catch (e) { console.error(e); }
   try { if (typeof renderQuickWeekdayPicker === "function") renderQuickWeekdayPicker(); } catch (e) { console.error(e); }
   try { if (typeof renderSealedLettersList === "function") renderSealedLettersList(); } catch (e) { console.error(e); }
   try { if (typeof renderSocialLettersList === "function") renderSocialLettersList(); } catch (e) { console.error(e); }
@@ -166,6 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
   safeInit("FutureMessages", initFutureMessagesFeature);
   safeInit("Share", initShareFeature);
   safeInit("Profile", initProfileFeature);
+  safeInit("License", initLicenseFeature);
   safeInit("Settings", initSettingsFeature);
 
   // Hiển thị giao diện & đồng bộ Cloud

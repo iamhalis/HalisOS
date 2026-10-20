@@ -1565,3 +1565,283 @@ body.has-custom-bg .focus-container.is-running {
   .letter-meta-grid { grid-template-columns: repeat(2, 1fr); }
   .share-preview-item { grid-template-columns: 1fr; gap: 4px; }
 }
+
+/* ==========================================================================
+   15. HỆ THỐNG QUẢN LÝ BẢN QUYỀN (LICENSE & KEY ACTIVATION)
+   ========================================================================== */
+.brand-badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.license-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 9999px;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.license-status-pill .pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.license-status-pill.unactivated {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+}
+.license-status-pill.unactivated .pill-dot {
+  background: var(--warning);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+}
+.license-status-pill.unactivated:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+}
+
+.license-status-pill.activated {
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+}
+.license-status-pill.activated .pill-dot {
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.btn-license-pill {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+.btn-license-activate {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+.btn-license-activate:hover {
+  background: rgba(245, 158, 11, 0.25);
+  transform: translateY(-1px);
+}
+.btn-license-pro {
+  background: var(--success-soft);
+  color: var(--success);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.profile-license-box {
+  margin-top: 8px;
+}
+.profile-license-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.profile-license-badge.free {
+  background: var(--warning-soft);
+  color: var(--warning);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+.profile-license-badge.pro {
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Thẻ cài đặt bản quyền */
+.license-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.license-current-status-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--bg-elevated);
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+}
+.license-status-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.badge-text {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.badge-text.free { color: var(--warning); }
+.badge-text.pro { color: var(--success); }
+
+/* Khung thông báo liên hệ lấy key */
+.license-note-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08) 0%, rgba(236, 72, 153, 0.06) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+}
+.license-note-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.license-note-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.license-note-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.license-contact-link {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #818cf8;
+  text-decoration: underline;
+  word-break: break-all;
+  display: inline-block;
+}
+.license-contact-link:hover {
+  color: #a5b4fc;
+}
+.license-note-desc {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin-top: 2px;
+}
+
+/* Ô nhập mã key */
+.license-code-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  text-align: center !important;
+  letter-spacing: 0.12em !important;
+  padding: 12px 16px !important;
+  border: 2px solid var(--border-color) !important;
+  border-radius: 12px !important;
+  background-color: var(--bg-surface) !important;
+}
+.license-code-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-soft) !important;
+}
+
+.license-alert {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+.license-alert.error {
+  background: rgba(239, 68, 68, 0.12);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+.license-alert.success {
+  background: var(--success-soft);
+  color: var(--success);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+/* Chi tiết bản quyền khi đã kích hoạt */
+.license-meta-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.license-meta-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.license-meta-card .meta-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+.license-meta-card .meta-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+.text-success { color: var(--success) !important; }
+
+/* Khu vực Admin sinh key */
+.admin-keygen-section {
+  border-top: 1px dashed var(--border-color);
+  padding-top: 16px;
+}
+.admin-keygen-box {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+}
+.admin-key-result {
+  background: var(--bg-surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.result-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+.key-result-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.generated-key-code {
+  font-family: monospace;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+.license-modal-card {
+  max-width: 520px !important;
+}
+.mb-20 { margin-bottom: 20px; }
