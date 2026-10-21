@@ -1485,7 +1485,7 @@ body.has-custom-bg .focus-container {
               box-shadow 0.5s ease !important;
 }
 
-/* --- C. KHI BẤM "BẮT ĐẦU": ANIMATION THU NHỎ & HIỆU ỨNG KHUNG BLUR ĐỒNG HỒ --- */
+/* --- C. KHI BẤM "BẮT ĐẦU": ANIMATION THU NHỎ & GIAO DIỆN KHUNG BLUR ĐỒNG HỒ --- */
 .focus-container.is-running,
 body.has-custom-bg .focus-container.is-running,
 body.is-pro-mode.has-custom-bg .focus-container.is-running,
@@ -1499,13 +1499,24 @@ body.is-trial-mode.has-custom-bg .focus-container.is-running {
   background: rgba(8, 20, 36, 0.42) !important;
   backdrop-filter: blur(18px) saturate(160%) !important;
   -webkit-backdrop-filter: blur(18px) saturate(160%) !important;
-  border: 3.5px solid #002b49 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: 0 24px 65px rgba(0, 0, 0, 0.52),
-              inset 0 0 35px rgba(0, 0, 0, 0.38),
-              0 0 30px rgba(0, 43, 73, 0.45) !important;
+              inset 0 0 35px rgba(0, 0, 0, 0.38) !important;
 
-  animation: focusClockFrameEntrance 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards,
-             focusClockBreathing 3.8s ease-in-out 0.75s infinite alternate !important;
+  /* HIỆU ỨNG THU NHỎ RÕ RÀNG TỪ LỚN VỀ NHỎ KHI BẤM BẮT ĐẦU */
+  animation: focusShrinkToClock 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  transition: border 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+/* KHI TẠM DỪNG: THÊM VIỀN RÕ NÉT XUNG QUANH KHUNG BLUR */
+.focus-container.is-running.is-paused,
+body.has-custom-bg .focus-container.is-running.is-paused,
+body.is-pro-mode.has-custom-bg .focus-container.is-running.is-paused,
+body.is-trial-mode.has-custom-bg .focus-container.is-running.is-paused {
+  border: 2.5px solid rgba(255, 255, 255, 0.75) !important;
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.55),
+              0 0 25px rgba(255, 255, 255, 0.25),
+              inset 0 0 35px rgba(0, 0, 0, 0.38) !important;
 }
 
 /* Chế độ Light Mode khi đang đếm giờ Focus */
@@ -1516,9 +1527,13 @@ body.is-trial-mode.has-custom-bg .focus-container.is-running {
   background: rgba(255, 255, 255, 0.94) !important;
   backdrop-filter: blur(20px) saturate(180%) !important;
   -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
-  border: 3.5px solid #0284c7 !important;
-  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12),
-              0 0 30px rgba(2, 132, 199, 0.25) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12) !important;
+}
+
+:root[data-theme="light"] body .focus-container.is-running.is-paused {
+  border: 2.5px solid #0284c7 !important;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.15), 0 0 20px rgba(2, 132, 199, 0.3) !important;
 }
 
 /* --- D. KHUNG BLUR NỘI BỘ CHỖ ĐỒNG HỒ (.timer-box-frame) --- */
@@ -1527,7 +1542,7 @@ body.is-trial-mode.has-custom-bg .focus-container.is-running {
   justify-content: center !important;
   align-items: center !important;
   width: 100% !important;
-  animation: timerWrapperFadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: timerWrapperFadeIn 0.4s ease forwards;
 }
 
 .focus-container.is-running .timer-box-frame {
@@ -1544,26 +1559,34 @@ body.is-trial-mode.has-custom-bg .focus-container.is-running {
   background: rgba(5, 14, 28, 0.35) !important;
   backdrop-filter: blur(14px) saturate(150%) !important;
   -webkit-backdrop-filter: blur(14px) saturate(150%) !important;
-  border: 2px solid rgba(56, 189, 248, 0.28) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
   box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.4),
-              0 8px 30px rgba(0, 0, 0, 0.35),
-              0 0 20px rgba(56, 189, 248, 0.12) !important;
+              0 8px 30px rgba(0, 0, 0, 0.35) !important;
   position: relative !important;
   overflow: hidden !important;
-  animation: clockBlurEntrance 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards,
-             clockInnerBreathing 4s ease-in-out 0.7s infinite alternate !important;
+  animation: timerInnerShrink 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  transition: border 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.focus-container.is-running.is-paused .timer-box-frame,
+body.has-custom-bg .focus-container.is-running.is-paused .timer-box-frame {
+  border: 2px solid rgba(255, 255, 255, 0.5) !important;
+  box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.4),
+              0 0 18px rgba(255, 255, 255, 0.2) !important;
 }
 
 :root[data-theme="light"] body .focus-container.is-running .timer-box-frame {
   background: rgba(241, 245, 249, 0.88) !important;
-  border: 2px solid rgba(2, 132, 199, 0.45) !important;
-  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.06),
-              0 8px 24px rgba(15, 23, 42, 0.06) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
 }
 
-/* --- E. CHỮ SỐ ĐỒNG HỒ & NHIỆM VỤ ĐANG TẬP TRUNG --- */
+:root[data-theme="light"] body .focus-container.is-running.is-paused .timer-box-frame {
+  border: 2px solid rgba(2, 132, 199, 0.6) !important;
+}
+
+/* --- E. CHỮ SỐ ĐỒNG HỒ --- */
 .focus-container.is-running .timer-digits {
-  animation: timerDigitsGlow 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  animation: timerDigitsFocusIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
 }
 
 :root[data-theme="light"] body .focus-container.is-running .timer-digits {
@@ -1571,150 +1594,68 @@ body.is-trial-mode.has-custom-bg .focus-container.is-running {
   text-shadow: 0 2px 10px rgba(15, 23, 42, 0.15) !important;
 }
 
-.focus-container.is-running .timer-active-task {
-  display: inline-block !important;
-  margin-top: 14px !important;
-  padding: 6px 20px !important;
-  border-radius: 99px !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  color: #94a3b8 !important;
-  font-size: 1.05rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.03em !important;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
-  animation: taskNameFadeIn 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+.timer-active-task.hidden,
+#focus-active-task-name.hidden {
+  display: none !important;
 }
 
-:root[data-theme="light"] body .focus-container.is-running .timer-active-task {
-  background: rgba(15, 23, 42, 0.08) !important;
-  border-color: rgba(15, 23, 42, 0.12) !important;
-  color: #334155 !important;
-  text-shadow: none !important;
-}
+/* --- F. CÁC KEYFRAMES HIỆU ỨNG THU NHỎ & XUẤT HIỆN --- */
 
-/* --- F. TRẠNG THÁI TẠM DỪNG (PAUSED STATE) --- */
-.focus-container.is-running.is-paused .timer-box-frame,
-body.has-custom-bg .focus-container.is-running.is-paused .timer-box-frame {
-  animation: clockInnerPaused 2s ease-in-out infinite alternate !important;
-  border-color: #f59e0b !important;
-}
-
-.focus-container.is-running.is-paused,
-body.has-custom-bg .focus-container.is-running.is-paused {
-  border-color: rgba(217, 119, 6, 0.65) !important;
-}
-
-/* --- G. CÁC KEYFRAMES HIỆU ỨNG ANIMATION --- */
-
-/* 1. Entrance bloom cho khung blur đồng hồ */
-@keyframes clockBlurEntrance {
+/* 1. Animation thu nhỏ từ lớn về nhỏ khi bấm Bắt đầu */
+@keyframes focusShrinkToClock {
   0% {
-    opacity: 0;
-    transform: scale(0.85) translateY(14px);
-    filter: blur(14px);
-    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.7), inset 0 0 0 rgba(56, 189, 248, 0);
-    border-color: rgba(56, 189, 248, 0.8);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.02) translateY(-2px);
-    filter: blur(0px);
-    box-shadow: 0 0 45px rgba(56, 189, 248, 0.45), inset 0 0 25px rgba(56, 189, 248, 0.25);
-    border-color: rgba(56, 189, 248, 0.6);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-    filter: blur(0px);
-    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.4), 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(56, 189, 248, 0.12);
-    border-color: rgba(56, 189, 248, 0.28);
-  }
-}
-
-/* 2. Hơi thở nhẹ nhàng khi đang đếm giờ */
-@keyframes clockInnerBreathing {
-  0% {
-    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.4), 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 15px rgba(56, 189, 248, 0.1);
-    border-color: rgba(56, 189, 248, 0.22);
-  }
-  100% {
-    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.45), 0 10px 35px rgba(0, 0, 0, 0.4), 0 0 28px rgba(56, 189, 248, 0.32);
-    border-color: rgba(56, 189, 248, 0.45);
-  }
-}
-
-/* 3. Entrance cho khung Focus tổng thể */
-@keyframes focusClockFrameEntrance {
-  0% {
-    transform: scale(0.96);
-    box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.5), inset 0 0 20px rgba(56, 189, 248, 0.2);
-    border-color: #38bdf8;
-  }
-  50% {
-    transform: scale(1.01);
-    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(56, 189, 248, 0.35), inset 0 0 30px rgba(56, 189, 248, 0.2);
-    border-color: #0284c7;
-  }
-  100% {
-    transform: scale(1);
-    box-shadow: 0 24px 65px rgba(0, 0, 0, 0.52), inset 0 0 35px rgba(0, 0, 0, 0.38), 0 0 30px rgba(0, 43, 73, 0.45);
-    border-color: #002b49;
-  }
-}
-
-/* 4. Hơi thở nhịp nhàng cho khung Focus tổng thể */
-@keyframes focusClockBreathing {
-  0% {
-    box-shadow: 0 24px 65px rgba(0, 0, 0, 0.45), inset 0 0 35px rgba(0, 0, 0, 0.35), 0 0 18px rgba(56, 189, 248, 0.1);
-    border-color: #002b49;
-  }
-  100% {
-    box-shadow: 0 28px 75px rgba(0, 0, 0, 0.55), inset 0 0 42px rgba(0, 0, 0, 0.42), 0 0 35px rgba(56, 189, 248, 0.28);
-    border-color: #0284c7;
-  }
-}
-
-/* 5. Chữ số đồng hồ toả sáng & trượt vào */
-@keyframes timerDigitsGlow {
-  0% {
-    opacity: 0;
-    transform: scale(0.85);
-    filter: blur(6px);
+    max-width: 1180px;
+    min-height: 490px;
+    transform: scale(1.16);
+    opacity: 0.85;
+    border-radius: 28px;
   }
   65% {
+    max-width: 840px;
+    min-height: 380px;
+    transform: scale(0.985);
     opacity: 1;
-    transform: scale(1.02);
-    filter: blur(0px);
-    text-shadow: 0 0 35px rgba(255, 255, 255, 0.9), 0 0 65px rgba(56, 189, 248, 0.7);
+    border-radius: 44px;
+  }
+  100% {
+    max-width: 840px;
+    min-height: 380px;
+    transform: scale(1);
+    opacity: 1;
+    border-radius: 44px;
+  }
+}
+
+/* 2. Animation thu nhỏ đồng bộ cho khung con bên trong */
+@keyframes timerInnerShrink {
+  0% {
+    transform: scale(1.12);
+    opacity: 0.8;
+  }
+  65% {
+    transform: scale(0.99);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* 3. Chữ số đồng hồ hiển thị sắc nét */
+@keyframes timerDigitsFocusIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
   }
   100% {
     opacity: 1;
     transform: scale(1);
-    filter: blur(0px);
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.85);
-  }
-}
-
-/* 6. Khung khi Tạm dừng (Amber glow) */
-@keyframes clockInnerPaused {
-  0% {
-    box-shadow: inset 0 0 35px rgba(0, 0, 0, 0.4), 0 0 15px rgba(217, 119, 6, 0.2);
-    border-color: rgba(217, 119, 6, 0.45);
-  }
-  100% {
-    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.45), 0 0 32px rgba(245, 158, 11, 0.4);
-    border-color: #f59e0b;
   }
 }
 
 @keyframes timerWrapperFadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes taskNameFadeIn {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 

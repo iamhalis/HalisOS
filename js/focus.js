@@ -177,11 +177,7 @@ function initFocusFeature() {
       currentFocusTaskIndex = selectedIndex;
       focusElapsedBeforePause = 0;
 
-      const taskNameEl = document.getElementById("focus-active-task-name");
-      if (taskNameEl && tasks[selectedIndex]) {
-        taskNameEl.textContent = tasks[selectedIndex].name;
-        taskNameEl.classList.remove("hidden");
-      }
+
 
       startFocusTimer();
     };
