@@ -91,6 +91,12 @@ function resetFocusState() {
   isFocusPaused = false;
   currentFocusTaskIndex = -1;
 
+  const taskNameEl = document.getElementById("focus-active-task-name");
+  if (taskNameEl) {
+    taskNameEl.textContent = "";
+    taskNameEl.classList.add("hidden");
+  }
+
   updateFocusTimerDisplay();
   updateFocusControlsUI();
 }
@@ -110,14 +116,20 @@ function updateFocusControlsUI() {
     pauseBtn.classList.add("hidden");
     doneBtn.classList.add("hidden");
     quitBtn.classList.add("hidden");
-    if (focusCard) focusCard.classList.remove("is-running");
+    if (focusCard) {
+      focusCard.classList.remove("is-running");
+      focusCard.classList.remove("is-paused");
+    }
   } else {
     // Trạng thái đang bấm giờ hoặc tạm dừng
     startBtn.classList.add("hidden");
     pauseBtn.classList.remove("hidden");
     doneBtn.classList.remove("hidden");
     quitBtn.classList.remove("hidden");
-    if (focusCard) focusCard.classList.add("is-running");
+    if (focusCard) {
+      focusCard.classList.add("is-running");
+      focusCard.classList.toggle("is-paused", isFocusPaused);
+    }
 
     pauseBtn.textContent = isFocusPaused ? "Tiếp tục" : "Tạm dừng";
   }
@@ -164,6 +176,13 @@ function initFocusFeature() {
 
       currentFocusTaskIndex = selectedIndex;
       focusElapsedBeforePause = 0;
+
+      const taskNameEl = document.getElementById("focus-active-task-name");
+      if (taskNameEl && tasks[selectedIndex]) {
+        taskNameEl.textContent = tasks[selectedIndex].name;
+        taskNameEl.classList.remove("hidden");
+      }
+
       startFocusTimer();
     };
   }
