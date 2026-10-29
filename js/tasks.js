@@ -1,3 +1,6 @@
+// =========================================================================
+// 3. TASKS.JS — TÍNH NĂNG QUẢN LÝ NHIỆM VỤ (THÊM, SỬA, XOÁ, BỘ LỌC)
+// =========================================================================
 let currentFilter = "all";
 let searchQuery = "";
 let currentPage = 1;
@@ -65,9 +68,16 @@ function createTaskRowElement(task, realIdx) {
   focusBtn.className = "action-chip";
   focusBtn.textContent = "Focus";
   focusBtn.addEventListener("click", () => {
-    switchTab("focus");
-    document.getElementById("focus-task-select").value = String(realIdx);
-    updateFocusPreviewName();
+    if (typeof selectFocusTask === "function") {
+      selectFocusTask(realIdx);
+    } else {
+      switchTab("focus");
+      const sel = document.getElementById("focus-task-select");
+      if (sel) {
+        sel.value = String(realIdx);
+        if (typeof syncCustomFocusDropdown === "function") syncCustomFocusDropdown();
+      }
+    }
   });
 
   const editBtn = document.createElement("button");

@@ -135,9 +135,13 @@ function updateFocusControlsUI() {
   }
 }
 
-function renderFocusSelector() {
+function renderFocusSelector(selectedTaskIndex) {
   const select = document.getElementById("focus-task-select");
   if (!select) return;
+
+  const previousValue = selectedTaskIndex !== undefined && selectedTaskIndex !== null
+    ? String(selectedTaskIndex)
+    : select.value;
 
   select.innerHTML = "";
   const pendingTasks = tasks.filter(t => !t.done);
@@ -150,13 +154,86 @@ function renderFocusSelector() {
     return;
   }
 
+  let matched = false;
   pendingTasks.forEach(t => {
     const originalIndex = tasks.indexOf(t);
     const opt = document.createElement("option");
     opt.value = originalIndex;
     opt.textContent = `${t.name} (${formatDisplayDate(t.date)} - ${t.time})`;
+    if (String(originalIndex) === previousValue) {
+      opt.selected = true;
+      matched = true;
+    }
     select.appendChild(opt);
   });
+
+  if (matched) {
+    select.value = previousValue;
+  }
+}
+
+function selectFocusTask(taskOrIndex) {
+  let realIdx = -1;
+  if (typeof taskOrIndex === "object" && taskOrIndex !== null) {
+    realIdx = tasks.indexOf(taskOrIndex);
+  } else {
+    realIdx = parseInt(taskOrIndex, 10);
+  }
+
+  if (isNaN(realIdx) || realIdx < 0 || !tasks[realIdx]) {
+    showToast("Nhiệm vụ không tồn tại!", true);
+    return;
+  }
+
+  // Nếu đang đếm giờ cho đúng nhiệm vụ này, chỉ cần chuyển tab
+  if (isFocusRunning && currentFocusTaskIndex === realIdx) {
+    if (typeof switchTab === "function") {
+      switchTab("focus");
+    }
+    return;
+  }
+
+  // Nếu đang đếm giờ hoặc tạm dừng cho nhiệm vụ khác, reset timer
+  if (isFocusRunning || isFocusPaused) {
+    resetFocusState();
+  }
+
+  // Nếu nhiệm vụ đang ở trạng thái đã hoàn thành, tự động mở lại
+  if (tasks[realIdx].done) {
+    tasks[realIdx].done = false;
+    saveStorage();
+    renderAll();
+    showToast(`Đã mở lại và chọn nhiệm vụ: "${tasks[realIdx].name}"`);
+  }
+
+  // Dựng lại selector và chọn nhiệm vụ này
+  renderFocusSelector(realIdx);
+
+  const select = document.getElementById("focus-task-select");
+  if (select) {
+    select.value = String(realIdx);
+    const targetOptIndex = Array.from(select.options).findIndex(opt => opt.value === String(realIdx));
+    if (targetOptIndex !== -1) {
+      select.selectedIndex = targetOptIndex;
+    }
+    select.dispatchEvent(new Event("change"));
+  }
+
+  // Chuyển sang tab Focus Mode
+  if (typeof switchTab === "function") {
+    switchTab("focus");
+  }
+
+  // Đồng bộ giao diện dropdown tuỳ chỉnh
+  if (typeof syncCustomFocusDropdown === "function") {
+    syncCustomFocusDropdown();
+  }
+}
+
+function updateFocusPreviewName() {
+  if (typeof syncCustomFocusDropdown === "function") {
+    syncCustomFocusDropdown();
+  }
 }
 
 function initFocusFeature() {
@@ -177,7 +254,11 @@ function initFocusFeature() {
       currentFocusTaskIndex = selectedIndex;
       focusElapsedBeforePause = 0;
 
-
+      const taskNameEl = document.getElementById("focus-active-task-name");
+      if (taskNameEl && tasks[selectedIndex]) {
+        taskNameEl.textContent = tasks[selectedIndex].name;
+        taskNameEl.classList.remove("hidden");
+      }
 
       startFocusTimer();
     };
@@ -215,4 +296,9 @@ function initFocusFeature() {
   renderFocusSelector();
   updateFocusTimerDisplay();
   updateFocusControlsUI();
+}
+
+if (typeof window !== "undefined") {
+  window.selectFocusTask = selectFocusTask;
+  window.updateFocusPreviewName = updateFocusPreviewName;
 }

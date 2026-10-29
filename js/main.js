@@ -34,7 +34,13 @@ function switchTab(tabId) {
     if (typeof renderSocialLettersList === "function") renderSocialLettersList();
   }
   if (tabId === "share" && typeof renderShareTaskSelector === "function") renderShareTaskSelector();
-  if (tabId === "focus") syncCustomFocusDropdown();
+  if (tabId === "focus") {
+    const menu = document.getElementById("custom-dropdown-menu");
+    const dropdownBox = document.getElementById("custom-focus-dropdown");
+    if (menu) menu.classList.add("hidden");
+    if (dropdownBox) dropdownBox.classList.remove("open");
+    syncCustomFocusDropdown();
+  }
   syncFocusLayoutState();
 }
 
@@ -120,14 +126,10 @@ function syncCustomFocusDropdown() {
     item.addEventListener("click", (e) => {
       e.stopPropagation();
       nativeSelect.selectedIndex = idx;
-      nativeSelect.dispatchEvent(new Event("change"));
-      headerText.textContent = opt.text;
-      
+      nativeSelect.value = opt.value;
       menu.classList.add("hidden");
       if (dropdownBox) dropdownBox.classList.remove("open");
-
-      document.querySelectorAll(".custom-dropdown-item").forEach(el => el.classList.remove("selected"));
-      item.classList.add("selected");
+      nativeSelect.dispatchEvent(new Event("change"));
     });
 
     menu.appendChild(item);
@@ -268,12 +270,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (nativeSelect) {
+    nativeSelect.addEventListener("change", () => syncCustomFocusDropdown());
     const obs = new MutationObserver(() => syncCustomFocusDropdown());
     obs.observe(nativeSelect, { childList: true, subtree: true });
     syncCustomFocusDropdown();
   }
 
-if (startBtn && focusCard) {
+  if (startBtn && focusCard) {
     const btnObs = new MutationObserver(() => syncFocusLayoutState());
     btnObs.observe(startBtn, { attributes: true, attributeFilter: ["class"] });
     syncFocusLayoutState();
