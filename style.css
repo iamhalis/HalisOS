@@ -671,8 +671,81 @@ body.has-custom-bg .topbar {
   align-items: center;
   gap: 8px;
 }
+.cal-task { cursor: pointer; user-select: none; }
+.cal-task:hover { background: var(--bg-hover); transform: translateY(-1px); }
 .cal-task.done { opacity: 0.6; text-decoration: line-through; }
 .cal-time { font-size: 0.75rem; color: var(--accent); font-weight: 600; flex-shrink: 0; }
+
+.cal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.cal-nav-btn-group {
+  display: inline-flex;
+  gap: 6px;
+}
+.today-chip {
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 99px;
+  margin-left: 6px;
+  vertical-align: middle;
+  letter-spacing: 0.02em;
+  display: inline-block;
+}
+.day-count-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 99px;
+  background: var(--bg-elevated);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+}
+.cal-add-btn {
+  margin-top: 12px;
+  padding: 6px 10px;
+  background: transparent;
+  border: 1px dashed var(--border-color);
+  border-radius: 8px;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  display: block;
+  width: 100%;
+}
+.cal-add-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.cal-page-center {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cal-today-chip-btn {
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: var(--accent);
+  font-weight: 600;
+  cursor: pointer;
+}
+.cal-today-chip-btn:hover {
+  background: var(--accent);
+  color: #fff;
+}
 
 /* ==========================================================================
    9. FOCUS MODE: HOÀN CHỈNH (TRONG SUỐT, CAO RỘNG, XOAY CHEVRON & KHUNG CHỮ NHẬT)

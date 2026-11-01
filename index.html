@@ -248,14 +248,43 @@
       <section class="tab-pane" id="tab-calendar">
         <div class="fm-top-header">
           <div>
-            <h3>Lịch trình 7 ngày tới</h3>
-            <p class="text-muted">Tự động sắp xếp công việc theo khung giờ mỗi ngày</p>
+            <h3 id="cal-header-title">Lịch trình 7 ngày tới</h3>
+            <p class="text-muted" id="cal-header-subtitle">Tự động sắp xếp công việc theo khung giờ mỗi ngày</p>
           </div>
-          <button type="button" class="btn btn-primary" id="share-entire-week-from-cal-btn">
-            🔗 Chia sẻ lịch tuần này
-          </button>
+          <div class="cal-header-actions">
+            <button type="button" class="btn btn-ghost" id="cal-today-top-btn" title="Về tuần hiện tại">
+              📅 Tuần này
+            </button>
+            <div class="cal-nav-btn-group">
+              <button type="button" class="btn btn-ghost" id="cal-prev-top-btn" title="Xem tuần trước">
+                ◀ Tuần trước
+              </button>
+              <button type="button" class="btn btn-ghost" id="cal-next-top-btn" title="Xem tuần kế">
+                Tuần kế ▶
+              </button>
+            </div>
+            <button type="button" class="btn btn-primary" id="share-entire-week-from-cal-btn">
+              🔗 Chia sẻ lịch tuần này
+            </button>
+          </div>
         </div>
         <div id="weekly-calendar-grid" class="calendar-grid"></div>
+
+        <!-- PHÂN TRANG LỊCH TUẦN (XEM TUẦN KẾ / TUẦN TRƯỚC) -->
+        <div class="pagination" id="cal-pagination">
+          <button type="button" class="btn btn-ghost" id="cal-prev-page-btn" title="Xem tuần trước">
+            ← Trang trước (Tuần trước)
+          </button>
+          <div class="cal-page-center">
+            <span id="cal-page-indicator">Tuần này</span>
+            <button type="button" class="btn btn-ghost cal-today-chip-btn hidden" id="cal-today-page-btn" title="Quay lại tuần này">
+              Về tuần này
+            </button>
+          </div>
+          <button type="button" class="btn btn-ghost" id="cal-next-page-btn" title="Xem tuần kế">
+            Trang sau (Tuần kế) →
+          </button>
+        </div>
       </section>
 
       <!-- TAB 4: FOCUS MODE -->

@@ -26,6 +26,7 @@ function switchTab(tabId) {
     pane.classList.toggle("active", pane.id === `tab-${tabId}`);
   });
 
+  if (tabId === "calendar" && typeof renderWeeklyCalendar === "function") renderWeeklyCalendar();
   if (tabId === "analytics" && typeof renderAnalyticsCharts === "function") renderAnalyticsCharts();
   if (tabId === "future-messages") {
     if (typeof syncAllDirectoryUsersFromCloud === "function") syncAllDirectoryUsersFromCloud();
