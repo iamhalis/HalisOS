@@ -27,6 +27,7 @@ function switchTab(tabId) {
   });
 
   if (tabId === "calendar" && typeof renderWeeklyCalendar === "function") renderWeeklyCalendar();
+  if (tabId === "notes" && typeof renderNotesTab === "function") renderNotesTab();
   if (tabId === "analytics" && typeof renderAnalyticsCharts === "function") renderAnalyticsCharts();
   if (tabId === "future-messages") {
     if (typeof syncAllDirectoryUsersFromCloud === "function") syncAllDirectoryUsersFromCloud();
@@ -96,6 +97,7 @@ function renderAll() {
   try { if (typeof renderWeeklyCalendar === "function") renderWeeklyCalendar(); } catch (e) { safeLog(e); }
   try { if (typeof renderFocusSelector === "function") renderFocusSelector(); } catch (e) { safeLog(e); }
   try { syncCustomFocusDropdown(); } catch (e) { safeLog(e); }
+  try { if (typeof renderNotesTab === "function") renderNotesTab(); } catch (e) { safeLog(e); }
   try { if (typeof renderAnalyticsCharts === "function") renderAnalyticsCharts(); } catch (e) { safeLog(e); }
   try { if (typeof renderShareTaskSelector === "function") renderShareTaskSelector(); } catch (e) { safeLog(e); }
 }
@@ -172,6 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
   safeInit("Tasks", initTasksFeature);
   safeInit("Calendar", initCalendarFeature);
   safeInit("Focus", initFocusFeature);
+  safeInit("Notes", initNotesFeature);
   safeInit("FutureMessages", initFutureMessagesFeature);
   safeInit("Share", initShareFeature);
   safeInit("Profile", initProfileFeature);

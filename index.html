@@ -18,7 +18,7 @@
         <div class="brand-info">
           <h1 id="app-title">Study OS</h1>
           <div class="brand-badges">
-            <span class="version-badge">v7.50 Web</span>
+            <span class="version-badge">v7.60 Web</span>
             <span class="license-status-pill unactivated" id="sidebar-license-badge" title="Nhấn để kích hoạt bản quyền">Free Trial</span>
           </div>
         </div>
@@ -50,6 +50,10 @@
         <button class="nav-item" data-tab="focus" title="Focus Mode">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           <span>Focus Mode</span>
+        </button>
+        <button class="nav-item" data-tab="notes" title="Note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span>Note</span>
         </button>
         <button class="nav-item" data-tab="analytics" title="Thống kê">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
@@ -332,6 +336,70 @@
           </div>
 
           <div id="focus-result-banner" class="focus-result hidden"></div>
+        </div>
+      </section>
+
+      <!-- TAB: NOTE / GIẤY NHÁP KÍNH MỜ -->
+      <section class="tab-pane" id="tab-notes">
+        <div class="fm-top-header">
+          <div>
+            <h3>📝 Sổ tay & Giấy nháp (Scratchpad)</h3>
+            <p class="text-muted">Ghi chép nhanh công thức, ý tưởng, nháp bài học tức thì với giao diện kính mờ êm mắt</p>
+          </div>
+          <div class="note-top-actions">
+            <button type="button" class="btn btn-primary" id="add-new-note-btn">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span>+ Thêm ghi chú mới</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="notes-workspace-layout">
+          <!-- Danh sách các tờ nháp bên trái -->
+          <aside class="card notes-sidebar-card">
+            <div class="card-header notes-list-header">
+              <h3>Danh sách ghi chú</h3>
+              <span class="stat-pill" id="notes-total-count">1</span>
+            </div>
+            <div class="search-box note-search-box">
+              <input type="text" id="note-search-input" placeholder="Tìm kiếm ghi chú..." />
+            </div>
+            <div class="notes-items-list" id="notes-items-list"></div>
+          </aside>
+
+          <!-- Tờ giấy nháp chính bên phải -->
+          <div class="card scratchpad-sheet-container">
+            <div class="scratchpad-header">
+              <div class="scratchpad-title-wrap">
+                <input type="text" id="active-note-title" class="scratchpad-title-input" placeholder="Tiêu đề ghi chú (VD: Công thức Toán, Dàn ý Văn...)" />
+                <div class="scratchpad-meta-row">
+                  <span class="scratchpad-status" id="scratchpad-save-status">
+                    <span class="save-indicator saved"></span> Đã lưu
+                  </span>
+                  <span class="scratchpad-separator">•</span>
+                  <span id="scratchpad-time-display">Cập nhật: Vừa xong</span>
+                  <span class="scratchpad-separator">•</span>
+                  <span id="scratchpad-stats-display">0 từ • 0 ký tự</span>
+                </div>
+              </div>
+              <div class="scratchpad-actions">
+                <button type="button" class="btn btn-ghost" id="copy-note-btn" title="Sao chép toàn bộ nội dung">
+                  📋 Sao chép
+                </button>
+                <button type="button" class="btn btn-ghost" id="download-note-btn" title="Tải về máy (.txt)">
+                  💾 Tải về (.txt)
+                </button>
+                <button type="button" class="btn btn-ghost btn-danger-ghost" id="delete-note-btn" title="Xóa ghi chú này">
+                  🗑️ Xóa
+                </button>
+              </div>
+            </div>
+
+            <!-- Khung giấy nháp kính mờ (Liquid Glass / Scratchpad Paper) -->
+            <div class="scratchpad-paper-frame">
+              <textarea id="active-note-content" class="scratchpad-textarea" placeholder="Viết nháp bất kỳ điều gì tại đây... (Nội dung tự động lưu ngay khi bạn gõ)" spellcheck="false"></textarea>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1180,6 +1248,7 @@
   <script src="js/tasks.js"></script>
   <script src="js/calendar.js"></script>
   <script src="js/focus.js"></script>
+  <script src="js/notes.js"></script>
   <script src="js/analytics.js"></script>
   <script src="js/future-messages.js"></script>
   <script src="js/share.js"></script>

@@ -28,6 +28,7 @@ let currentUser = (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Sessi
 let config = { ...DEFAULT_CONFIG };
 let tasks = [];
 let futureMails = [];
+let notes = [];
 let sharedLetters = loadJSON("studyos_shared_letters", []);
 let shareCodeRegistry = loadJSON("studyos_share_codes", {});
 
@@ -248,6 +249,7 @@ async function syncToCloud() {
     config,
     tasks,
     futureMails,
+    notes,
     updatedAt: Date.now()
   };
   try {
@@ -274,6 +276,9 @@ async function pullCurrentUserFromCloud() {
     config = { ...DEFAULT_CONFIG, ...(remoteData.config || {}) };
     tasks = Array.isArray(remoteData.tasks) ? remoteData.tasks : [];
     futureMails = Array.isArray(remoteData.futureMails) ? remoteData.futureMails : [];
+    if (Array.isArray(remoteData.notes) && remoteData.notes.length > 0) {
+      notes = remoteData.notes;
+    }
     saveUsersDB();
     saveLocalOnly();
     if (typeof renderAll === "function") renderAll();
@@ -294,31 +299,52 @@ function getStorageKeys() {
     return {
       configKey: `studyos_config_${currentUser}`,
       tasksKey: `studyos_tasks_${currentUser}`,
-      mailsKey: `studyos_mails_${currentUser}`
+      mailsKey: `studyos_mails_${currentUser}`,
+      notesKey: `studyos_notes_${currentUser}`
     };
   }
   return {
     configKey: "studyos_config",
     tasksKey: "studyos_tasks",
-    mailsKey: "studyos_mails_guest"
+    mailsKey: "studyos_mails_guest",
+    notesKey: "studyos_notes_guest"
   };
 }
 
 function loadActiveUserData() {
-  const { configKey, tasksKey, mailsKey } = getStorageKeys();
+  const { configKey, tasksKey, mailsKey, notesKey } = getStorageKeys();
   config = loadJSON(configKey, { ...DEFAULT_CONFIG });
   tasks = loadJSON(tasksKey, []);
   futureMails = loadJSON(mailsKey, []);
+  notes = loadJSON(notesKey, [
+    {
+      id: "note_" + Date.now(),
+      title: "Ghi chú & Giấy nháp 1",
+      content: "",
+      updatedAt: Date.now()
+    }
+  ]);
+  if (!Array.isArray(notes) || notes.length === 0) {
+    notes = [
+      {
+        id: "note_" + Date.now(),
+        title: "Ghi chú & Giấy nháp 1",
+        content: "",
+        updatedAt: Date.now()
+      }
+    ];
+  }
   sharedLetters = loadJSON("studyos_shared_letters", []);
   if (typeof selectedShareTaskIndices !== "undefined") selectedShareTaskIndices.clear();
   migrateTasks();
 }
 
 function saveLocalOnly() {
-  const { configKey, tasksKey, mailsKey } = getStorageKeys();
+  const { configKey, tasksKey, mailsKey, notesKey } = getStorageKeys();
   localStorage.setItem(configKey, JSON.stringify(config));
   localStorage.setItem(tasksKey, JSON.stringify(tasks));
   localStorage.setItem(mailsKey, JSON.stringify(futureMails));
+  localStorage.setItem(notesKey, JSON.stringify(notes));
 }
 
 function saveStorage() {
