@@ -59,6 +59,8 @@ body {
   width: 100% !important;
   min-height: 100vh !important;
   overflow-x: clip !important;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 /* ==========================================================================
@@ -747,6 +749,231 @@ body.has-custom-bg .topbar {
   color: #fff;
 }
 
+/* Khung nền chứa cho Header Lịch tuần và Phân trang (Mặc định & khi có ảnh nền) */
+#tab-calendar .fm-top-header {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 18px 22px;
+  box-shadow: var(--shadow);
+  margin-bottom: 22px;
+  transition: all 0.2s ease;
+}
+
+#cal-pagination {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 16px 22px;
+  margin-top: 24px;
+  box-shadow: var(--shadow);
+  transition: all 0.2s ease;
+}
+
+#cal-page-indicator {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  letter-spacing: 0.01em;
+}
+
+#tab-calendar .btn-ghost {
+  background: var(--bg-elevated);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  font-weight: 600;
+  transition: all 0.15s ease;
+}
+#tab-calendar .btn-ghost:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ==========================================================================
+   TỐI ƯU ĐỘ TƯƠNG PHẢN LỊCH TUẦN KHI DÙNG HÌNH NỀN (ĐẶC BIỆT LÀ NỀN SÁNG)
+   ========================================================================== */
+body.has-custom-bg #tab-calendar .fm-top-header,
+body.is-pro-mode.has-custom-bg #tab-calendar .fm-top-header {
+  background: rgba(13, 18, 30, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+body.has-custom-bg #cal-pagination,
+body.is-pro-mode.has-custom-bg #cal-pagination {
+  background: rgba(13, 18, 30, 0.88) !important;
+  backdrop-filter: blur(20px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Thẻ ngày trong lịch tuần (Độ mờ tối cao chống chói mắt khi nền sáng) */
+body.has-custom-bg .day-card,
+body.is-pro-mode.has-custom-bg .day-card {
+  background: rgba(13, 18, 30, 0.88) !important;
+  backdrop-filter: blur(22px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+}
+
+body.has-custom-bg .day-card.today,
+body.is-pro-mode.has-custom-bg .day-card.today {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 1.5px var(--accent), 0 14px 34px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Tiêu đề & phụ đề tab lịch tuần */
+body.has-custom-bg #cal-header-title {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
+}
+body.has-custom-bg #cal-header-subtitle {
+  color: #cbd5e1 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+  font-weight: 500 !important;
+}
+
+/* Nút bấm trong lịch tuần trên nền ảnh */
+body.has-custom-bg #tab-calendar .btn-ghost {
+  background: rgba(255, 255, 255, 0.12) !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  color: #ffffff !important;
+  font-weight: 600 !important;
+  backdrop-filter: blur(8px) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+body.has-custom-bg #tab-calendar .btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.24) !important;
+  border-color: var(--accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35) !important;
+}
+body.has-custom-bg #tab-calendar .btn-ghost.active {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+/* Chỉ báo phân trang lịch */
+body.has-custom-bg #cal-page-indicator {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
+}
+body.has-custom-bg .cal-today-chip-btn {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+  border-color: var(--accent) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.45) !important;
+}
+
+/* Chữ trong các thẻ ngày: ngày, ngày tháng, badge */
+body.has-custom-bg .day-name {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9) !important;
+}
+body.has-custom-bg .day-date {
+  color: #cbd5e1 !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+}
+body.has-custom-bg .day-count-badge {
+  background: rgba(99, 102, 241, 0.35) !important;
+  border: 1px solid rgba(129, 140, 248, 0.55) !important;
+  color: #e0e7ff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+body.has-custom-bg .day-tasks p.text-muted {
+  color: #cbd5e1 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85) !important;
+}
+body.has-custom-bg .day-tasks p.text-muted small {
+  color: #94a3b8 !important;
+}
+
+/* Từng nhiệm vụ trong ngày */
+body.has-custom-bg .cal-task {
+  background: rgba(22, 30, 48, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.35) !important;
+  backdrop-filter: blur(8px) !important;
+}
+body.has-custom-bg .cal-task:hover {
+  background: rgba(30, 41, 66, 0.98) !important;
+  border-color: rgba(129, 140, 248, 0.5) !important;
+}
+body.has-custom-bg .cal-time {
+  color: #a5b4fc !important;
+  font-weight: 700 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Nút thêm nhiệm vụ nhanh ở mỗi thẻ ngày */
+body.has-custom-bg .cal-add-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border: 1px dashed rgba(255, 255, 255, 0.3) !important;
+  color: #f1f5f9 !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(6px) !important;
+}
+body.has-custom-bg .cal-add-btn:hover {
+  background: var(--accent) !important;
+  border-color: var(--accent) !important;
+  border-style: solid !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.45) !important;
+}
+
+/* Hỗ trợ chế độ Light Mode khi có ảnh nền */
+:root[data-theme="light"] body.has-custom-bg #tab-calendar .fm-top-header,
+:root[data-theme="light"] body.is-pro-mode.has-custom-bg #tab-calendar .fm-top-header,
+:root[data-theme="light"] body.has-custom-bg #cal-pagination,
+:root[data-theme="light"] body.is-pro-mode.has-custom-bg #cal-pagination,
+:root[data-theme="light"] body.has-custom-bg .day-card,
+:root[data-theme="light"] body.is-pro-mode.has-custom-bg .day-card {
+  background: rgba(255, 255, 255, 0.93) !important;
+  border: 1px solid rgba(0, 0, 0, 0.12) !important;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08) !important;
+}
+:root[data-theme="light"] body.has-custom-bg #cal-header-title,
+:root[data-theme="light"] body.has-custom-bg #cal-page-indicator,
+:root[data-theme="light"] body.has-custom-bg .day-name {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+:root[data-theme="light"] body.has-custom-bg #cal-header-subtitle,
+:root[data-theme="light"] body.has-custom-bg .day-date {
+  color: #475569 !important;
+  text-shadow: none !important;
+}
+:root[data-theme="light"] body.has-custom-bg .cal-task {
+  background: rgba(241, 245, 249, 0.92) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06) !important;
+}
+:root[data-theme="light"] body.has-custom-bg .cal-time {
+  color: var(--accent) !important;
+  text-shadow: none !important;
+}
+:root[data-theme="light"] body.has-custom-bg .cal-add-btn {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.18) !important;
+  color: #475569 !important;
+  text-shadow: none !important;
+}
+:root[data-theme="light"] body.has-custom-bg .cal-add-btn:hover {
+  background: var(--accent) !important;
+  color: #ffffff !important;
+}
+
 /* ==========================================================================
    9. FOCUS MODE: HOÀN CHỈNH (TRONG SUỐT, CAO RỘNG, XOAY CHEVRON & KHUNG CHỮ NHẬT)
    ========================================================================== */
@@ -1236,6 +1463,19 @@ body.has-custom-bg {
   background-attachment: fixed !important;
   background-repeat: no-repeat !important;
   transition: background-image 0.4s ease-in-out;
+}
+
+/* Lớp phủ bảo vệ mắt chống chói khi dùng ảnh nền sáng */
+body.has-custom-bg::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 12, 22, 0.36);
+  pointer-events: none;
+  z-index: 0;
+}
+:root[data-theme="light"] body.has-custom-bg::before {
+  background: rgba(255, 255, 255, 0.22);
 }
 
 /* --- A. DARK MODE GLASSMORPHISM (MẶC ĐỊNH KHI CÓ ẢNH NỀN) --- */
@@ -2087,7 +2327,7 @@ body.is-pro-mode:not(.has-custom-bg) .quote-banner {
 /* Khi CÓ ảnh nền: Kính pha lê trong suốt nhìn xuyên hình nền */
 body.is-pro-mode.has-custom-bg .card,
 body.is-pro-mode.has-custom-bg .stat-card,
-body.is-pro-mode.has-custom-bg .day-card,
+
 body.is-pro-mode.has-custom-bg .quote-banner,
 body.is-pro-mode.has-custom-bg .focus-container:not(.is-running) {
   background: rgba(10, 15, 26, var(--pro-glass-opacity, 0.44)) !important;
@@ -2116,7 +2356,6 @@ body.is-pro-mode.has-custom-bg:not(.focus-mode-running) .topbar {
 /* Light mode cho PRO */
 :root[data-theme="light"] body.is-pro-mode.has-custom-bg .card,
 :root[data-theme="light"] body.is-pro-mode.has-custom-bg .stat-card,
-:root[data-theme="light"] body.is-pro-mode.has-custom-bg .day-card,
 :root[data-theme="light"] body.is-pro-mode.has-custom-bg .quote-banner,
 :root[data-theme="light"] body.is-pro-mode.has-custom-bg .focus-container:not(.is-running) {
   background: rgba(255, 255, 255, calc(var(--pro-glass-opacity, 0.44) + 0.14)) !important;
@@ -2140,6 +2379,8 @@ body.is-pro-mode.has-custom-bg .countdown-number,
 body.is-pro-mode.has-custom-bg #live-clock,
 body.is-pro-mode.has-custom-bg .task-title,
 body.is-pro-mode.has-custom-bg .day-name,
+body.is-pro-mode.has-custom-bg #cal-page-indicator,
+body.is-pro-mode.has-custom-bg #cal-header-title,
 body.is-pro-mode.has-custom-bg .timer-digits,
 body.is-pro-mode.has-custom-bg .brand-info h1 {
   color: #ffffff !important;
@@ -2149,6 +2390,8 @@ body.is-pro-mode.has-custom-bg .brand-info h1 {
 
 /* Đoạn text phụ (muted) trong PRO: màu sáng rõ nét, tương phản cao */
 body.is-pro-mode.has-custom-bg .text-muted,
+body.is-pro-mode.has-custom-bg .day-date,
+body.is-pro-mode.has-custom-bg #cal-header-subtitle,
 body.is-pro-mode.has-custom-bg .stat-sub,
 body.is-pro-mode.has-custom-bg .stat-header span:first-child,
 body.is-pro-mode.has-custom-bg .countdown-label,
@@ -2161,7 +2404,7 @@ body.is-pro-mode.has-custom-bg .slider-hints span {
 
 /* Task item, cal task và input: lớp kính bảo vệ tương phản nội bộ */
 body.is-pro-mode.has-custom-bg .task-item,
-body.is-pro-mode.has-custom-bg .cal-task,
+
 body.is-pro-mode.has-custom-bg .capsule-card,
 body.is-pro-mode.has-custom-bg .share-day-group,
 body.is-pro-mode.has-custom-bg .share-task-row {
