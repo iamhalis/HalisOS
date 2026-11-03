@@ -2338,6 +2338,12 @@ body.is-pro-mode .brand-logo {
   gap: 10px;
 }
 
+#add-new-note-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .notes-workspace-layout {
   display: grid;
   grid-template-columns: 310px 1fr;

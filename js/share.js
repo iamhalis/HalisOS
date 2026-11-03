@@ -374,7 +374,7 @@ function renderShareTaskSelector() {
     });
   } else {
     if (tasks.length === 0) {
-      listEl.innerHTML = `<p class="text-muted">Hiện chưa có nhiệm vụ nào trong lịch. Hãy nhấn "+ Thêm nhiệm vụ" ở góc trên để tạo nhiệm vụ mới!</p>`;
+      listEl.innerHTML = `<p class="text-muted">Hiện chưa có nhiệm vụ nào trong lịch. Hãy tạo nhiệm vụ mới trong mục Nhiệm vụ!</p>`;
       counterEl.textContent = "Đã chọn: 0 nhiệm vụ";
       return;
     }
