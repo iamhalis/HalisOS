@@ -159,6 +159,13 @@ function initProfileFeature() {
       return;
     }
 
+    const consentCheck = document.getElementById("reg-consent");
+    if (!consentCheck || !consentCheck.checked) {
+      showToast("Vui lòng tích chọn đồng ý với Chính sách bảo vệ dữ liệu cá nhân!", true);
+      return;
+    }
+    const consentTimestamp = new Date().toISOString();
+
     if (users[username]) {
       showToast("Username này đã tồn tại trên thiết bị!", true);
       return;
@@ -215,10 +222,21 @@ function initProfileFeature() {
 
       const isFirstAccountEver = Object.keys(users).length === 0;
 
-      // Hash mật khẩu với PBKDF2-SHA256 (không lưu plaintext)
-      let securePasswordHash = password;
+      // Bắt buộc hash mật khẩu với PBKDF2-SHA256 (tuyệt đối không bao giờ lưu plaintext)
+      let securePasswordHash = null;
       if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.hashPassword) {
-        securePasswordHash = await HaliosSecurity.hashPassword(password);
+        try {
+          securePasswordHash = await HaliosSecurity.hashPassword(password);
+        } catch (hashErr) {
+          if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+            HaliosSecurity.Logger.error("Lỗi khi hash mật khẩu:", hashErr);
+          }
+        }
+      }
+
+      if (!securePasswordHash || !securePasswordHash.startsWith("pbkdf2:")) {
+        showToast("Lỗi bảo mật: Trình duyệt không hỗ trợ Web Crypto để băm mật khẩu an toàn!", true);
+        return;
       }
 
       users[username] = {
@@ -229,7 +247,9 @@ function initProfileFeature() {
         createdAt: getTodayStr(),
         is_activated: true,
         license_key: activatedKey,
-        activated_at: new Date().toISOString()
+        activated_at: new Date().toISOString(),
+        consent_accepted: true,
+        consent_timestamp: consentTimestamp
       };
       saveUsersDB();
 
@@ -576,10 +596,21 @@ function initProfileFeature() {
       return;
     }
 
-    // Băm mật khẩu mới bằng PBKDF2
-    let hashedNewPassword = newPasswordInput;
+    // Băm mật khẩu mới bằng PBKDF2 (bắt buộc)
+    let hashedNewPassword = null;
     if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.hashPassword) {
-      hashedNewPassword = await HaliosSecurity.hashPassword(newPasswordInput);
+      try {
+        hashedNewPassword = await HaliosSecurity.hashPassword(newPasswordInput);
+      } catch (e) {
+        if (typeof HaliosSecurity !== "undefined" && HaliosSecurity.Logger) {
+          HaliosSecurity.Logger.error("Lỗi khi hash mật khẩu mới:", e);
+        }
+      }
+    }
+
+    if (!hashedNewPassword || !hashedNewPassword.startsWith("pbkdf2:")) {
+      showToast("Lỗi bảo mật: Không thể mã hóa mật khẩu mới!", true);
+      return;
     }
 
     users[currentUser].password = hashedNewPassword;

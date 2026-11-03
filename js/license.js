@@ -224,6 +224,22 @@ function closeLicenseModal() {
 }
 
 /**
+ * Mở Modal so sánh gói Free Trial vs Member
+ */
+function openPlanComparisonModal() {
+  const modal = document.getElementById("plan-comparison-modal-overlay");
+  if (modal) modal.classList.remove("hidden");
+}
+
+/**
+ * Đóng Modal so sánh gói Free Trial vs Member
+ */
+function closePlanComparisonModal() {
+  const modal = document.getElementById("plan-comparison-modal-overlay");
+  if (modal) modal.classList.add("hidden");
+}
+
+/**
  * Cập nhật toàn bộ giao diện liên quan đến trạng thái bản quyền
  */
 function renderLicenseUI() {
@@ -236,21 +252,16 @@ function renderLicenseUI() {
   document.body.classList.toggle("is-member-mode", isAct);
   document.body.classList.toggle("is-trial-mode", !isAct);
 
-  // Điều khiển tính năng chỉnh kính Ultra-Glass trong Cài đặt
+  // Điều khiển tính năng chỉnh kính Ultra-Glass trong Cài đặt (Mở khóa hoàn toàn cho mọi người dùng kể cả Trial)
   const glassLocked = document.getElementById("glass-tuner-locked");
   const glassControls = document.getElementById("glass-tuner-controls");
   const glassBadge = document.getElementById("glass-tuner-badge");
 
-  if (glassLocked) glassLocked.classList.toggle("hidden", isAct);
-  if (glassControls) glassControls.classList.toggle("disabled", !isAct);
+  if (glassLocked) glassLocked.classList.add("hidden");
+  if (glassControls) glassControls.classList.remove("disabled");
   if (glassBadge) {
-    if (isAct) {
-      glassBadge.className = "pro-tag-badge active";
-      glassBadge.textContent = "Member Đã mở khóa";
-    } else {
-      glassBadge.className = "pro-tag-badge locked";
-      glassBadge.textContent = "Cần Member";
-    }
+    glassBadge.className = "pro-tag-badge active";
+    glassBadge.textContent = "Mở khóa cho tất cả";
   }
 
   // 1. Cập nhật Badge trên Sidebar
@@ -494,6 +505,32 @@ function initLicenseFeature() {
         renderLicenseUI();
         if (typeof showToast === "function") showToast("Đã hủy kích hoạt bản quyền trên máy này.");
       }
+    });
+  }
+
+  // Nút mở/đóng Modal So sánh gói Free Trial vs Member
+  const openPlanBtn = document.getElementById("open-plan-comparison-btn");
+  if (openPlanBtn) {
+    openPlanBtn.addEventListener("click", openPlanComparisonModal);
+  }
+
+  const closePlanBtn = document.getElementById("close-plan-modal-btn");
+  if (closePlanBtn) {
+    closePlanBtn.addEventListener("click", closePlanComparisonModal);
+  }
+
+  const stayGuestBtn = document.getElementById("plan-modal-stay-guest-btn");
+  if (stayGuestBtn) {
+    stayGuestBtn.addEventListener("click", closePlanComparisonModal);
+  }
+
+  const goRegisterBtn = document.getElementById("plan-modal-go-register-btn");
+  if (goRegisterBtn) {
+    goRegisterBtn.addEventListener("click", () => {
+      closePlanComparisonModal();
+      if (typeof switchTab === "function") switchTab("profile");
+      const regTabBtn = document.querySelector('.auth-tab-btn[data-auth="register"]');
+      if (regTabBtn) regTabBtn.click();
     });
   }
 

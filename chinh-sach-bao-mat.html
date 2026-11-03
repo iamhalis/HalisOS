@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chính sách bảo vệ dữ liệu cá nhân — Halios Study OS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .policy-container {
+      max-width: 860px;
+      margin: 40px auto;
+      padding: 32px 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+    }
+    .policy-header {
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 20px;
+      margin-bottom: 28px;
+    }
+    .policy-header h1 {
+      font-size: 1.85rem;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+    .policy-meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .policy-alert {
+      background: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      border-radius: 4px;
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+    .policy-section {
+      margin-bottom: 32px;
+    }
+    .policy-section h2 {
+      font-size: 1.25rem;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px dashed var(--border-color);
+    }
+    .policy-section p, .policy-section li {
+      color: var(--text-main);
+      line-height: 1.65;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+    .policy-section ul {
+      padding-left: 24px;
+      margin-bottom: 14px;
+    }
+    .policy-table-wrap {
+      overflow-x: auto;
+      margin: 16px 0;
+    }
+    .policy-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .policy-table th, .policy-table td {
+      border: 1px solid var(--border-color);
+      padding: 10px 14px;
+      text-align: left;
+    }
+    .policy-table th {
+      background: var(--bg-elevated);
+      color: var(--text-main);
+      font-weight: 600;
+    }
+    .policy-table td {
+      background: var(--bg-surface);
+      color: var(--text-main);
+    }
+    .policy-tag-fill {
+      background: rgba(245, 158, 11, 0.15);
+      color: #f59e0b;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+    .back-btn-wrap {
+      margin-top: 32px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="policy-container">
+    <div class="policy-header">
+      <h1>Chính sách bảo vệ dữ liệu cá nhân</h1>
+      <div class="policy-meta">
+        <span><strong>Cập nhật lần cuối:</strong> 03/11/2026</span>
+        <span><strong>Phiên bản:</strong> v7.71</span>
+      </div>
+    </div>
+
+    <!-- 1. CHÚNG TÔI LÀ AI -->
+    <!-- Căn cứ: Điều 9 khoản 2 Luật 91/2025/QH15: người dùng phải biết rõ bên kiểm soát dữ liệu khi đồng ý -->
+    <section class="policy-section">
+      <h2>1. Chúng tôi là ai</h2>
+      <p>
+        <strong>Halios Study OS</strong> (sau đây gọi là "chúng tôi") là ứng dụng web hỗ trợ tự học, đếm giờ Pomodoro và quản lý mục tiêu cá nhân do nhà phát triển độc lập <strong>iamhalis</strong> xây dựng và vận hành.
+      </p>
+      <ul>
+        <li><strong>Chủ thể phát triển:</strong> iamhalis.</li>
+        <li><strong>Hình thức hoạt động:</strong> Ứng dụng công cụ cá nhân phi thương mại.</li>
+        <li><strong>Kênh liên hệ & tiếp nhận yêu cầu chính thức:</strong> <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer">https://halis-bio.vercel.app/iamhalis</a></li>
+      </ul>
+    </section>
+
+    <!-- 2. PHÂN ĐỊNH QUYỀN RIÊNG TƯ & LƯU TRỮ GIỮA 2 GÓI: FREE TRIAL & MEMBER -->
+    <section class="policy-section">
+      <h2>2. Phân định quyền riêng tư và lưu trữ: Free Trial vs Member</h2>
+      <p>
+        Nhằm tôn trọng tối đa quyền riêng tư và quyền tự quyết của người học (đặc biệt là lứa tuổi học sinh), Halios Study OS phân định rõ 2 gói hoạt động:
+      </p>
+      
+      <div class="policy-table-wrap">
+        <table class="policy-table">
+          <thead>
+            <tr>
+              <th>Tiêu chí so sánh</th>
+              <th>👤 Gói Free Trial (Chế độ Khách)</th>
+              <th>⭐ Gói Member (Thành viên kích hoạt)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Cơ chế tài khoản</strong></td>
+              <td><strong>Không cần tài khoản:</strong> Mở web là dùng ngay, không yêu cầu username, email hay mật khẩu.</td>
+              <td><strong>Có tài khoản cá nhân:</strong> Đăng ký bằng Username, Mật khẩu (băm PBKDF2) và Mã Key kích hoạt.</td>
+            </tr>
+            <tr>
+              <td><strong>Quyền riêng tư & Thu thập dữ liệu</strong></td>
+              <td><strong>100% Ẩn danh (Local-first):</strong> Không thu thập bất kỳ dữ liệu định danh cá nhân nào.</td>
+              <td>Thu thập Username, Email (tùy chọn) và Mật khẩu băm an toàn theo sự đồng ý của người dùng.</td>
+            </tr>
+            <tr>
+              <td><strong>Vị trí lưu trữ dữ liệu học tập</strong></td>
+              <td><strong>Lưu 100% trên trình duyệt (LocalStorage):</strong> Dữ liệu không bao giờ rời khỏi máy tính của bạn.</td>
+              <td><strong>Đồng bộ đám mây (Cloud Sync):</strong> Lưu trên Firebase (Singapore) giúp dùng liền mạch đa thiết bị.</td>
+            </tr>
+            <tr>
+              <td><strong>Sao lưu & Đổi thiết bị</strong></td>
+              <td>Dữ liệu gắn liền với trình duyệt đó. Nếu xóa cache hoặc đổi máy khác thì không tự chuyển qua.</td>
+              <td>Tự động đồng bộ; đăng nhập trên máy tính trường học, laptop hay điện thoại đều giữ nguyên tiến độ.</td>
+            </tr>
+            <tr>
+              <td><strong>Tính năng học tập</strong></td>
+              <td>Đầy đủ tính năng Pomodoro, Nhiệm vụ, Lịch tuần, Ghi chú, Thống kê và Tùy chỉnh độ mờ kính (Backdrop Blur).</td>
+              <td>Đầy đủ tính năng học tập, mở khóa thêm: Đồng bộ Đám mây tự động, Hộp thư tương lai Cloud, Chia sẻ lịch trình.</td>
+            </tr>
+            <tr>
+              <td><strong>Cách kích hoạt</strong></td>
+              <td>Mặc định khi truy cập ứng dụng (Miễn phí 100%).</td>
+              <td>Nhận mã Key kích hoạt miễn phí tại: <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer">https://halis-bio.vercel.app/iamhalis</a>.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <em>Ghi chú quan trọng:</em> Nếu bạn chỉ muốn sử dụng một công cụ Pomodoro cá nhân và không muốn chia sẻ bất kỳ thông tin nào lên internet, gói <strong>Free Trial</strong> là sự lựa chọn an toàn tuyệt đối cho bạn.
+      </p>
+    </section>
+
+    <!-- 3. DỮ LIỆU THU THẬP VÀ MỤC ĐÍCH -->
+    <!-- Căn cứ: Điều 9 khoản 2 điểm a và khoản 4 điểm a Luật 91/2025: biết rõ loại dữ liệu, mục đích; đồng ý theo từng mục đích -->
+    <section class="policy-section">
+      <h2>3. Dữ liệu chúng tôi thu thập và mục đích xử lý</h2>
+      <p>
+        Chúng tôi tuân thủ nguyên tắc chỉ thu thập các dữ liệu thực sự cần thiết để cung cấp tính năng học tập và quản lý mục tiêu cho bạn. Dưới đây là danh mục dữ liệu được hệ thống thu thập:
+      </p>
+      <div class="policy-table-wrap">
+        <table class="policy-table">
+          <thead>
+            <tr>
+              <th>Loại dữ liệu</th>
+              <th>Thời điểm thu thập</th>
+              <th>Mục đích sử dụng</th>
+              <th>Nơi lưu trữ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tên đăng nhập (Username)</strong></td>
+              <td>Khi bạn đăng ký tài khoản Member</td>
+              <td>Định danh tài khoản, phân tách dữ liệu học tập cá nhân</td>
+              <td>Trình duyệt (Local) & Firebase Cloud (Singapore)</td>
+            </tr>
+            <tr>
+              <td><strong>Địa chỉ Email (Không bắt buộc)</strong></td>
+              <td>Khi bạn đăng ký hoặc cập nhật hồ sơ cá nhân</td>
+              <td>Giúp liên kết tài khoản và hỗ trợ bạn bè tìm kiếm để chia sẻ thời khóa biểu</td>
+              <td>Trình duyệt & Firebase Cloud</td>
+            </tr>
+            <tr>
+              <td><strong>Mật khẩu tài khoản</strong></td>
+              <td>Khi bạn tạo tài khoản hoặc đổi mật khẩu</td>
+              <td>Xác thực quyền đăng nhập. Mật khẩu được <strong>mã hóa băm 1 chiều (Bcrypt 12 rounds)</strong>, chúng tôi không bao giờ lưu trữ hay nhìn thấy mật khẩu gốc của bạn.</td>
+              <td>Hệ thống máy chủ Halios (dạng Hash bảo mật)</td>
+            </tr>
+            <tr>
+              <td><strong>Mã bản quyền (License Key)</strong></td>
+              <td>Khi bạn nhập Key kích hoạt tài khoản</td>
+              <td>Kích hoạt tính năng đồng bộ đám mây và lưu trữ nâng cao</td>
+              <td>Bộ nhớ ứng dụng & Máy chủ bản quyền</td>
+            </tr>
+            <tr>
+              <td><strong>Dữ liệu học tập cá nhân</strong> (Nhiệm vụ, Lịch trình, Ghi chú, Pomodoro, Thư tương lai)</td>
+              <td>Khi bạn chủ động nhập nội dung trong quá trình học tập</td>
+              <td>Phục vụ trực tiếp chức năng đếm giờ, quản lý công việc và hiển thị thống kê cho chính bạn</td>
+              <td>Trình duyệt (chế độ Khách) hoặc đồng bộ lên Firebase Cloud (chế độ Member)</td>
+            </tr>
+            <tr>
+              <td><strong>Cookie kỹ thuật phiên (`halios_session`)</strong></td>
+              <td>Khi bạn đăng nhập vào hệ thống</td>
+              <td>Duy trì phiên đăng nhập an toàn (HttpOnly, SameSite=Strict), bảo vệ hệ thống chống tấn công giả mạo (CSRF)</td>
+              <td>Trình duyệt người dùng (Cookie thiết yếu)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Chúng tôi cam kết <strong>không sử dụng</strong> dữ liệu cá nhân của bạn cho bất kỳ mục đích nào khác ngoài các mục đích đã công bố ở bảng trên khi chưa có sự đồng ý của bạn.
+      </p>
+    </section>
+
+    <!-- 4. DỮ LIỆU NHẠY CẢM -->
+    <!-- Căn cứ: Điều 2 khoản 3 Luật 91/2025; Nghị định 356/2025/NĐ-CP -->
+    <section class="policy-section">
+      <h2>4. Dữ liệu cá nhân nhạy cảm</h2>
+      <p>
+        Halios Study OS <strong>hoàn toàn không thu thập</strong> các dữ liệu cá nhân nhạy cảm như: dữ liệu sinh trắc học, thông tin thẻ tín dụng/tài khoản ngân hàng, vị trí địa lý thời gian thực (GPS), hồ sơ bệnh án, hoặc dữ liệu theo dõi hành vi trực tuyến trái phép.
+      </p>
+    </section>
+
+    <!-- 5. BÊN THỨ BA NHẬN DỮ LIỆU -->
+    <!-- Căn cứ: Điều 7 khoản 6 Luật 91/2025: cấm mua bán dữ liệu cá nhân -->
+    <section class="policy-section">
+      <h2>5. Các bên thứ ba và dịch vụ hạ tầng liên kết</h2>
+      <p>
+        Để duy trì tính ổn định của ứng dụng, chúng tôi hợp tác với các nhà cung cấp hạ tầng công nghệ uy tín:
+      </p>
+      <div class="policy-table-wrap">
+        <table class="policy-table">
+          <thead>
+            <tr>
+              <th>Bên thứ ba</th>
+              <th>Dữ liệu tiếp nhận</th>
+              <th>Mục đích</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Google Firebase</strong> (Google LLC)</td>
+              <td>Dữ liệu hồ sơ đã mã hóa, nhiệm vụ, ghi chú học tập</td>
+              <td>Lưu trữ cơ sở dữ liệu thời gian thực và đồng bộ đa thiết bị cho tài khoản Member (Khu vực máy chủ: Asia-Southeast1 - Singapore).</td>
+            </tr>
+            <tr>
+              <td><strong>Vercel Inc.</strong></td>
+              <td>Địa chỉ IP mạng (Network log kỹ thuật số khi gửi yêu cầu)</td>
+              <td>Lưu trữ và phân phối hạ tầng web frontend toàn cầu (CDN).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        <strong>Cam kết minh bạch:</strong> Chúng tôi <strong>không bao giờ bán, cho thuê hay trao đổi</strong> dữ liệu cá nhân của người dùng cho bất kỳ bên quảng cáo, tiếp thị hoặc môi giới dữ liệu nào.
+      </p>
+    </section>
+
+    <!-- 6. LƯU TRỮ VÀ CHUYỂN DỮ LIỆU XUYÊN BIÊN GIỚI -->
+    <!-- Căn cứ: Điều 20 khoản 1 Luật 91/2025; Điều 18 Nghị định 356/2025/NĐ-CP -->
+    <section class="policy-section">
+      <h2>6. Lưu trữ và chuyển dữ liệu ra nước ngoài</h2>
+      <p>
+        Ứng dụng sử dụng dịch vụ đám mây của Google Firebase (với máy chủ đặt tại khu vực Singapore) và nền tảng máy chủ Vercel. Theo quy định tại Điều 20 Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15, việc lưu trữ này được xác định là hành vi chuyển dữ liệu cá nhân ra nước ngoài nhằm mục đích vận hành kỹ thuật hệ thống.
+      </p>
+      <p>
+        <strong>Thời hạn lưu trữ dữ liệu:</strong> Dữ liệu của bạn được lưu giữ cho đến khi:
+      </p>
+      <ul>
+        <li>Bạn chủ động thực hiện tính năng <strong>"Xóa vĩnh viễn tài khoản"</strong> trong ứng dụng; hoặc</li>
+        <li>Bạn gửi yêu cầu xóa dữ liệu tới chúng tôi qua email tiếp nhận; hoặc</li>
+        <li>Hệ thống ngừng cung cấp dịch vụ (trong trường hợp đó toàn bộ cơ sở dữ liệu sẽ được xóa an toàn).</li>
+      </ul>
+    </section>
+
+    <!-- 7. COOKIE VÀ CÔNG CỤ THEO DÕI -->
+    <!-- Căn cứ: Điều 9 khoản 4 điểm d Luật 91/2025; Điều 28 -->
+    <section class="policy-section">
+      <h2>7. Cookie và công cụ lưu trữ cục bộ</h2>
+      <p>
+        Halios Study OS sử dụng các công cụ lưu trữ sau:
+      </p>
+      <ul>
+        <li>
+          <strong>Cookie phiên kỹ thuật (`halios_session`):</strong> Là cookie thiết yếu (Strictly Necessary Cookie) được gắn nhãn bảo vệ <code>HttpOnly</code>, <code>SameSite=Strict</code>, <code>Secure</code> để xác thực đăng nhập và chống tấn công giả mạo CSRF. Cookie này không thể tắt nếu bạn dùng chế độ đăng nhập tài khoản.
+        </li>
+        <li>
+          <strong>LocalStorage trình duyệt:</strong> Dùng để lưu trữ tạm thời giao diện (Sáng/Tối) và dữ liệu học tập cá nhân trên thiết bị của bạn khi dùng Chế độ Khách (Free Trial).
+        </li>
+        <li>
+          <strong>Không dùng Cookie quảng cáo:</strong> Website hoàn toàn <strong>không</strong> sử dụng Google Analytics, Facebook Pixel hay bất kỳ mã theo dõi quảng cáo nào của bên thứ ba.
+        </li>
+      </ul>
+    </section>
+
+    <!-- 8. QUYỀN CỦA BẠN ĐỐI VỚI DỮ LIỆU CÁ NHÂN -->
+    <!-- Căn cứ: Điều 4 khoản 1 Luật 91/2025; Điều 5 Nghị định 356/2025/NĐ-CP -->
+    <section class="policy-section">
+      <h2>8. Quyền của chủ thể dữ liệu và quy trình thực hiện</h2>
+      <p>
+        Theo quy định tại Điều 4 Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15, bạn có đầy đủ các quyền sau:
+      </p>
+      <ul>
+        <li><strong>Quyền được biết và xem:</strong> Biết loại dữ liệu chúng tôi xử lý và xem thông tin hồ sơ của bạn trực tiếp trong tab Hồ sơ.</li>
+        <li><strong>Quyền chỉnh sửa:</strong> Bạn có quyền tự do chỉnh sửa Email, mật khẩu, và nội dung học tập bất kỳ lúc nào trên giao diện.</li>
+        <li><strong>Quyền xóa dữ liệu (Right to Erasure):</strong> Bạn có thể tự mình thực hiện tại mục <em>"Vùng nguy hiểm: Xóa tài khoản vĩnh viễn"</em> trong tab Hồ sơ để xóa ngay lập tức toàn bộ thông tin trên máy chủ Firebase và trình duyệt.</li>
+        <li><strong>Quyền rút lại sự đồng ý:</strong> Bạn có quyền rút lại sự đồng ý xử lý dữ liệu bằng cách xóa tài khoản hoặc ngừng sử dụng dịch vụ.</li>
+        <li><strong>Quyền khiếu nại, phản ánh:</strong> Liên hệ với chúng tôi để được giải quyết các thắc mắc về quyền riêng tư.</li>
+      </ul>
+
+      <p><strong>Cam kết thời hạn xử lý (Theo Điều 5 Nghị định 356/2025/NĐ-CP):</strong></p>
+      <ul>
+        <li><strong>Trong vòng 2 ngày làm việc:</strong> Chúng tôi sẽ xác nhận và hướng dẫn thủ tục cho mọi yêu cầu liên quan đến quyền dữ liệu cá nhân của bạn.</li>
+        <li><strong>Trong vòng 10 ngày làm việc:</strong> Cung cấp bản trích xuất hoặc hoàn tất chỉnh sửa dữ liệu theo yêu cầu.</li>
+        <li><strong>Trong vòng 20 ngày làm việc:</strong> Hoàn tất việc xóa vĩnh viễn dữ liệu khi bạn gửi yêu cầu bằng văn bản/email nếu chưa tự xóa qua giao diện.</li>
+      </ul>
+    </section>
+
+    <!-- 9. ĐỐI TƯỢNG HỌC SINH & TRẺ EM -->
+    <!-- Căn cứ: Điều 24 Luật 91/2025/QH15 -->
+    <section class="policy-section">
+      <h2>9. Dành cho học sinh và người dưới độ tuổi thành niên</h2>
+      <p>
+        Halios Study OS là công cụ hỗ trợ phương pháp tự học và rèn luyện Pomodoro dành cho học sinh, sinh viên. Đối với người dùng chưa đủ 14 tuổi, việc tạo tài khoản và đồng bộ dữ liệu trực tuyến cần được sự hướng dẫn và đồng ý của cha mẹ hoặc người giám hộ theo quy định pháp luật.
+      </p>
+    </section>
+
+    <!-- 10. THÔNG TIN LIÊN HỆ -->
+    <section class="policy-section">
+      <h2>10. Kênh tiếp nhận và liên hệ</h2>
+      <p>
+        Mọi câu hỏi, phản ánh hoặc yêu cầu liên quan đến Chính sách bảo vệ dữ liệu cá nhân này, vui lòng liên hệ:
+      </p>
+      <ul>
+        <li><strong>Người phụ trách:</strong> iamhalis</li>
+        <li><strong>Email tiếp nhận:</strong> <span class="policy-tag-fill">[ KHÔNG CÓ / DO NOT HAVE ]</span></li>
+        <li><strong>Liên hệ trực tiếp:</strong> <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer">https://halis-bio.vercel.app/iamhalis</a></li>
+      </ul>
+    </section>
+
+    <div class="back-btn-wrap">
+      <a href="index.html" class="btn btn-primary" style="display: inline-flex; align-items: center; gap: 8px; text-decoration: none;">
+        ← Quay lại ứng dụng Study OS
+      </a>
+      <span style="font-size: 0.8rem; color: var(--text-muted);">
+        Halios Study OS © 2026
+      </span>
+    </div>
+  </div>
+
+  <script>
+    // Đồng bộ theme với ứng dụng chính
+    (function() {
+      const savedTheme = localStorage.getItem("studyos_theme") || "dark";
+      document.documentElement.setAttribute("data-theme", savedTheme);
+    })();
+  </script>
+</body>
+</html>

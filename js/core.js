@@ -198,7 +198,15 @@ async function syncAllDirectoryUsersFromCloud() {
     if (allAccounts && typeof allAccounts === "object") {
       Object.keys(allAccounts).forEach(uname => {
         if (allAccounts[uname] && allAccounts[uname].profile) {
-          users[uname] = allAccounts[uname].profile;
+          // BẢO MẬT: Tuyệt đối không lưu mật khẩu của người dùng khác vào cơ sở dữ liệu nội bộ
+          const profileData = { ...allAccounts[uname].profile };
+          if (uname !== currentUser) {
+            delete profileData.password;
+            users[uname] = { ...(users[uname] || {}), ...profileData };
+          } else {
+            // Với tài khoản hiện tại, chỉ cập nhật thông tin nếu có
+            users[uname] = { ...users[uname], ...profileData };
+          }
         }
       });
       saveUsersDB();

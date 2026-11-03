@@ -137,7 +137,15 @@ function requireAuth(req, res, next) {
 // Đăng ký tài khoản (Bcrypt 12 rounds)
 app.post("/api/auth/register", async (req, res, next) => {
   try {
-    const { username, email, password } = req.body;
+    const { username, email, password, consentAccepted } = req.body;
+
+    // Validate chấp thuận điều khoản & chính sách bảo vệ dữ liệu cá nhân
+    if (consentAccepted !== true && consentAccepted !== "true") {
+      return res.status(400).json({ 
+        success: false, 
+        error: "Bạn cần đồng ý với Chính sách bảo vệ dữ liệu cá nhân của Halios Study OS!" 
+      });
+    }
 
     // Validate nghiêm ngặt phía Server
     if (!username || !/^[a-zA-Z0-9_.-]{3,24}$/.test(username)) {
@@ -161,7 +169,13 @@ app.post("/api/auth/register", async (req, res, next) => {
     return res.json({
       success: true,
       message: "Đăng ký tài khoản thành công!",
-      user: { username, email, createdAt: new Date().toISOString() },
+      user: { 
+        username, 
+        email, 
+        createdAt: new Date().toISOString(),
+        consentAccepted: true,
+        consentTimestamp: new Date().toISOString()
+      },
       // Không bao giờ trả về hashedPassword cho client
     });
   } catch (err) {

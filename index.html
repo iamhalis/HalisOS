@@ -18,7 +18,7 @@
         <div class="brand-info">
           <h1 id="app-title">Study OS</h1>
           <div class="brand-badges">
-            <span class="version-badge">v7.60 Web</span>
+            <span class="version-badge">v7.71 Web</span>
             <span class="license-status-pill unactivated" id="sidebar-license-badge" title="Nhấn để kích hoạt bản quyền">Free Trial</span>
           </div>
         </div>
@@ -86,6 +86,11 @@
         <button class="theme-toggle" id="theme-toggle-btn">
           <span>Giao diện Sáng / Tối</span>
         </button>
+        <div class="sidebar-legal-links" style="margin-top: 10px; text-align: center; font-size: 0.78rem;">
+          <a href="chinh-sach-bao-mat.html" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: none; opacity: 0.85;">
+            🔒 Chính sách bảo mật
+          </a>
+        </div>
       </div>
     </aside>
 
@@ -713,8 +718,11 @@
             <span class="banner-icon">👤</span>
             <div class="banner-text">
               <strong>Chế độ Khách (Free Trial):</strong> Dữ liệu chỉ lưu tạm thời trên trình duyệt này và không đồng bộ lên Cloud để tránh quá tải máy chủ. Đăng ký tài khoản và nhập Key kích hoạt để mở khóa lưu trữ Đám mây.
-              <div class="banner-link-wrap mt-4">
-                Cần key kích hoạt liên hệ: <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer">https://halis-bio.vercel.app/iamhalis</a>
+              <div class="banner-link-wrap mt-4" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                <span>Cần key kích hoạt liên hệ: <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer">https://halis-bio.vercel.app/iamhalis</a></span>
+                <button type="button" class="btn btn-sm btn-ghost" id="open-plan-comparison-btn" style="padding: 2px 8px; font-size: 0.78rem; border: 1px solid var(--border-color); background: var(--bg-surface);">
+                  🔍 So sánh Free Trial vs Member
+                </button>
               </div>
             </div>
           </div>
@@ -760,6 +768,16 @@
                 <span class="text-muted" style="font-size: 0.8rem; display: block; margin-top: 4px;">
                   Chưa có mã Key? <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" style="color: #818cf8;">Liên hệ nhận Key tại đây</a> hoặc tiếp tục sử dụng <strong>Chế độ Khách</strong>.
                 </span>
+              </div>
+              <div class="form-group consent-group" style="margin-top: 12px; margin-bottom: 8px;">
+                <label for="reg-consent" style="display: flex; align-items: flex-start; gap: 8px; cursor: pointer; font-size: 0.85rem; font-weight: normal; color: var(--text-muted); line-height: 1.45;">
+                  <input type="checkbox" id="reg-consent" required style="margin-top: 3px; accent-color: var(--accent); cursor: pointer;" />
+                  <span>
+                    Tôi xác nhận đã đọc và đồng ý với 
+                    <a href="chinh-sach-bao-mat.html" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline; font-weight: 500;">Chính sách bảo vệ dữ liệu cá nhân</a> 
+                    của Halios Study OS. <span class="req">*</span>
+                  </span>
+                </label>
               </div>
               <div class="form-actions" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
                 <button type="submit" class="btn btn-primary">Tạo tài khoản Member</button>
@@ -969,7 +987,7 @@
                     <span class="tuner-subtitle">Dễ dàng nhìn xuyên hình nền với độ sắc nét chữ cao nhất</span>
                   </div>
                 </div>
-                <span class="pro-tag-badge locked" id="glass-tuner-badge">Member Feature</span>
+                <span class="pro-tag-badge active" id="glass-tuner-badge" style="background: var(--success-soft); color: var(--success); border-color: rgba(16, 185, 129, 0.3);">Mở khóa cho tất cả</span>
               </div>
 
               <div class="glass-tuner-controls" id="glass-tuner-controls">
@@ -1006,17 +1024,6 @@
                   <button type="button" class="preset-btn" data-opacity="32" data-blur="8">Kính Siêu Trong</button>
                   <button type="button" class="preset-btn active" data-opacity="45" data-blur="12">Cân Bằng (Khuyên dùng)</button>
                   <button type="button" class="preset-btn" data-opacity="68" data-blur="18">Mờ Dày</button>
-                </div>
-              </div>
-
-              <!-- Thông báo khóa khi ở bản Trial -->
-              <div class="glass-tuner-locked-overlay hidden" id="glass-tuner-locked">
-                <div class="locked-content">
-                  <span class="lock-icon">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                  </span>
-                  <span>Chế độ Kính Pha Lê Siêu Trong & Chỉnh độ mờ độc quyền cho <strong>Tài khoản Member</strong>.</span>
-                  <button type="button" class="btn btn-sm btn-primary" onclick="openLicenseModal()">Kích hoạt Member ngay</button>
                 </div>
               </div>
             </div>
@@ -1139,6 +1146,97 @@
       <div class="letter-modal-footer">
         <span class="letter-footer-note">Kỷ niệm được lưu giữ trên hệ thống Study OS</span>
         <button type="button" class="btn btn-primary" id="close-letter-footer-btn">Đóng thư</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL SO SÁNH GÓI: FREE TRIAL VS MEMBER -->
+  <div id="plan-comparison-modal-overlay" class="letter-modal-overlay hidden">
+    <div class="letter-modal-card" style="max-width: 740px;" role="dialog" aria-modal="true">
+      <div class="letter-modal-topbar">
+        <div class="letter-seal-badge" style="color: var(--accent); background: var(--accent-soft);">
+          <span class="seal-dot" style="background: var(--accent);"></span>
+          <span>BẢNG SO SÁNH TÍNH NĂNG GÓI HỌC TẬP</span>
+        </div>
+        <button type="button" class="letter-close-icon" id="close-plan-modal-btn" title="Đóng">✕</button>
+      </div>
+
+      <div class="letter-modal-header" style="padding-bottom: 14px;">
+        <h2>Chọn gói học tập phù hợp: Free Trial vs Member</h2>
+        <p class="text-muted" style="margin-top: 4px; font-size: 0.88rem;">
+          Mọi công cụ Pomodoro, Nhiệm vụ, Ghi chú và Lịch tuần đều <strong>hoàn toàn miễn phí</strong>. Bạn chỉ cần chọn cách lưu trữ dữ liệu mong muốn.
+        </p>
+      </div>
+
+      <div class="letter-modal-body" style="padding: 16px 24px; overflow-y: auto; max-height: 52vh;">
+        <div class="policy-table-wrap" style="margin: 0; overflow-x: auto;">
+          <table class="policy-table" style="width: 100%; border-collapse: collapse; font-size: 0.86rem;">
+            <thead>
+              <tr style="background: var(--bg-elevated);">
+                <th style="padding: 10px; border: 1px solid var(--border-color); width: 28%;">Tiêu chí</th>
+                <th style="padding: 10px; border: 1px solid var(--border-color); width: 36%;">👤 Free Trial (Khách)</th>
+                <th style="padding: 10px; border: 1px solid var(--border-color); width: 36%; color: var(--accent);">⭐ Member (Kích hoạt Key)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Đăng ký tài khoản</strong></td>
+                <td style="padding: 10px; border: 1px solid var(--border-color); color: var(--success); font-weight: 600;">Không cần (Mở là học ngay)</td>
+                <td style="padding: 10px; border: 1px solid var(--border-color);">Tạo tài khoản + Mã Key</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Lưu trữ dữ liệu</strong></td>
+                <td style="padding: 10px; border: 1px solid var(--border-color);">Lưu trong trình duyệt máy bạn (100% Offline)</td>
+                <td style="padding: 10px; border: 1px solid var(--border-color); color: var(--accent); font-weight: 600;">Đồng bộ Đám mây (Cloud Sync)</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Dùng nhiều thiết bị</strong></td>
+                <td style="padding: 10px; border: 1px solid var(--border-color);">Chỉ lưu trên 1 máy tính hiện tại</td>
+                <td style="padding: 10px; border: 1px solid var(--border-color);">Dùng mượt trên PC, Laptop, Điện thoại</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Tùy chỉnh Kính mờ & Blur</strong></td>
+                <td style="padding: 10px; border: 1px solid var(--border-color); color: var(--success); font-weight: 600;">✅ Tự do tùy chỉnh không giới hạn</td>
+                <td style="padding: 10px; border: 1px solid var(--border-color); color: var(--success); font-weight: 600;">✅ Tự do tùy chỉnh không giới hạn</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Hộp thư tương lai</strong></td>
+                <td style="padding: 10px; border: 1px solid var(--border-color);">Lưu tạm thời trên máy</td>
+                <td style="padding: 10px; border: 1px solid var(--border-color);">Bảo quản an toàn trên Cloud</td>
+              </tr>
+              <tr>
+                <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Chi phí</strong></td>
+                <td style="padding: 10px; border: 1px solid var(--border-color);">Miễn phí 100%</td>
+                <td style="padding: 10px; border: 1px solid var(--border-color);"><strong>Miễn phí</strong> (Nhận Key qua liên kết bio)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="license-note-box mt-16" style="margin-top: 14px; margin-bottom: 0;">
+          <div class="license-note-icon">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7.5" cy="15.5" r="4.5"/><path d="m21 3-9.5 9.5"/><path d="m15.5 7.5 3 3"/></svg>
+          </div>
+          <div class="license-note-content">
+            <div class="license-note-title">Cách nhận Mã Key Member miễn phí:</div>
+            <p class="license-note-desc" style="font-size: 0.85rem; margin-top: 2px;">
+              Liên hệ nhận mã Key kích hoạt tại: 
+              <a href="https://halis-bio.vercel.app/iamhalis" target="_blank" rel="noopener noreferrer" style="color: var(--accent); text-decoration: underline; font-weight: 600;">
+                https://halis-bio.vercel.app/iamhalis
+              </a>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="letter-modal-footer" style="display: flex; justify-content: space-between; align-items: center; padding: 14px 24px;">
+        <a href="chinh-sach-bao-mat.html" target="_blank" rel="noopener noreferrer" style="font-size: 0.8rem; color: var(--text-muted); text-decoration: underline;">
+          Xem Chính sách bảo mật chi tiết
+        </a>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn btn-ghost" id="plan-modal-stay-guest-btn">Dùng Free Trial</button>
+          <button type="button" class="btn btn-primary" id="plan-modal-go-register-btn">Đăng ký Member</button>
+        </div>
       </div>
     </div>
   </div>

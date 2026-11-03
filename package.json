@@ -1,6 +1,6 @@
 {
   "name": "halios-studyos",
-  "version": "1.0.0",
+  "version": "7.71.0",
   "description": "Halios Study OS - Hệ thống Pomodoro & Quản lý học tập với lá chắn bảo mật toàn diện",
   "main": "server.js",
   "scripts": {
