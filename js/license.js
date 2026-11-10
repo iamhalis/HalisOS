@@ -248,7 +248,8 @@ function renderLicenseUI() {
   const isGuest = info.isGuest;
 
   // 0. Cập nhật class is-member-mode (và is-pro-mode để tương thích) cùng is-trial-mode lên thẻ body
-  document.body.classList.toggle("is-pro-mode", isAct);
+  // Luôn kích hoạt is-pro-mode trên body để đồng bộ 100% hiệu ứng kính Ultra-Glass cho cả Trial và Member
+  document.body.classList.toggle("is-pro-mode", true);
   document.body.classList.toggle("is-member-mode", isAct);
   document.body.classList.toggle("is-trial-mode", !isAct);
 
